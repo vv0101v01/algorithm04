@@ -702,9 +702,9 @@ test "Module 8 & 9 & 10: Fisher-Rao KL Taylor, Quantum SLD, PDE flows & all 7 Th
     @super_emergence.vec_norm(@super_emergence.vec_sub(evolved, bps)) < 1.0e-6,
   )
 
-  // Master verification: ALL 7 derived theorems pass!
+  // Master verification: ALL 18 composite theorems (Layers I-IV) pass!
   let reports = @super_emergence.verify_all_theorems()
-  assert_eq(reports.length(), 14)
+  assert_eq(reports.length(), 18)
   for rep in reports {
     assert_true(rep.passed)
   }
@@ -1015,10 +1015,10 @@ test "Module 12: Semitropical projective space TP^n, Galois projection, Ghost hy
     @super_emergence.tropical_hilbert_dist(pi_exact, pi_maslov) < 5.0e-3,
   )
 
-  // 6. Verify ALL 14 derived theorems pass simultaneously!
-  let all14 = @super_emergence.verify_all_theorems()
-  assert_eq(all14.length(), 14)
-  for rep in all14 {
+  // 6. Verify ALL 18 composite theorems (Layers I-IV) pass simultaneously!
+  let all18 = @super_emergence.verify_all_theorems()
+  assert_eq(all18.length(), 18)
+  for rep in all18 {
     assert_true(rep.passed)
   }
   // Supertropical multiplication absorbs Ghost ideal: Tangible * Ghost -> Ghost
@@ -1203,4 +1203,194 @@ test "Modules 13-15 & Regression Suite: U(g) PBW, Contact/ICIS/Normal/Mero/Micro
     (pf_prod - @super_emergence.SuperMatrix::identity(0, 2)).frob_norm() <
     1.0e-14,
   )
+}
+
+///|
+test "Layer 4 (Theorems XV-XVIII): unified bridge theorems — Schur-Metriplectic flow, paraconsistent unification, Cech super-bundle & quaternionic Connes, role-gated memory" {
+  let (_, end_col) = @super_emergence.run_sgne_emergence_simulation(
+    n_agents=8,
+    n_steps=24,
+    dt=0.18,
+  )
+  let c = end_col[0].belief.c
+
+  // --- THEOREM XV: Schur-Mass Metriplectic structure-preserving flow ---
+  let metri = @super_emergence.schur_metriplectic_instance()
+  let q = [0.9, -0.8]
+  let p = [0.2, 0.35]
+  let e0 = metri.energy(q, p)
+  let (q2, p2) = metri.metriplectic_step(q, p, 0.002, [0.0, 0.0])
+  assert_true(metri.energy(q2, p2) <= e0 + 1.0e-6)
+  assert_true(metri.metriplectic_defect(q) < 1.0e-12)
+  assert_true(metri.symplectic_defect(q, 0.05) < 1.0e-9)
+  assert_true(
+    (metri.conservative_flow_jacobian(q, 0.05).det() - 1.0).abs() < 1.0e-9,
+  )
+  assert_true(metri.dissipation_contraction(0.05) < 1.0)
+  let (soul_norm, body_trace) = @super_emergence.schur_soul_mass_shift()
+  assert_true(soul_norm > 1.0e-6)
+  assert_true(body_trace.abs() < 1.0e-12)
+  assert_true(@super_emergence.schur_effective_mass_identity() < 1.0e-13)
+  let dw = @super_emergence.double_well_instance()
+  let esc = @super_emergence.double_well_barrier_escape(dw, 8, 6000, 0.001, 1.5)
+  assert_eq(esc.conservative_escapes, 0)
+  assert_true(esc.metriplectic_escapes > 0)
+  assert_true(esc.conservative_max_energy < esc.barrier_height)
+
+  // --- THEOREM XVI: Belnap-Grassmann-Poincare paraconsistent unification ---
+  let emb_a = @super_emergence.PoincarePoint::new(1.0, [0.10, 0.0, 0.0, 0.0])
+  let emb_b = @super_emergence.PoincarePoint::new(1.0, [0.90, 0.0, 0.0, 0.0])
+  let sym_embed = (sym : String) => {
+    match sym {
+      "sense" => @super_emergence.PoincarePoint::new(1.0, [0.10, 0.0, 0.0, 0.0])
+      "plan" => @super_emergence.PoincarePoint::new(1.0, [0.60, 0.0, 0.0, 0.0])
+      _ => @super_emergence.PoincarePoint::origin(1.0, 4)
+    }
+  }
+  let st_a : @super_emergence.NeuroSymState = {
+    term: @super_emergence.SymTerm::App("sense", [
+      @super_emergence.SymTerm::Var("x"),
+    ]),
+    emb: emb_a,
+    logic: @super_emergence.Grassmann::generator(4, 0, coeff=0.5),
+  }
+  let st_b : @super_emergence.NeuroSymState = {
+    term: @super_emergence.SymTerm::App("plan", [
+      @super_emergence.SymTerm::Var("x"),
+    ]),
+    emb: emb_b,
+    logic: @super_emergence.Grassmann::generator(4, 0, coeff=0.4),
+  }
+  let pauli_rep = @super_emergence.unify_paraconsistent(st_a, st_b, sym_embed)
+  assert_true(pauli_rep.value == @super_emergence.Bv)
+  assert_true(pauli_rep.quarantined)
+  assert_true(pauli_rep.pauli_excluded)
+  let w1 = @super_emergence.ParaUniverse::new(["p", "q", "r"], [
+    @super_emergence.Tv,
+    @super_emergence.Fv,
+    @super_emergence.Fv,
+  ])
+  let w2 = @super_emergence.ParaUniverse::new(["p", "q", "r"], [
+    @super_emergence.Fv,
+    @super_emergence.Tv,
+    @super_emergence.Fv,
+  ])
+  let (no_expl, fused) = @super_emergence.paraconsistent_no_explosion([w1, w2])
+  assert_true(no_expl)
+  assert_true(fused[0] == @super_emergence.Bv)
+  assert_true(fused[2] == @super_emergence.Fv)
+  let lfp = @super_emergence.epistemic_least_fixed_point(v => {
+    match v {
+      @super_emergence.Nv => @super_emergence.Nv
+      @super_emergence.Fv => @super_emergence.Bv
+      @super_emergence.Tv => @super_emergence.Bv
+      @super_emergence.Bv => @super_emergence.Bv
+    }
+  })
+  assert_true(lfp == @super_emergence.Nv)
+
+  // --- THEOREM XVII: Cech super-operator bundle & quaternionic Connes bridge ---
+  let bundle = @super_emergence.build_canonical_super_bundle()
+  assert_true(bundle.cocycle_defect() < 1.0e-12)
+  assert_true(bundle.patch_defect() < 1.0e-12)
+  assert_true(bundle.holonomy_defect([0, 1, 2]) < 1.0e-12)
+  assert_true(
+    bundle.str_ber_gauge_defect(@super_emergence.super_orthogonal_gauge()) <
+    1.0e-9,
+  )
+  let ncgraph : @super_emergence.NonCommGraph = {
+    n: 3,
+    weights: [
+      [
+        @super_emergence.Quat::zero(),
+        @super_emergence.Quat::new(0.30, 0.40, -0.20, 0.50),
+        @super_emergence.Quat::new(-0.60, 0.10, 0.30, -0.20),
+      ],
+      [
+        @super_emergence.Quat::zero(),
+        @super_emergence.Quat::zero(),
+        @super_emergence.Quat::new(0.20, -0.50, 0.15, 0.25),
+      ],
+      [
+        @super_emergence.Quat::zero(),
+        @super_emergence.Quat::zero(),
+        @super_emergence.Quat::zero(),
+      ],
+    ],
+  }
+  let rho = @super_emergence.quat_real_embedding(ncgraph)
+  assert_true((rho.transpose() - rho).frob_norm() < 1.0e-12)
+  let (rho_eigs, _) = rho.sym_eigen()
+  let (kramers_ok, mult) = @super_emergence.kramers_multiplicity_profile(
+    rho_eigs,
+  )
+  assert_true(kramers_ok)
+  let mut total_mult = 0
+  for m in mult {
+    total_mult = total_mult + m
+  }
+  assert_eq(total_mult, 12)
+  let st = @super_emergence.QuatSpectralTriple::from_graph(ncgraph)
+  let qa = @super_emergence.Quat::new(0.5, 0.25, -0.1, 0.3)
+  let qb = @super_emergence.Quat::new(-0.2, 0.4, 0.15, 0.05)
+  let qc = @super_emergence.Quat::new(0.9, -0.3, 0.2, 0.1)
+  assert_true(st.connes_distance(qa, qa) < 1.0e-9)
+  let d_ab = st.connes_distance(qa, qb)
+  let d_bc = st.connes_distance(qb, qc)
+  let d_ac = st.connes_distance(qa, qc)
+  assert_true(d_ab > 1.0e-9)
+  assert_true(d_ac <= d_ab + d_bc + 1.0e-9)
+  let (k0_idx, k0_err) = @super_emergence.quat_k0_integer_index(
+    { a: 2.0, b: 1.0, q: @super_emergence.Quat::new(0.0, 0.5, -0.5, 1.0), },
+    { a: 3.0, b: 0.5, q: @super_emergence.Quat::new(0.2, 0.1, 0.0, -0.3), },
+  )
+  assert_true(k0_idx >= 2 && k0_idx <= 4)
+  assert_true(k0_err < 1.0e-9)
+
+  // --- THEOREM XVIII: SGNE-Syn-Mem-Para ---
+  let profiles = @super_emergence.role_memory_profiles()
+  assert_eq(profiles.length(), 4)
+  let mut prev_t = 1.0e30
+  for prof in profiles {
+    let (lin, ser) = @super_emergence.role_absorption_time(prof.retention)
+    assert_true(@super_emergence.approx(lin, ser, 1.0e-6))
+    assert_true(lin < prev_t)
+    prev_t = lin
+    assert_true(
+      @super_emergence.role_semigroup_closure_error(prof, 1.0, 64) < 1.0e-9,
+    )
+  }
+  let (t_winners, t_state) = @super_emergence.supertropical_wta_dual(
+    [0.10, 2.00, 0.50, -1.00],
+    0.1,
+    200,
+  )
+  assert_eq(t_winners.length(), 1)
+  assert_true(!t_state.is_ghost())
+  let (g_winners, g_state) = @super_emergence.supertropical_wta_dual(
+    [0.60, 0.60, -0.30, -1.20],
+    0.1,
+    200,
+  )
+  assert_eq(g_winners.length(), 2)
+  assert_true(g_state.is_ghost())
+  assert_true(
+    @super_emergence.slaving_collapse_error(1.5, 4.0, 0.2, 400) < 1.0e-9,
+  )
+  let (bicomp_ok, po_size, pb_size) = @super_emergence.finite_bicompleteness_certificate()
+  assert_true(bicomp_ok)
+  assert_true(po_size > 0 && pb_size > 0)
+  let code = @super_emergence.godel_encode_finite_set([0, 2, 5])
+  let decoded = @super_emergence.godel_decode_finite_set(code)
+  assert_eq(decoded.length(), 3)
+  assert_eq(decoded[0], 0)
+  assert_eq(decoded[1], 2)
+  assert_eq(decoded[2], 5)
+  let smp = @super_emergence.distill_synergetic_memory_para_agent(end_col, c)
+  assert_true(smp.semigroup_closure_error < 1.0e-9)
+  assert_true(smp.wta_tangible && smp.wta_ghost)
+  assert_true(smp.slaving_collapse_error < 1.0e-9)
+  assert_true(smp.godel_injective)
+  assert_true(smp.no_explosion)
+  assert_true(smp.contradicted_propositions > 0)
 }

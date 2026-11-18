@@ -1685,7 +1685,272 @@ pub fn verify_all_theorems() -> Array[TheoremReport] {
     summary: "sp(A_0)=0; 1/(x+i0)=pv-i*pi*delta; d_x^{-1}delta=Y; P o P^{-1}=P^{-1} o P=1 exact.",
   })
 
+  // --- Layer 4: UNIFIED BRIDGE THEOREMS (XV-XVIII), the six MERGE-ONLY dividends ---
+  let c_last = end_col[0].belief.c
+  for r in verify_layer4_bridge_theorems(end_col, c_last) {
+    reports.push(r)
+  }
+
   reports
+}
+
+///|
+/// Layer-4 unified bridge theorem verifier (Theorems XV-XVIII).
+/// These four composite theorems exist ONLY in the merged repository: each of them
+/// couples a structure of `algorithm04` with a structure of `algo8` inside a single
+/// type system, and NONE of them can be stated in either upstream code base alone.
+fn verify_layer4_bridge_theorems(
+  end_col : Array[ProtoAgent],
+  c_end : Double,
+) -> Array[TheoremReport] {
+  let reports : Array[TheoremReport] = []
+
+  // ===================== THEOREM XV: SCHUR-MASS METRIPLECTIC FLOW =====================
+  let metri = schur_metriplectic_instance()
+  let mq = [0.9, -0.8]
+  let mp = [0.2, 0.35]
+  let e0 = metri.energy(mq, mp)
+  let (mq2, mp2) = metri.metriplectic_step(mq, mp, 0.002, [0.0, 0.0])
+  let e1 = metri.energy(mq2, mp2)
+  let metri_defect = metri.metriplectic_defect(mq)
+  let symp_defect = metri.symplectic_defect(mq, 0.05)
+  let det_j = metri.conservative_flow_jacobian(mq, 0.05).det()
+  let (soul_norm, body_trace) = schur_soul_mass_shift()
+  let schur_ident = schur_effective_mass_identity()
+  let dw = double_well_instance()
+  let esc = double_well_barrier_escape(dw, 12, 8000, 0.001, 1.5)
+  let contraction = metri.dissipation_contraction(0.05)
+  let res_t15 = metri_defect
+    .max(symp_defect)
+    .max((det_j - 1.0).abs())
+    .max(schur_ident)
+    .max(body_trace.abs())
+    .max((esc.conservative_max_energy - esc.barrier_height).max(0.0))
+  let t15_ok = metri_defect < 1.0e-12 &&
+    symp_defect < 1.0e-9 &&
+    (det_j - 1.0).abs() < 1.0e-9 &&
+    soul_norm > 1.0e-6 &&
+    body_trace.abs() < 1.0e-12 &&
+    schur_ident < 1.0e-13 &&
+    e1 <= e0 + 1.0e-6 &&
+    esc.conservative_escapes == 0 &&
+    esc.metriplectic_escapes > 0 &&
+    contraction < 1.0
+  reports.push({
+    id: "Theorem XV",
+    title: "Schur-Mass Metriplectic Structure-Preserving Flow (conservative + dissipative)",
+    passed: t15_ok,
+    max_residual: res_t15,
+    key_invariant: esc.metriplectic_escapes.to_double(),
+    summary: "A^T Omega + Omega A = -gamma Omega exact; conservative J^T Omega J = Omega, det J = 1; soul mass shift > 0; conservative flow trapped (0 escapes), metriplectic flow escapes.",
+  })
+
+  // ================= THEOREM XVI: BELNAP-GRASSMANN-POINCARE UNIFICATION =================
+  let emb_a = PoincarePoint::new(1.0, [0.10, 0.0, 0.0, 0.0])
+  let emb_b = PoincarePoint::new(1.0, [0.90, 0.0, 0.0, 0.0])
+  let term_a = SymTerm::App("sense", [SymTerm::Var("x")])
+  let term_b = SymTerm::App("plan", [SymTerm::Var("x")])
+  let st_a : NeuroSymState = {
+    term: term_a,
+    emb: emb_a,
+    logic: Grassmann::generator(4, 0, coeff=0.5),
+  }
+  let st_b : NeuroSymState = {
+    term: term_b,
+    emb: emb_b,
+    logic: Grassmann::generator(4, 0, coeff=0.4),
+  }
+  let sym_embed = (sym : String) => {
+    match sym {
+      "sense" => PoincarePoint::new(1.0, [0.10, 0.0, 0.0, 0.0])
+      "plan" => PoincarePoint::new(1.0, [0.60, 0.0, 0.0, 0.0])
+      _ => PoincarePoint::origin(1.0, 4)
+    }
+  }
+  let pauli_rep = unify_paraconsistent(st_a, st_b, sym_embed)
+  let coherent_a : NeuroSymState = {
+    term: term_a,
+    emb: emb_a,
+    logic: Grassmann::generator(4, 1, coeff=0.5),
+  }
+  let coherent_b : NeuroSymState = {
+    term: term_a,
+    emb: emb_a,
+    logic: Grassmann::generator(4, 2, coeff=0.5),
+  }
+  let coherent_rep = unify_paraconsistent(coherent_a, coherent_b, sym_embed)
+  let w1 = ParaUniverse::new(["p", "q", "r"], [Tv, Fv, Fv])
+  let w2 = ParaUniverse::new(["p", "q", "r"], [Fv, Tv, Fv])
+  let (no_expl, fused) = paraconsistent_no_explosion([w1, w2])
+  let lfp = epistemic_least_fixed_point(v => {
+    match v {
+      Nv => Nv
+      Fv => Bv
+      Tv => Bv
+      Bv => Bv
+    }
+  })
+  let t16_ok = pauli_rep.value == Bv &&
+    pauli_rep.quarantined &&
+    pauli_rep.pauli_excluded &&
+    coherent_rep.value == Tv &&
+    !coherent_rep.quarantined &&
+    no_expl &&
+    fused[0] == Bv &&
+    fused[1] == Bv &&
+    fused[2] == Fv &&
+    lfp == Nv &&
+    all_monotone_maps_have_fixed_point()
+  let res_t16 = (pauli_rep.coherence - 1.0)
+    .abs()
+    .max((coherent_rep.coherence - 1.0).abs())
+  reports.push({
+    id: "Theorem XVI",
+    title: "Belnap-Grassmann-Poincare Paraconsistent Unification (quarantine without explosion)",
+    passed: t16_ok,
+    max_residual: res_t16,
+    key_invariant: if lfp == Nv {
+      1.0
+    } else {
+      0.0
+    },
+    summary: "Pauli-Grassmann exclusion and structural clash quarantined as Bv (never exploded); coherent unification yields Tv; multi-world fusion keeps orthogonal propositions undesignated; Knaster-Tarski lfp exists.",
+  })
+
+  // ============ THEOREM XVII: CECH SUPEROPERATOR BUNDLE & QUATERNIONIC CONNES ============
+  let bundle = build_canonical_super_bundle()
+  let cocycle_defect = bundle.cocycle_defect()
+  let patch_defect = bundle.patch_defect()
+  let holonomy_defect = bundle.holonomy_defect([0, 1, 2])
+  let gauge = super_orthogonal_gauge()
+  let gauge_defect = bundle.str_ber_gauge_defect(gauge)
+  // Quaternionic noncommutative graph -> real 4n x 4n Kramers 4-fold degenerate embedding
+  let ncgraph : NonCommGraph = {
+    n: 3,
+    weights: [
+      [
+        Quat::zero(),
+        Quat::new(0.30, 0.40, -0.20, 0.50),
+        Quat::new(-0.60, 0.10, 0.30, -0.20),
+      ],
+      [Quat::zero(), Quat::zero(), Quat::new(0.20, -0.50, 0.15, 0.25)],
+      [Quat::zero(), Quat::zero(), Quat::zero()],
+    ],
+  }
+  let rho = quat_real_embedding(ncgraph)
+  let sym_defect = (rho.transpose() - rho).frob_norm()
+  let (rho_eigs, _) = rho.sym_eigen()
+  let (kramers_ok, mult_profile) = kramers_multiplicity_profile(rho_eigs)
+  let st = QuatSpectralTriple::from_graph(ncgraph)
+  let qa = Quat::new(0.5, 0.25, -0.1, 0.3)
+  let qb = Quat::new(-0.2, 0.4, 0.15, 0.05)
+  let qc = Quat::new(0.9, -0.3, 0.2, 0.1)
+  let d_ab = st.connes_distance(qa, qb)
+  let d_bc = st.connes_distance(qb, qc)
+  let d_ac = st.connes_distance(qa, qc)
+  let herm_ok = adjacency_is_hermitian(ncgraph, 1.0e-12)
+  let (k0_idx, k0_err) = quat_k0_integer_index(
+    { a: 2.0, b: 1.0, q: Quat::new(0.0, 0.5, -0.5, 1.0), },
+    { a: 3.0, b: 0.5, q: Quat::new(0.2, 0.1, 0.0, -0.3), },
+  )
+  let res_t17 = cocycle_defect
+    .max(patch_defect)
+    .max(holonomy_defect)
+    .max(gauge_defect)
+    .max(sym_defect)
+    .max(k0_err)
+  let t17_ok = cocycle_defect < 1.0e-12 &&
+    patch_defect < 1.0e-12 &&
+    holonomy_defect < 1.0e-12 &&
+    gauge_defect < 1.0e-9 &&
+    sym_defect < 1.0e-12 &&
+    herm_ok &&
+    kramers_ok &&
+    d_ab > 1.0e-9 &&
+    d_ac <= d_ab + d_bc + 1.0e-9 &&
+    k0_idx >= 2 &&
+    k0_idx <= 4 &&
+    k0_err < 1.0e-9
+  reports.push({
+    id: "Theorem XVII",
+    title: "Cech SuperOperatorBundle Holonomy & Quaternionic Kramers-Connes K_0 Bridge",
+    passed: t17_ok,
+    max_residual: res_t17,
+    key_invariant: mult_profile.length().to_double(),
+    summary: "g_ab g_bc = g_ac exact; holonomy = id; str/Ber gauge invariant; real 4n embedding has Kramers 4-fold degeneracy; Connes distance is a metric; K_0 index = \{k0_idx} in Z.",
+  })
+
+  // ================= THEOREM XVIII: SGNE-Syn-Mem-Para (LAYER 4 ALGORITHM) =================
+  let smp = distill_synergetic_memory_para_agent(end_col, c_end)
+  let t18_ok = smp.semigroup_closure_error < 1.0e-9 &&
+    smp.wta_tangible &&
+    smp.wta_ghost &&
+    smp.slaving_collapse_error < 1.0e-9 &&
+    smp.godel_injective &&
+    smp.no_explosion &&
+    smp.role_absorption_times[0] > smp.role_absorption_times[1] &&
+    smp.role_absorption_times[1] > smp.role_absorption_times[2] &&
+    smp.role_absorption_times[2] > smp.role_absorption_times[3]
+  let res_t18 = smp.semigroup_closure_error.max(smp.slaving_collapse_error)
+  reports.push({
+    id: "Theorem XVIII",
+    title: "SGNE-Syn-Mem-Para: Role-Gated Memory, Haken-Supertropical Duality & Finite Bicompleteness",
+    passed: t18_ok,
+    max_residual: res_t18,
+    key_invariant: smp.role_absorption_times[0],
+    summary: "Role absorption times strictly ordered by retention; O(log t) closed form == iteration; WTA Tangible/Ghost duality exact; slaving collapse; limits+colimits+Cantor Godel injective; B_4 fusion without explosion.",
+  })
+
+  reports
+}
+
+///|
+/// Build the canonical 3-patch Cech super-operator bundle used by Theorem XVII:
+///   transitions g_01 = A, g_12 = B, g_02 = A B (hence the cocycle condition holds
+///   identically on every triple), and local sections s_j = g_ij^{st} s_i g_ij.
+pub fn build_canonical_super_bundle() -> SuperOperatorBundle {
+  let a = even_super_matrix(
+    [1.0, 0.0, 0.0, 1.0],
+    [0.20, 0.10, 0.05, 0.0],
+    [0.0, 0.0, 0.0, 0.0],
+    [1.0, 0.0, 0.0, 1.0],
+  )
+  let b = even_super_matrix(
+    [1.0, 0.0, 0.0, 1.0],
+    [0.0, 0.0, 0.0, 0.0],
+    [0.10, 0.0, 0.05, 0.10],
+    [1.0, 0.0, 0.0, 1.0],
+  )
+  let g01 = a
+  let g12 = b
+  let g02 = g01 * g12
+  let ident = SuperMatrix::identity(2, 2, n_gen=DEFAULT_GRASSMANN_GEN)
+  let s0 = even_super_matrix(
+    [2.0, 0.3, 0.3, 1.5],
+    [0.1, 0.0, 0.05, 0.02],
+    [0.05, 0.0, 0.1, 0.02],
+    [1.2, 0.2, 0.2, 0.9],
+  )
+  let s1 = g01.supertranspose() * s0 * g01
+  let s2 = g02.supertranspose() * s0 * g02
+  let t = [
+    [ident, g01, g02],
+    [g01.inverse(), ident, g12],
+    [g02.inverse(), g12.inverse(), ident],
+  ]
+  { n_sets: 3, local_ops: [s0, s1, s2], transitions: t, }
+}
+
+///|
+/// Orthosymplectic-compatible gauge g = [[G, 0], [0, I]] with G a 2x2 rotation:
+/// it preserves BOTH the supertrace str and the Berezinian Ber exactly.
+pub fn super_orthogonal_gauge() -> SuperMatrix {
+  let th = 0.4
+  let c = @math.cos(th)
+  let s = @math.sin(th)
+  even_super_matrix([c, -s, s, c], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [
+    1.0, 0.0, 0.0, 1.0,
+  ])
 }
 
 ///|

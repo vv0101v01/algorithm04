@@ -17,16 +17,16 @@ concurrency:
 
 jobs:
   verify:
-    name: Format, Strict Typecheck, 3-Backend Tests & 14-Theorem Audit
+    name: Format, Strict Typecheck, 3-Backend Tests & 18-Theorem Audit
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js (for JS backend verification)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "22"
 
@@ -58,8 +58,26 @@ jobs:
       - name: Gate 6 — Run cross-backend verification (js)
         run: moon test --target js
 
-      - name: Gate 7 — Run full 14-theorem & tri-layer emergence CLI audit
+      - name: Gate 7 — Run full 18-theorem & four-layer emergence CLI audit
         run: |
           OUT="$(moon run cmd/main)"
           printf '%s\n' "$OUT"
-          printf '%s\n' "$OUT" | grep -Fq "14 / 14 theorems verified."
+          printf '%s\n' "$OUT" | grep -Fq "18 / 18 theorems verified."
+          printf '%s\n' "$OUT" | grep -Fq "SGNE-Syn-Mem-Para"
+          printf '%s\n' "$OUT" | grep -Fq "26 structures"
+
+      - name: Gate 8 — Validate the machine-readable emergence problem set
+        run: |
+          python3 -c "
+          import json
+          d = json.load(open('benchmarks/emergence_problem_set.json'))
+          ps = d['problems']
+          ids = [p['id'] for p in ps]
+          assert len(ids) == len(set(ids)), 'duplicate problem ids'
+          assert len(ps) >= 30, 'problem set too small'
+          for p in ps:
+              assert p['kind'] in d['kinds'], p['id']
+              assert p['layer'].startswith('Tier'), p['id']
+              assert 'module' in p and 'function' in p, p['id']
+          print('problem set OK: %d problems' % len(ps))
+          "

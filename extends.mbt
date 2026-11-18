@@ -386,3 +386,187 @@ pub extend UniversalUnfolding with @debug.Debug::{to_repr}
 
 ///|
 pub extend UniversalUnfolding with Eq::{not_equal, equal}
+
+///|
+/// NOTE: `Complex::norm_sq` and `Complex::scale` already exist as inherent methods in
+/// `algebra.mbt`, so only the non-conflicting trait methods are promoted here; the trait
+/// implementations themselves (`impl AbelianGroup for Complex`, `impl Module for Complex`)
+/// remain fully available through `AbelianGroup::norm_sq` / `Module::scale`.
+pub extend Complex with AbelianGroup::{sub_elem, neg_elem, add_elem, zero_elem}
+
+///|
+pub extend Complex with Ring::{mul_elem, one_elem}
+
+///|
+pub extend Quat with @debug.Debug::{to_repr}
+
+///|
+pub extend Quat with Add::{add}
+
+///|
+pub extend Quat with Div::{div}
+
+///|
+pub extend Quat with Eq::{not_equal, equal}
+
+///|
+pub extend Quat with Mul::{mul}
+
+///|
+pub extend Quat with Neg::{neg}
+
+///|
+pub extend Quat with Sub::{sub}
+
+///|
+pub extend Quat with AbelianGroup::{
+  sub_elem,
+  neg_elem,
+  add_elem,
+  zero_elem,
+  norm_sq,
+}
+
+///|
+pub extend Quat with Module::{scale}
+
+///|
+pub extend Quat with Ring::{mul_elem, one_elem}
+
+///|
+pub extend Gates with @debug.Debug::{to_repr}
+
+///|
+pub extend Gates with Eq::{not_equal, equal}
+
+///|
+pub extend MemoryCell with @debug.Debug::{to_repr}
+
+///|
+pub extend MemoryCell with Eq::{not_equal, equal}
+
+///|
+pub extend Phase with @debug.Debug::{to_repr}
+
+///|
+pub extend Phase with Eq::{not_equal, equal}
+
+///|
+pub extend Phase with Hash::{hash, hash_combine}
+
+///|
+pub extend Layer with @debug.Debug::{to_repr}
+
+///|
+pub extend Layer with Eq::{not_equal, equal}
+
+///|
+pub extend SynergeticNet with @debug.Debug::{to_repr}
+
+///|
+pub extend SynergeticNet with Eq::{not_equal, equal}
+
+///|
+pub extend NeuralH with @debug.Debug::{to_repr}
+
+///|
+pub extend NeuralH with Eq::{not_equal, equal}
+
+///|
+pub extend Obj with @debug.Debug::{to_repr}
+
+///|
+pub extend Obj with Eq::{not_equal, equal}
+
+///|
+pub extend Hom with @debug.Debug::{to_repr}
+
+///|
+pub extend Hom with Eq::{not_equal, equal}
+
+///|
+pub extend Cone with @debug.Debug::{to_repr}
+
+///|
+pub extend Cone with Eq::{not_equal, equal}
+
+///|
+pub extend FinitePullback with @debug.Debug::{to_repr}
+
+///|
+pub extend FinitePullback with Eq::{not_equal, equal}
+
+///|
+pub extend Hermitian2 with @debug.Debug::{to_repr}
+
+///|
+pub extend Hermitian2 with Eq::{not_equal, equal}
+
+///|
+pub extend NonCommGraph with @debug.Debug::{to_repr}
+
+///|
+pub extend NonCommGraph with Eq::{not_equal, equal}
+
+///|
+pub extend FourVal with @debug.Debug::{to_repr}
+
+///|
+pub extend FourVal with Eq::{not_equal, equal}
+
+///|
+pub extend FourVal with Hash::{hash, hash_combine}
+
+///|
+pub extend ParaUniverse with @debug.Debug::{to_repr}
+
+///|
+pub extend ParaUniverse with Eq::{not_equal, equal}
+
+///|
+pub extend MultiWorld with @debug.Debug::{to_repr}
+
+///|
+pub extend MultiWorld with Eq::{not_equal, equal}
+
+///|
+pub extend SuperHamiltonian with @debug.Debug::{to_repr}
+
+///|
+pub extend SuperHamiltonian with Eq::{not_equal, equal}
+
+///|
+pub extend BarrierEscapeReport with @debug.Debug::{to_repr}
+
+///|
+pub extend BarrierEscapeReport with Eq::{not_equal, equal}
+
+///|
+pub extend ParaUnifyReport with @debug.Debug::{to_repr}
+
+///|
+pub extend ParaUnifyReport with Eq::{not_equal, equal}
+
+///|
+pub extend SuperOperatorBundle with @debug.Debug::{to_repr}
+
+///|
+pub extend SuperOperatorBundle with Eq::{not_equal, equal}
+
+///|
+pub extend QuatSpectralTriple with @debug.Debug::{to_repr}
+
+///|
+pub extend QuatSpectralTriple with Eq::{not_equal, equal}
+
+///|
+pub extend RoleMemoryProfile with @debug.Debug::{to_repr}
+
+///|
+pub extend RoleMemoryProfile with Eq::{not_equal, equal}
+
+///|
+pub extend SynMemParaReport with @debug.Debug::{to_repr}
+
+///|
+pub extend SynMemParaReport with Eq::{not_equal, equal}

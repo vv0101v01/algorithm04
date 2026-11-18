@@ -1,6 +1,6 @@
 name = "arena/super_emergence"
 
-version = "1.0.0"
+version = "2.0.0"
 
 readme = "README.mbt.md"
 
@@ -13,6 +13,7 @@ keywords = [
   "poincare",
   "pope",
   "noncommutative-geometry",
+  "quaternion-k-theory",
   "super-jacobi",
   "supersymmetry",
   "fisher-information",
@@ -21,9 +22,15 @@ keywords = [
   "universal-enveloping",
   "singularity-germs",
   "microfunctions",
+  "symplectic",
+  "metriplectic",
+  "synergetics",
+  "memory-semigroup",
+  "operator-bundle",
+  "paraconsistent-logic",
   "agent-emergence",
 ]
 
 preferred_target = "wasm-gc"
 
-description = "Eighteen modern super-geometric, universal-functorial, semitropical projective, singularity-germ, and Sato microlocal mathematical structures in MoonBit with 14 machine-verified theorems and tri-layer quasi-agentic emergence engines."
+description = "Unified mathematical-logical-algorithmic emergence framework (algorithm04 + algo8) in MoonBit: 24 mathematical structures, 18 composite + 31 foundational machine-verified theorems, and a four-layer quasi-agentic emergence engine."

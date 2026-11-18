@@ -175,7 +175,14 @@ pub fn[L : LieSuperAlgebra] graded_skew_defect(x : L, y : L) -> L {
 }
 
 ///|
-/// Complex number z = re + i * im used for PoPE polar fibers U(1)^d subset C^d.
+/// NaN-safe floating-point proximity check |a - b| < eps (returns false on NaN).
+pub fn approx(a : Double, b : Double, eps : Double) -> Bool {
+  (a - b).abs() < eps
+}
+
+///|
+/// Complex number z = re + i * im unifying the Hamel-basis field C (algo8)
+/// with PoPE polar fibers U(1)^d, Laurent meromorphic germs, and Sato hyperfunctions (algorithm04).
 #derive(Debug, Eq)
 pub(all) struct Complex {
   re : Double
@@ -224,8 +231,26 @@ pub fn Complex::norm_sq(self : Complex) -> Double {
 }
 
 ///|
+/// Compatibility alias for squared modulus |z|^2 = re^2 + im^2 (from algo8).
+pub fn Complex::norm2(self : Complex) -> Double {
+  self.norm_sq()
+}
+
+///|
 pub fn Complex::abs(self : Complex) -> Double {
   self.norm_sq().sqrt()
+}
+
+///|
+/// Compatibility alias for Euclidean modulus |z| = sqrt(re^2 + im^2) (from algo8).
+pub fn Complex::norm(self : Complex) -> Double {
+  self.abs()
+}
+
+///|
+/// Near-zero field element predicate |z|^2 < 1e-30 (from algo8).
+pub fn Complex::is_zero(self : Complex) -> Bool {
+  self.norm_sq() < 1.0e-30
 }
 
 ///|
@@ -234,7 +259,7 @@ pub fn Complex::phase(self : Complex) -> Double {
 }
 
 ///|
-/// Exact multiplicative inverse z^{-1} = z^* / |z|^2 on C \ {0}.
+/// Exact multiplicative inverse z^{-1} = z^* / |z|^2 on C \ {0} (zero-guarded).
 pub fn Complex::inv(self : Complex) -> Complex {
   let n2 = self.norm_sq()
   if n2 <= 1.0e-300 {
@@ -276,6 +301,41 @@ pub impl Div for Complex with fn div(self, other) {
 ///|
 pub impl Neg for Complex with fn neg(self) {
   { re: -self.re, im: -self.im, }
+}
+
+///|
+pub impl AbelianGroup for Complex with fn zero_elem() {
+  Complex::zero()
+}
+
+///|
+pub impl AbelianGroup for Complex with fn add_elem(self, other) {
+  self + other
+}
+
+///|
+pub impl AbelianGroup for Complex with fn neg_elem(self) {
+  -self
+}
+
+///|
+pub impl AbelianGroup for Complex with fn norm_sq(self) {
+  self.re * self.re + self.im * self.im
+}
+
+///|
+pub impl Module for Complex with fn scale(self, s) {
+  { re: self.re * s, im: self.im * s, }
+}
+
+///|
+pub impl Ring for Complex with fn one_elem() {
+  Complex::one()
+}
+
+///|
+pub impl Ring for Complex with fn mul_elem(self, other) {
+  self * other
 }
 
 ///|

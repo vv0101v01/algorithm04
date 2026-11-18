@@ -10,23 +10,47 @@ pub const DEFAULT_GRASSMANN_GEN : Int32 = 4
 
 pub const TROP_NEG_INF : Double = -1.0e30
 
+pub fn absorption_time_linear_solve(Array[Array[Double]], Array[Double]) -> Array[Double]
+
+pub fn absorption_time_series(Int32, Array[Array[Double]], Int32, Double) -> Double
+
+pub fn adjacency_is_hermitian(NonCommGraph, Double) -> Bool
+
 pub fn[L : LieSuperAlgebra] adjoint_leibniz_defect(L, L, L) -> L
 
 pub fn affine_barycenter(Array[AffinePoint], Array[Double]) -> AffinePoint
 
+pub fn agent_para_universe(ProtoAgent, PoincarePoint, Double) -> ParaUniverse
+
+pub fn all_monotone_maps_have_fixed_point() -> Bool
+
 pub fn anticommutator_family_defect(Array[DenseMat]) -> Double
+
+pub fn approx(Double, Double, Double) -> Bool
 
 pub fn audit_complete_intersection(MapGerm, koszul_check_deg? : Int32) -> CompleteIntersectionReport
 
 pub fn audit_serre_normality(MapGerm) -> SerreNormalityReport
 
+pub fn build_canonical_super_bundle() -> SuperOperatorBundle
+
+pub fn build_global_section(Array[Array[Double]], Array[Array[Double]], Int32, Double) -> Bool
+
 pub fn canonical_symplectic(Int32) -> DenseMat
+
+pub fn cantor_pair(Int32, Int32) -> Int32
+
+pub fn cantor_unpair(Int32) -> (Int32, Int32)
 
 pub fn categorical_fisher_matrix(Array[Double]) -> DenseMat
 
 pub fn categorical_probs(Array[Double]) -> Array[Double]
 
+pub fn cayley_hamilton_2x2(Array[Array[Quat]], Double) -> Bool
+
 pub fn chirality_grading_mat(Int32, Int32) -> DenseMat
+
+pub fn classic_embed(Bool) -> FourVal
 
 pub fn classical_commutator(DenseMat, DenseMat) -> DenseMat
 
@@ -34,33 +58,79 @@ pub fn classical_jacobiator(DenseMat, DenseMat, DenseMat) -> DenseMat
 
 pub fn classify_contact_equiv_class(MapGerm) -> GermEquivClass
 
+pub fn cocycle_condition(Array[Double], Array[Double], Array[Double], Double) -> Bool
+
+pub fn colony_para_fusion(Array[ProtoAgent], Double, Double) -> (Bool, Array[FourVal], Int32)
+
 pub fn compare_natural_vs_euclidean_kl(Array[Double], Array[Double], Int32, Double) -> (Double, Double)
+
+pub fn compute_finite_pullback(Hom, Hom) -> FinitePullback
 
 pub fn compute_finite_pushout(Int32, Int32, Array[Int32], Array[Int32]) -> FinitePushout
 
+pub fn count_terminal_arrows(Int32) -> Int32
+
+pub fn default_neural_h() -> NeuralH
+
 pub fn distill_germ_microlocal_phase() -> GermMicrolocalReport
 
+pub fn distill_synergetic_memory_para_agent(Array[ProtoAgent], Double) -> SynMemParaReport
+
 pub fn distill_tropical_kan_macro_agent(Array[ProtoAgent], Array[ProtoAgent]) -> TropicalKanMacroAgent
+
+pub fn double_well_barrier_escape(SuperHamiltonian, Int32, Int32, Double, Double) -> BarrierEscapeReport
+
+pub fn double_well_instance() -> SuperHamiltonian
+
+pub fn emergent_commutator_trace(Array[Double], Array[Double], Array[Double], Double) -> Bool
+
+pub fn emergent_spectral_gap(Array[Double]) -> Double
+
+pub fn energy_drift(Bool, Int32, Double) -> Double
+
+pub fn epistemic_least_fixed_point((FourVal) -> FourVal) -> FourVal
 
 pub fn euler_jacobi_residue_sum(Array[Complex], Int32) -> Complex
 
 pub fn eval_supertropical_poly(Array[Double], Array[Array[Double]], Array[Double], tie_tol? : Double) -> SuperTropical
 
+pub fn even_super_matrix(Array[Double], Array[Double], Array[Double], Array[Double]) -> SuperMatrix
+
 pub fn evolve_ricci_fisher_curvature(Double, Int32, Double, Double, Double, Double, Int32) -> (Array[Double], Double)
 
 pub fn evolve_susy_heat_flow(WittenSUSYSystem, Array[Double], Double) -> Array[Double]
+
+pub fn explicit_euler_step(NeuralH, Array[Double], Array[Double], Double) -> (Array[Double], Array[Double])
+
+pub fn explicit_identity_residual(NeuralH, Array[Double], Array[Double], Double) -> Double
+
+pub fn explosion_counterexample_exists() -> Bool
 
 pub fn factor_through_quotient_germ(MapGerm, PolyGerm, Int32, tol? : Double) -> Result[PolyGerm, String]
 
 pub fn fermionic_creation_operators(Int32) -> Array[DenseMat]
 
+pub fn field_axioms_hold(Array[Complex]) -> Bool
+
+pub fn finite_bicompleteness_certificate() -> (Bool, Int32, Int32)
+
 pub fn flat_osp_metric_mat(Int32, Int32) -> DenseMat
+
+pub fn four_all_values() -> Array[FourVal]
+
+pub fn four_le(FourVal, FourVal) -> Bool
+
+pub fn functor_laws_product_with_k(Int32, Int32, Int32) -> Bool
+
+pub fn functor_laws_synergetic(SynergeticNet, Array[Double], Array[Double], Array[Double]) -> Bool
 
 pub fn funk_metric(Array[Double], Array[Double]) -> Double
 
 pub fn gaussian_fisher_distance(Double, Double, Double, Double) -> Double
 
 pub fn gaussian_fisher_matrix(Double, Double) -> DenseMat
+
+pub fn gaussian_int_norms(Int32) -> Array[Int32]
 
 pub fn gaussian_poincare_pullback_metric(Double, Double, eps? : Double) -> DenseMat
 
@@ -74,11 +144,19 @@ pub fn gmat_eye(Int32, Int32) -> Array[Grassmann]
 
 pub fn gmat_mul(Array[Grassmann], Int32, Int32, Array[Grassmann], Int32, Int32) -> Array[Grassmann]
 
+pub fn godel_decode_finite_set(Int32) -> Array[Int32]
+
+pub fn godel_encode_finite_set(Array[Int32]) -> Int32
+
 pub fn[L : LieSuperAlgebra] graded_skew_defect(L, L) -> L
 
 pub fn[A : Ring + Module] grassmann_universal_lift(Grassmann, A, A, Array[A]) -> A
 
 pub fn grassmann_universal_lift_mat(Grassmann, Int32, Array[DenseMat]) -> DenseMat
+
+pub fn hermitian2_eigs(Hermitian2) -> (Double, Double)
+
+pub fn hermitian2_projector_plus(Hermitian2) -> (Double, Double, Quat)
 
 pub fn ideal_colength(JetBasis, Array[PolyGerm]) -> Int32
 
@@ -86,11 +164,19 @@ pub fn init_disordered_colony(Int32, Double) -> Array[ProtoAgent]
 
 pub fn is_k_versal_unfolding(MapGerm, Array[MapGerm]) -> Bool
 
+pub fn k0_additivity(Double, Double, Double) -> Bool
+
+pub fn k0_direct_sum_index(Hermitian2, Hermitian2) -> (Int32, Double)
+
+pub fn k0_spectral_identity(Hermitian2, Double) -> Bool
+
 pub fn kl_divergence(Array[Double], Array[Double]) -> Double
 
 pub fn koszul_h1_check(MapGerm, Int32) -> (Double, Int32)
 
 pub fn koszul_sign(Parity, Parity) -> Double
+
+pub fn kramers_multiplicity_profile(Array[Double], eps? : Double) -> (Bool, Array[Int32])
 
 pub fn laplace_beltrami_berezin_1d(SuperManifold, (Double) -> Double, Double, eps? : Double) -> Double
 
@@ -103,6 +189,12 @@ pub fn maslov_add(Double, Double, Double) -> Double
 pub fn maslov_left_kan_extension(Array[Int32], DenseMat, Array[Double], Double) -> Array[Double]
 
 pub fn maslov_sum(Array[Double], Double) -> Double
+
+pub fn memory_absorbing_matrix() -> Array[Array[Double]]
+
+pub fn memory_closed_form(Double, Double, Double, Int32) -> Double
+
+pub fn memory_ergodic_matrix() -> Array[Array[Double]]
 
 pub fn mgu_universal_mediating_subst(Substitution, Substitution) -> Result[Substitution, String]
 
@@ -128,11 +220,25 @@ pub fn occurs_in(String, SymTerm) -> Bool
 
 pub fn orbit_space_distance(SuperMassTensor, SuperMassTensor) -> Double
 
+pub fn order_parameter_logits(Array[Double], Double, Int32) -> Array[Double]
+
+pub fn order_parameter_wta(Array[Double], Double, Int32) -> Array[Int32]
+
 pub fn osp1_2_fundamental_rep() -> Array[DenseMat]
 
 pub fn osp1_2_quadratic_casimir() -> UEAElement
 
 pub fn osp_invariance_defect(SuperMatrix) -> Double
+
+pub fn pair(Cone, Int32, Int32) -> Hom
+
+pub fn paraconsistent_no_explosion(Array[ParaUniverse]) -> (Bool, Array[FourVal])
+
+pub fn patch_sections(Array[Double], Array[Double], Array[Double], Double) -> Bool
+
+pub fn phase_index(Phase) -> Int32
+
+pub fn phase_space_jacobian((Array[Double], Array[Double]) -> (Array[Double], Array[Double]), Array[Double], Array[Double], eps? : Double) -> DenseMat
 
 pub fn poincare_frechet_mean(Array[PoincarePoint], Array[Double], max_iters? : Int32) -> PoincarePoint
 
@@ -140,11 +246,33 @@ pub fn poincare_gromov_plucker_bound(Double) -> Double
 
 pub fn popcount(Int32) -> Int32
 
+pub fn product_pi1(Int32, Int32) -> Hom
+
+pub fn product_pi2(Int32, Int32) -> Hom
+
 pub fn project_to_tropical_grassmannian_ultrametric(DenseMat) -> DenseMat
 
 pub fn protocol_super_jacobi_anomaly(SuperMatrix, SuperMatrix, SuperMatrix, (SuperMatrix, SuperMatrix) -> SuperMatrix) -> Double
 
 pub fn quantum_bures_fisher_matrix(DenseMat, Array[DenseMat]) -> DenseMat
+
+pub fn quat_k0_integer_index(Hermitian2, Hermitian2) -> (Int32, Double)
+
+pub fn quat_real_embedding(NonCommGraph) -> DenseMat
+
+pub fn rayleigh_imag_residual(Hermitian2, Array[Quat]) -> Double
+
+pub fn rayleigh_real(Hermitian2, Array[Quat]) -> Double
+
+pub fn rebuild_from_coords(Double, Double) -> Complex
+
+pub fn role_absorption_time(Double) -> (Double, Double)
+
+pub fn role_memory_profiles() -> Array[RoleMemoryProfile]
+
+pub fn role_semigroup_closure_error(RoleMemoryProfile, Double, Int32) -> Double
+
+pub fn role_transition_matrix(Double) -> Array[Array[Double]]
 
 pub fn rope_attention_score(Array[Double], Double, Array[Double], Double, base? : Double) -> Double
 
@@ -152,9 +280,23 @@ pub fn run_sgne_emergence_simulation(n_agents? : Int32, n_steps? : Int32, dt? : 
 
 pub fn same_map_germ_stalk((Array[Double]) -> Array[Double], (Array[Double]) -> Array[Double], Array[Double], tol? : Double) -> Bool
 
+pub fn schur_effective_mass_identity() -> Double
+
+pub fn schur_metriplectic_instance() -> SuperHamiltonian
+
+pub fn schur_soul_mass_shift() -> (Double, Double)
+
 pub fn sigmoid(Double) -> Double
 
 pub fn sl2_quadratic_casimir() -> UEAElement
+
+pub fn slaving_collapse_error(Double, Double, Double, Int32) -> Double
+
+pub fn slaving_fixed_point(Double, Double) -> Double
+
+pub fn slaving_run(Double, Double, Double, Int32) -> Double
+
+pub fn slaving_step(Double, Double, Double, Double) -> Double
 
 pub fn softmax_vec(Array[Double]) -> Array[Double]
 
@@ -168,9 +310,13 @@ pub fn solve_sylvester(DenseMat, DenseMat, DenseMat, sign? : Double) -> DenseMat
 
 pub fn spd_affine_invariant_distance(DenseMat, DenseMat) -> Double
 
+pub fn stationary_power_iteration(Array[Array[Double]], Int32) -> Array[Double]
+
 pub fn step_super_lax(SuperMatrix, SuperMatrix, Double) -> SuperMatrix
 
 pub fn step_super_riccati(SuperMatrix, SuperMatrix, SuperMatrix, SuperMatrix, Double) -> SuperMatrix
+
+pub fn strong_basis_coords(Complex) -> (Double, Double)
 
 pub fn super_fisher_matrix(Array[Double], DenseMat, Array[DenseMat]) -> DenseMat
 
@@ -180,15 +326,33 @@ pub fn[L : LieSuperAlgebra] super_jacobiator(L, L, L) -> L
 
 pub fn super_mobius_add(SuperPoint, SuperPoint) -> SuperPoint
 
+pub fn super_orthogonal_gauge() -> SuperMatrix
+
 pub fn super_osp_inner(SuperPoint, SuperPoint) -> Grassmann
 
 pub fn super_poisson_bracket((Double, Double) -> Grassmann, Parity, (Double, Double) -> Grassmann, Double, Double, eps? : Double) -> Grassmann
 
 pub fn super_pope_score(PoPEConfig, SuperPoint, Double, SuperPoint, Double, alpha_ferm? : Double) -> Grassmann
 
+pub fn supertropical_wta_dual(Array[Double], Double, Int32, tie_tol? : Double) -> (Array[Int32], SuperTropical)
+
 pub fn symmetric_log_derivative(DenseMat, DenseMat) -> DenseMat
 
+pub fn symplectic_det_area(Array[Double], Array[Double], Double) -> Double
+
+pub fn symplectic_euler_step(NeuralH, Array[Double], Array[Double], Double) -> (Array[Double], Array[Double])
+
+pub fn symplectic_form_defect(DenseMat) -> Double
+
+pub fn symplectic_identity_residual(NeuralH, Array[Double], Array[Double], Double) -> Double
+
 pub fn symplectic_odd_inner(Array[Grassmann], Array[Grassmann], Int32) -> Grassmann
+
+pub fn tarski_least_fixed_point((FourVal) -> FourVal) -> FourVal
+
+pub fn terminal_is_unique_up_to_iso() -> Bool
+
+pub fn terminal_unique_arrow(Int32) -> Hom
 
 pub fn tropical_functor_law_violation(DenseMat, Array[Double]) -> Double
 
@@ -203,6 +367,10 @@ pub fn tropical_projective_geodesic(TropProjPoint, TropProjPoint, Double) -> Tro
 pub fn tropical_right_kan_extension(Array[Int32], DenseMat, Array[Double]) -> Array[Double]
 
 pub fn unify_neuro_symbolic(NeuroSymState, NeuroSymState, (String) -> PoincarePoint, tau? : Double, min_coherence? : Double) -> UnifyResult
+
+pub fn unify_paraconsistent(NeuroSymState, NeuroSymState, (String) -> PoincarePoint, tau? : Double, min_coherence? : Double) -> ParaUnifyReport
+
+pub fn universal_property_product_witness(Int32, Int32, Int32) -> Bool
 
 pub fn universal_tensor_factorization(Int32, Int32, Int32, (Array[Double], Array[Double]) -> Array[Double]) -> DenseMat
 
@@ -233,6 +401,8 @@ pub fn wedge_sign(Int32, Int32, Int32) -> Double
 pub fn weierstrass_prepare_2d(PolyGerm) -> Result[(PolyGerm, PolyGerm), String]
 
 pub fn what_where_entanglement_norms(PoPEConfig, Array[Double]) -> (Double, Double)
+
+pub fn wta_argmax_stable(Array[Double]) -> Bool
 
 pub fn[A, X] yoneda_from_value(Array[A], HomFunctor[A, X]) -> Array[X]
 
@@ -273,6 +443,19 @@ pub fn AffinePoint::translate(Self, Array[Double]) -> Self
 pub impl AffineTorsor for AffinePoint
 
 #derive(Eq, @debug.Debug)
+pub(all) struct BarrierEscapeReport {
+  conservative_escapes : Int32
+  metriplectic_escapes : Int32
+  trials : Int32
+  barrier_height : Double
+  conservative_max_energy : Double
+  metriplectic_min_energy : Double
+}
+pub fn BarrierEscapeReport::equal(Self, Self) -> Bool
+pub fn BarrierEscapeReport::not_equal(Self, Self) -> Bool
+pub fn BarrierEscapeReport::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
 pub(all) struct CompleteIntersectionReport {
   ambient_dim : Int32
   num_eqs : Int32
@@ -297,6 +480,7 @@ pub(all) struct Complex {
 }
 pub fn Complex::abs(Self) -> Double
 pub fn Complex::add(Self, Self) -> Self
+pub fn Complex::add_elem(Self, Self) -> Self
 pub fn Complex::conj(Self) -> Self
 pub fn Complex::div(Self, Self) -> Self
 pub fn Complex::equal(Self, Self) -> Bool
@@ -304,22 +488,43 @@ pub fn Complex::from_polar(Double, Double) -> Self
 pub fn Complex::hermitian_dot(Self, Self) -> Self
 pub fn Complex::i_unit() -> Self
 pub fn Complex::inv(Self) -> Self
+pub fn Complex::is_zero(Self) -> Bool
 pub fn Complex::mul(Self, Self) -> Self
+pub fn Complex::mul_elem(Self, Self) -> Self
 pub fn Complex::neg(Self) -> Self
+pub fn Complex::neg_elem(Self) -> Self
 pub fn Complex::new(Double, Double) -> Self
+pub fn Complex::norm(Self) -> Double
+pub fn Complex::norm2(Self) -> Double
 pub fn Complex::norm_sq(Self) -> Double
 pub fn Complex::not_equal(Self, Self) -> Bool
 pub fn Complex::one() -> Self
+pub fn Complex::one_elem() -> Self
 pub fn Complex::phase(Self) -> Double
 pub fn Complex::scale(Self, Double) -> Self
 pub fn Complex::sub(Self, Self) -> Self
+pub fn Complex::sub_elem(Self, Self) -> Self
 pub fn Complex::to_repr(Self) -> @debug.Repr
 pub fn Complex::zero() -> Self
+pub fn Complex::zero_elem() -> Self
+pub impl AbelianGroup for Complex
+pub impl Module for Complex
+pub impl Ring for Complex
 pub impl Add for Complex
 pub impl Div for Complex
 pub impl Mul for Complex
 pub impl Neg for Complex
 pub impl Sub for Complex
+
+#derive(Eq, @debug.Debug)
+pub(all) struct Cone {
+  c_size : Int32
+  f : Array[Int32]
+  g : Array[Int32]
+}
+pub fn Cone::equal(Self, Self) -> Bool
+pub fn Cone::not_equal(Self, Self) -> Bool
+pub fn Cone::to_repr(Self) -> @debug.Repr
 
 pub(all) struct Coyoneda[S, A] {
   seeds : Array[S]
@@ -398,6 +603,17 @@ pub fn EmergenceSnapshot::not_equal(Self, Self) -> Bool
 pub fn EmergenceSnapshot::to_repr(Self) -> @debug.Repr
 
 #derive(Eq, @debug.Debug)
+pub(all) struct FinitePullback {
+  n_apex : Int32
+  proj_a : Hom
+  proj_b : Hom
+}
+pub fn FinitePullback::equal(Self, Self) -> Bool
+pub fn FinitePullback::mediating_map(Self, Hom, Hom) -> Result[Hom, String]
+pub fn FinitePullback::not_equal(Self, Self) -> Bool
+pub fn FinitePullback::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
 pub(all) struct FinitePushout {
   n_apex : Int32
   inl : Array[Int32]
@@ -407,6 +623,27 @@ pub fn FinitePushout::equal(Self, Self) -> Bool
 pub fn[X : Eq] FinitePushout::mediating_map(Self, Array[X], Array[X]) -> Result[Array[X], String]
 pub fn FinitePushout::not_equal(Self, Self) -> Bool
 pub fn FinitePushout::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, Hash, @debug.Debug)
+pub(all) enum FourVal {
+  Nv
+  Fv
+  Tv
+  Bv
+}
+pub fn FourVal::equal(Self, Self) -> Bool
+pub fn FourVal::hash(Self) -> Int32
+pub fn FourVal::hash_combine(Self, Hasher) -> Unit
+pub fn FourVal::is_designated(Self) -> Bool
+pub fn FourVal::join(Self, Self) -> Self
+pub fn FourVal::land(Self, Self) -> Self
+pub fn FourVal::lor(Self, Self) -> Self
+pub fn FourVal::meet(Self, Self) -> Self
+pub fn FourVal::neg(Self) -> Self
+pub fn FourVal::not_equal(Self, Self) -> Bool
+pub fn FourVal::to_repr(Self) -> @debug.Repr
+pub fn FourVal::to_string(Self) -> String
+pub fn FourVal::truth_le(Self, Self) -> Bool
 
 #derive(Eq, @debug.Debug)
 pub(all) struct FreeVec {
@@ -419,6 +656,17 @@ pub fn FreeVec::not_equal(Self, Self) -> Bool
 pub fn FreeVec::to_repr(Self) -> @debug.Repr
 pub fn FreeVec::unit_gen(Int32, Int32) -> Self
 pub impl UniversalFreeObject for FreeVec
+
+#derive(Eq, @debug.Debug)
+pub(all) struct Gates {
+  forget : Double
+  input : Double
+  output : Double
+  candidate : Double
+}
+pub fn Gates::equal(Self, Self) -> Bool
+pub fn Gates::not_equal(Self, Self) -> Bool
+pub fn Gates::to_repr(Self) -> @debug.Repr
 
 #derive(Eq, @debug.Debug)
 pub(all) struct GermEquivClass {
@@ -537,6 +785,29 @@ pub fn HalfPlaneGerm::equal(Self, Self) -> Bool
 pub fn HalfPlaneGerm::not_equal(Self, Self) -> Bool
 pub fn HalfPlaneGerm::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
+pub(all) struct Hermitian2 {
+  a : Double
+  b : Double
+  q : Quat
+}
+pub fn Hermitian2::equal(Self, Self) -> Bool
+pub fn Hermitian2::not_equal(Self, Self) -> Bool
+pub fn Hermitian2::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct Hom {
+  src : Int32
+  dst : Int32
+  map : Array[Int32]
+}
+pub fn Hom::compose(Self, Self) -> Self
+pub fn Hom::equal(Self, Self) -> Bool
+pub fn Hom::identity(Int32) -> Self
+pub fn Hom::is_identity(Self) -> Bool
+pub fn Hom::not_equal(Self, Self) -> Bool
+pub fn Hom::to_repr(Self) -> @debug.Repr
+
 pub(all) struct HomFunctor[A, X] {
   run : (A) -> X
 }
@@ -579,6 +850,16 @@ pub fn JetBasis::not_equal(Self, Self) -> Bool
 pub fn JetBasis::to_repr(Self) -> @debug.Repr
 
 #derive(Eq, @debug.Debug)
+pub(all) struct Layer {
+  w : Array[Array[Double]]
+  b : Array[Double]
+}
+pub fn Layer::activate(Self, Array[Double]) -> Array[Double]
+pub fn Layer::equal(Self, Self) -> Bool
+pub fn Layer::not_equal(Self, Self) -> Bool
+pub fn Layer::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
 pub(all) struct MapGerm {
   basis : JetBasis
   comps : Array[PolyGerm]
@@ -597,6 +878,16 @@ pub fn MapGerm::target_dim(Self) -> Int32
 pub fn MapGerm::tjurina_number(Self) -> Int32
 pub fn MapGerm::to_repr(Self) -> @debug.Repr
 pub fn MapGerm::universal_k_unfolding(Self) -> UniversalUnfolding
+
+#derive(Eq, @debug.Debug)
+pub(all) struct MemoryCell {
+  c : Double
+  h : Double
+}
+pub fn MemoryCell::equal(Self, Self) -> Bool
+pub fn MemoryCell::not_equal(Self, Self) -> Bool
+pub fn MemoryCell::step(Self, Gates) -> Self
+pub fn MemoryCell::to_repr(Self) -> @debug.Repr
 
 #derive(Eq, @debug.Debug)
 pub(all) struct MeromorphicGerm {
@@ -672,6 +963,31 @@ pub fn MultiMeroGerm::origin_status(Self, tol? : Double) -> String
 pub fn MultiMeroGerm::to_repr(Self) -> @debug.Repr
 
 #derive(Eq, @debug.Debug)
+pub(all) struct MultiWorld {
+  worlds : Array[ParaUniverse]
+}
+pub fn MultiWorld::equal(Self, Self) -> Bool
+pub fn MultiWorld::merge_pointwise(Self) -> Array[FourVal]
+pub fn MultiWorld::not_equal(Self, Self) -> Bool
+pub fn MultiWorld::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct NeuralH {
+  tw : Array[Double]
+  va : Array[Double]
+  vw : Array[Array[Double]]
+  vb : Array[Double]
+}
+pub fn NeuralH::energy(Self, Array[Double], Array[Double]) -> Double
+pub fn NeuralH::equal(Self, Self) -> Bool
+pub fn NeuralH::grad_kinetic(Self, Array[Double]) -> Array[Double]
+pub fn NeuralH::grad_potential(Self, Array[Double]) -> Array[Double]
+pub fn NeuralH::kinetic(Self, Array[Double]) -> Double
+pub fn NeuralH::not_equal(Self, Self) -> Bool
+pub fn NeuralH::potential(Self, Array[Double]) -> Double
+pub fn NeuralH::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
 pub(all) struct NeuroSymState {
   term : SymTerm
   emb : PoincarePoint
@@ -680,6 +996,51 @@ pub(all) struct NeuroSymState {
 pub fn NeuroSymState::equal(Self, Self) -> Bool
 pub fn NeuroSymState::not_equal(Self, Self) -> Bool
 pub fn NeuroSymState::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct NonCommGraph {
+  n : Int32
+  weights : Array[Array[Quat]]
+}
+pub fn NonCommGraph::adjacency(Self) -> Array[Array[Quat]]
+pub fn NonCommGraph::equal(Self, Self) -> Bool
+pub fn NonCommGraph::not_equal(Self, Self) -> Bool
+pub fn NonCommGraph::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct Obj {
+  tag : Int32
+}
+pub fn Obj::equal(Self, Self) -> Bool
+pub fn Obj::not_equal(Self, Self) -> Bool
+pub fn Obj::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct ParaUnifyReport {
+  term : SymTerm
+  subst : Substitution
+  value : FourVal
+  coherence : Double
+  anomaly : Double
+  logic : Grassmann
+  quarantined : Bool
+  pauli_excluded : Bool
+  reason : String
+}
+pub fn ParaUnifyReport::equal(Self, Self) -> Bool
+pub fn ParaUnifyReport::not_equal(Self, Self) -> Bool
+pub fn ParaUnifyReport::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct ParaUniverse {
+  props : Array[String]
+  vals : Array[FourVal]
+}
+pub fn ParaUniverse::equal(Self, Self) -> Bool
+pub fn ParaUniverse::lookup(Self, String) -> FourVal?
+pub fn ParaUniverse::new(Array[String], Array[FourVal]) -> Self
+pub fn ParaUniverse::not_equal(Self, Self) -> Bool
+pub fn ParaUniverse::to_repr(Self) -> @debug.Repr
 
 #derive(Eq, Hash, @debug.Debug)
 pub(all) enum Parity {
@@ -693,6 +1054,20 @@ pub fn Parity::hash(Self) -> Int32
 pub fn Parity::hash_combine(Self, Hasher) -> Unit
 pub fn Parity::not_equal(Self, Self) -> Bool
 pub fn Parity::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, Hash, @debug.Debug)
+pub(all) enum Phase {
+  ShortTerm
+  Encoding
+  LongTerm
+  Retrieval
+  Lost
+}
+pub fn Phase::equal(Self, Self) -> Bool
+pub fn Phase::hash(Self) -> Int32
+pub fn Phase::hash_combine(Self, Hasher) -> Unit
+pub fn Phase::not_equal(Self, Self) -> Bool
+pub fn Phase::to_repr(Self) -> @debug.Repr
 
 #derive(Eq, @debug.Debug)
 pub(all) struct PoPEConfig {
@@ -773,6 +1148,68 @@ pub fn ProtoAgent::not_equal(Self, Self) -> Bool
 pub fn ProtoAgent::to_repr(Self) -> @debug.Repr
 
 #derive(Eq, @debug.Debug)
+pub(all) struct Quat {
+  w : Double
+  x : Double
+  y : Double
+  z : Double
+}
+pub fn Quat::add(Self, Self) -> Self
+pub fn Quat::add_elem(Self, Self) -> Self
+pub fn Quat::conj(Self) -> Self
+pub fn Quat::div(Self, Self) -> Self
+pub fn Quat::equal(Self, Self) -> Bool
+pub fn Quat::inv(Self) -> Self
+pub fn Quat::mul(Self, Self) -> Self
+pub fn Quat::mul_elem(Self, Self) -> Self
+pub fn Quat::neg(Self) -> Self
+pub fn Quat::neg_elem(Self) -> Self
+pub fn Quat::new(Double, Double, Double, Double) -> Self
+pub fn Quat::norm(Self) -> Double
+pub fn Quat::norm2(Self) -> Double
+pub fn Quat::norm_sq(Self) -> Double
+pub fn Quat::not_equal(Self, Self) -> Bool
+pub fn Quat::one() -> Self
+pub fn Quat::one_elem() -> Self
+pub fn Quat::scale(Self, Double) -> Self
+pub fn Quat::smul(Self, Double) -> Self
+pub fn Quat::sub(Self, Self) -> Self
+pub fn Quat::sub_elem(Self, Self) -> Self
+pub fn Quat::to_real_mat4(Self) -> DenseMat
+pub fn Quat::to_repr(Self) -> @debug.Repr
+pub fn Quat::zero() -> Self
+pub fn Quat::zero_elem() -> Self
+pub impl AbelianGroup for Quat
+pub impl Module for Quat
+pub impl Ring for Quat
+pub impl Add for Quat
+pub impl Div for Quat
+pub impl Mul for Quat
+pub impl Neg for Quat
+pub impl Sub for Quat
+
+#derive(Eq, @debug.Debug)
+pub(all) struct QuatSpectralTriple {
+  n : Int32
+  dirac : DenseMat
+}
+pub fn QuatSpectralTriple::connes_distance(Self, Quat, Quat) -> Double
+pub fn QuatSpectralTriple::equal(Self, Self) -> Bool
+pub fn QuatSpectralTriple::from_graph(NonCommGraph) -> Self
+pub fn QuatSpectralTriple::not_equal(Self, Self) -> Bool
+pub fn QuatSpectralTriple::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct RoleMemoryProfile {
+  role : Int32
+  gates : Gates
+  retention : Double
+}
+pub fn RoleMemoryProfile::equal(Self, Self) -> Bool
+pub fn RoleMemoryProfile::not_equal(Self, Self) -> Bool
+pub fn RoleMemoryProfile::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
 pub(all) struct SerreNormalityReport {
   dim_x : Int32
   dim_sing : Int32
@@ -847,6 +1284,28 @@ pub fn SuperBeltramiPDE::not_equal(Self, Self) -> Bool
 pub fn SuperBeltramiPDE::step(Self, Double) -> Self
 pub fn SuperBeltramiPDE::to_repr(Self) -> @debug.Repr
 pub fn SuperBeltramiPDE::total_mass(Self) -> Double
+
+#derive(Eq, @debug.Debug)
+pub(all) struct SuperHamiltonian {
+  m_eff : DenseMat
+  kappa : Array[Double]
+  gamma : Double
+}
+pub fn SuperHamiltonian::conservative_flow_jacobian(Self, Array[Double], Double) -> DenseMat
+pub fn SuperHamiltonian::conservative_generator(Self, Array[Double]) -> DenseMat
+pub fn SuperHamiltonian::dim(Self) -> Int32
+pub fn SuperHamiltonian::dissipation_contraction(Self, Double) -> Double
+pub fn SuperHamiltonian::energy(Self, Array[Double], Array[Double]) -> Double
+pub fn SuperHamiltonian::equal(Self, Self) -> Bool
+pub fn SuperHamiltonian::grad_potential(Self, Array[Double]) -> Array[Double]
+pub fn SuperHamiltonian::hess_potential(Self, Array[Double]) -> DenseMat
+pub fn SuperHamiltonian::metriplectic_defect(Self, Array[Double]) -> Double
+pub fn SuperHamiltonian::metriplectic_step(Self, Array[Double], Array[Double], Double, Array[Double]) -> (Array[Double], Array[Double])
+pub fn SuperHamiltonian::not_equal(Self, Self) -> Bool
+pub fn SuperHamiltonian::phase_generator(Self, Array[Double]) -> DenseMat
+pub fn SuperHamiltonian::symplectic_defect(Self, Array[Double], Double) -> Double
+pub fn SuperHamiltonian::symplectic_form(Self) -> DenseMat
+pub fn SuperHamiltonian::to_repr(Self) -> @debug.Repr
 
 #derive(Eq, @debug.Debug)
 pub(all) struct SuperLieTable {
@@ -956,6 +1415,20 @@ pub impl Neg for SuperMatrix
 pub impl Sub for SuperMatrix
 
 #derive(Eq, @debug.Debug)
+pub(all) struct SuperOperatorBundle {
+  n_sets : Int32
+  local_ops : Array[SuperMatrix]
+  transitions : Array[Array[SuperMatrix]]
+}
+pub fn SuperOperatorBundle::cocycle_defect(Self) -> Double
+pub fn SuperOperatorBundle::equal(Self, Self) -> Bool
+pub fn SuperOperatorBundle::holonomy_defect(Self, Array[Int32]) -> Double
+pub fn SuperOperatorBundle::not_equal(Self, Self) -> Bool
+pub fn SuperOperatorBundle::patch_defect(Self) -> Double
+pub fn SuperOperatorBundle::str_ber_gauge_defect(Self, SuperMatrix) -> Double
+pub fn SuperOperatorBundle::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
 pub(all) struct SuperPoint {
   manifold : SuperManifold
   bos : Array[Grassmann]
@@ -998,6 +1471,37 @@ pub fn SymTerm::hash(Self) -> Int32
 pub fn SymTerm::hash_combine(Self, Hasher) -> Unit
 pub fn SymTerm::not_equal(Self, Self) -> Bool
 pub fn SymTerm::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct SynMemParaReport {
+  role_retention : Array[Double]
+  role_absorption_times : Array[Double]
+  semigroup_closure_error : Double
+  wta_tangible : Bool
+  wta_ghost : Bool
+  wta_ghost_winners : Int32
+  slaving_collapse_error : Double
+  pushout_ontology_size : Int32
+  pullback_apex_size : Int32
+  godel_injective : Bool
+  fused_values : Array[FourVal]
+  no_explosion : Bool
+  contradicted_propositions : Int32
+}
+pub fn SynMemParaReport::equal(Self, Self) -> Bool
+pub fn SynMemParaReport::not_equal(Self, Self) -> Bool
+pub fn SynMemParaReport::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct SynergeticNet {
+  encoder : Layer
+  n_order : Int32
+}
+pub fn SynergeticNet::encode(Self, Array[Double]) -> Array[Double]
+pub fn SynergeticNet::equal(Self, Self) -> Bool
+pub fn SynergeticNet::not_equal(Self, Self) -> Bool
+pub fn SynergeticNet::push_morphism(Self, Array[Double], Array[Double]) -> Array[Double]
+pub fn SynergeticNet::to_repr(Self) -> @debug.Repr
 
 #derive(Eq, @debug.Debug)
 pub(all) struct TheoremReport {
