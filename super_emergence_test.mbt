@@ -1389,3 +1389,255 @@ test "Layer 4 (Theorems XV-XVIII): unified bridge theorems — Schur-Metriplecti
   assert_true(smp.no_explosion)
   assert_true(smp.contradicted_propositions > 0)
 }
+
+///|
+test "Roadmap M1.1: exogenous WFR forcing conserves mass and records dissipation separately" {
+  let pde = @super_emergence.SuperBeltramiPDE::new(
+    @super_emergence.SuperManifold::new(4, 2, 1.0),
+    32,
+    0.88,
+    0.15,
+    0.4,
+    r => 2.5 * (r - 0.52) * (r - 0.52),
+    r => 1.0 + 0.6 * @math.cos(3.0 * r),
+  )
+  let dt = 0.004
+  let forcing = @super_emergence.WFRExogenousPerturbation::new(
+    0.2,
+    Array::makei(32, i => @math.sin(0.7 * i.to_double())),
+  )
+  let perturbed = pde.step_with_exogenous_perturbation(dt, forcing)
+  let deterministic = pde.step(dt)
+  let ledger = perturbed.ledger
+
+  assert_true(ledger.input_shape_valid)
+  assert_true(ledger.mass_conservation_error < 1.0e-12)
+  assert_true(ledger.deterministic_dissipation > 0.0)
+  assert_true(
+    (ledger.deterministic_dissipation -
+    (ledger.free_energy_before - deterministic.free_energy())).abs() <
+    1.0e-12,
+  )
+  assert_true(
+    (ledger.perturbation_work -
+    (perturbed.state.free_energy() - deterministic.free_energy())).abs() <
+    1.0e-12,
+  )
+  assert_true(
+    (ledger.total_free_energy_change -
+    (ledger.perturbation_work - ledger.deterministic_dissipation)).abs() <
+    1.0e-11,
+  )
+  let mut max_density_shift = 0.0
+  for i in 0..<32 {
+    let shift = (perturbed.state.density[i] - deterministic.density[i]).abs()
+    if shift > max_density_shift {
+      max_density_shift = shift
+    }
+  }
+  assert_true(max_density_shift > 1.0e-6)
+
+  // A malformed forcing vector is rejected explicitly and cannot corrupt the mass.
+  let invalid = pde.step_with_exogenous_perturbation(
+    dt,
+    @super_emergence.WFRExogenousPerturbation::new(1.0, [1.0]),
+  )
+  assert_true(!invalid.ledger.input_shape_valid)
+  assert_true(invalid.ledger.input_values_valid)
+  assert_true(invalid.ledger.mass_conservation_error < 1.0e-12)
+  assert_true(invalid.ledger.perturbation_work.abs() < 1.0e-14)
+
+  let infinity = 1.0 / 0.0
+  let nan_value = infinity - infinity
+  let nonfinite = pde.step_with_exogenous_perturbation(
+    dt,
+    @super_emergence.WFRExogenousPerturbation::new(
+      0.2,
+      Array::makei(32, i => if i == 0 { nan_value } else { 0.0 }),
+    ),
+  )
+  assert_true(nonfinite.ledger.input_shape_valid)
+  assert_true(!nonfinite.ledger.input_values_valid)
+  assert_true(nonfinite.ledger.mass_conservation_error < 1.0e-12)
+  assert_true(nonfinite.ledger.perturbation_work.abs() < 1.0e-14)
+}
+
+///|
+test "Roadmap M1.2: spectrum-driven d_O re-role is four-cluster certified and reversible" {
+  let orbits = @super_emergence.canonical_role_mass_orbits()
+  let masses = Array::makei(8, i => {
+    let role = i / 2
+    let spectrum = orbits[role].bosonic_mass_spectrum()
+    let permuted = @super_emergence.DenseMat::from_fn(4, 4, (r, c) => {
+      if r == c {
+        spectrum[(r + i) % 4]
+      } else {
+        0.0
+      }
+    })
+    let xi = Array::makei(16, _ => @super_emergence.Grassmann::zero(4))
+    @super_emergence.SuperMassTensor::from_real_and_yukawa(
+      permuted, xi, 1.0, 4, 4,
+    )
+  })
+
+  let baseline = @super_emergence.reassign_roles_by_orbit_distance(
+    masses,
+    orbits,
+    [8.0, 0.0, 0.0, 0.0],
+  )
+  assert_true(baseline.input_valid)
+  assert_true(baseline.certified_four_clusters)
+  assert_eq(baseline.cluster_sizes, [2, 2, 2, 2])
+  assert_true(baseline.max_within_cluster_distance < 1.0e-9)
+  assert_true(baseline.min_between_cluster_distance > 1.0e-3)
+  assert_true(baseline.separation_margin > 1.0e-3)
+  assert_eq(baseline.role_assignment, [0, 0, 1, 1, 2, 2, 3, 3])
+
+  let changed = @super_emergence.reassign_roles_by_orbit_distance(
+    masses,
+    orbits,
+    [0.0, 8.0, 0.0, 0.0],
+  )
+  assert_true(changed.certified_four_clusters)
+  assert_eq(changed.cluster_sizes, [2, 2, 2, 2])
+  assert_eq(changed.matched_orbit_indices, baseline.matched_orbit_indices)
+  for i in 0..<8 {
+    assert_eq(changed.role_assignment[i], (baseline.role_assignment[i] + 1) % 4)
+  }
+  let restored = @super_emergence.reassign_roles_by_orbit_distance(
+    masses,
+    orbits,
+    [8.0, 0.0, 0.0, 0.0],
+  )
+  assert_eq(restored.role_assignment, baseline.role_assignment)
+  assert_true(restored.certified_four_clusters)
+
+  let invalid_spectrum = @super_emergence.reassign_roles_by_orbit_distance(
+    masses,
+    orbits,
+    [1.0, -1.0, 0.0, 0.0],
+  )
+  assert_true(!invalid_spectrum.input_valid)
+  assert_true(!invalid_spectrum.certified_four_clusters)
+  let infinite_spectrum = @super_emergence.reassign_roles_by_orbit_distance(
+    masses,
+    orbits,
+    [1.0 / 0.0, 0.0, 0.0, 0.0],
+  )
+  assert_true(!infinite_spectrum.input_valid)
+  assert_true(!infinite_spectrum.certified_four_clusters)
+}
+
+///|
+test "Roadmap M1.3: 100000-step WFR audit certifies nonincreasing energy and conserved mass" {
+  let pde = @super_emergence.SuperBeltramiPDE::new(
+    @super_emergence.SuperManifold::new(4, 2, 1.0),
+    32,
+    0.88,
+    0.15,
+    0.4,
+    r => 2.5 * (r - 0.52) * (r - 0.52),
+    r => 1.0 + 0.6 * @math.cos(3.0 * r),
+  )
+  let audit = pde.audit_long_time_stability(0.0005, 100000)
+  assert_true(audit.input_valid)
+  assert_eq(audit.requested_steps, 100000)
+  assert_eq(audit.completed_steps, 100000)
+  assert_eq(audit.failed_steps, 0)
+  assert_true(audit.free_energy_monotone)
+  assert_true(audit.max_free_energy_increase == 0.0)
+  assert_true(audit.final_free_energy <= audit.initial_free_energy)
+  assert_true(audit.final_equilibrium_distance < 2.0e-6)
+  assert_true(audit.max_proposed_energy_increase < 1.0e-12)
+  assert_true(audit.max_mass_conservation_error < 1.0e-12)
+  assert_true(audit.mass_conserved)
+  assert_true(audit.minimum_density > 0.0)
+  assert_true(audit.positivity_preserved)
+  assert_true(audit.simulated_time > 49.0)
+  assert_true(audit.stationary_holds > 0)
+
+  let adaptive = pde.step_energy_monotone(1000.0)
+  assert_true(adaptive.accepted)
+  assert_true(adaptive.retries > 0)
+  assert_true(adaptive.state.free_energy() <= pde.free_energy())
+
+  let invalid = pde.audit_long_time_stability(0.0, 100)
+  assert_true(!invalid.input_valid)
+  assert_eq(invalid.completed_steps, 0)
+}
+
+///|
+test "Roadmap M1.4: Hurst-conditioned memory retention and absorption increase monotonically" {
+  let h_grid = [0.1, 0.3, 0.5, 0.7, 0.9]
+  let trend = @super_emergence.audit_hurst_memory_monotonicity(h_grid)
+  assert_true(trend.input_valid)
+  assert_true(trend.hurst_grid_strictly_increasing)
+  assert_true(trend.mean_absorption_strictly_increasing)
+  assert_true(trend.each_role_absorption_strictly_increasing)
+  assert_true(trend.within_sample_role_order_preserved)
+  assert_true(trend.certified)
+  assert_true(trend.minimum_mean_absorption_increment > 0.0)
+  assert_eq(trend.mean_absorption_times.length(), h_grid.length())
+  assert_eq(trend.role_absorption_times_by_sample.length(), h_grid.length())
+
+  let base = @super_emergence.role_memory_profiles()
+  let reference = @super_emergence.role_memory_profiles_for_hurst(0.5)
+  assert_true(reference.input_valid)
+  assert_eq(reference.profiles.length(), 4)
+  for i in 0..<4 {
+    assert_eq(reference.profiles[i].retention, base[i].retention)
+    assert_eq(
+      reference.profiles[i].gates.forget,
+      reference.profiles[i].retention,
+    )
+    assert_true(
+      (reference.role_absorption_times[i] -
+      4.0 / (1.0 - reference.profiles[i].retention)).abs() <
+      1.0e-12,
+    )
+  }
+  let invalid_hurst = @super_emergence.role_memory_profiles_for_hurst(1.0)
+  assert_true(!invalid_hurst.input_valid)
+  assert_eq(invalid_hurst.profiles.length(), 0)
+  let lower_endpoint = @super_emergence.role_memory_profiles_for_hurst(0.0)
+  assert_true(!lower_endpoint.input_valid)
+  let infinity = 1.0 / 0.0
+  let nan_value = infinity - infinity
+  let nonfinite_hurst = @super_emergence.role_memory_profiles_for_hurst(
+    nan_value,
+  )
+  assert_true(!nonfinite_hurst.input_valid)
+  let (high_retention_linear, high_retention_tail) = @super_emergence.role_absorption_time(
+    0.999,
+  )
+  assert_true((high_retention_linear - 4000.0).abs() < 1.0e-8)
+  assert_true((high_retention_tail - 4000.0).abs() < 1.0e-8)
+  let invalid_grid = @super_emergence.audit_hurst_memory_monotonicity([
+    0.2, 0.2, 0.8,
+  ])
+  assert_true(!invalid_grid.input_valid)
+  assert_true(!invalid_grid.certified)
+
+  let colony = @super_emergence.init_disordered_colony(4, 0.25)
+  let integrated = @super_emergence.distill_synergetic_memory_para_agent(
+    colony,
+    0.25,
+    hurst=0.9,
+  )
+  assert_true(integrated.hurst_profile_valid)
+  assert_eq(integrated.hurst_exponent, 0.9)
+  assert_true(integrated.role_retention[0] > base[0].retention)
+  assert_true(
+    integrated.role_absorption_times[0] > reference.role_absorption_times[0],
+  )
+  assert_true(
+    integrated.role_absorption_times[0] > integrated.role_absorption_times[1],
+  )
+  assert_true(
+    integrated.role_absorption_times[1] > integrated.role_absorption_times[2],
+  )
+  assert_true(
+    integrated.role_absorption_times[2] > integrated.role_absorption_times[3],
+  )
+}

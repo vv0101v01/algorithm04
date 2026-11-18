@@ -1,5 +1,6 @@
 import {
   "arena/super_emergence" @se,
+  "moonbitlang/core/math",
 }
 
 pkgtype(kind: "executable")

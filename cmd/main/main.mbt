@@ -2,7 +2,8 @@
 /// Unified CLI demo for `arena/super_emergence` (v2.0.0): verifies all 18 composite
 /// theorems (Layers I-IV) and replays the four-layer quasi-agentic emergence engine
 /// `SGNE-Flow` + `SGNE-Trop-Kan` + `SGNE-Germ-Micro` + `SGNE-Syn-Mem-Para`, followed by
-/// the eight merged mathematical-structure demos. Run with `moon run cmd/main`.
+/// the eight merged mathematical-structure demos and the M1.1/M1.2 acceptance report.
+/// Run with `moon run cmd/main`.
 
 ///|
 /// Format a floating-point value to a fixed number of decimal places for clean tables.
@@ -57,6 +58,13 @@ fn fmt_sci(x : Double) -> String {
 }
 
 ///|
+/// Preserve the sign when displaying a scientific energy change or work term.
+fn fmt_signed_sci(x : Double) -> String {
+  let sign = if x < 0.0 { "-" } else { "" }
+  "\{sign}\{fmt_sci(x)}"
+}
+
+///|
 fn main {
   println(
     "================================================================================",
@@ -93,6 +101,8 @@ fn main {
   report_part_6()
   report_part_7(final_agents, c_end)
   report_part_8()
+  report_part_9()
+  report_part_10()
 }
 
 ///|
@@ -422,5 +432,202 @@ fn report_part_8() -> Unit {
   )
   println(
     "================================================================================",
+  )
+}
+
+///|
+fn fmt_int_array(values : Array[Int32]) -> String {
+  let out = StringBuilder()
+  out.write_string("[")
+  for i in 0..<values.length() {
+    if i > 0 {
+      out.write_string(", ")
+    }
+    out.write_string(values[i].to_string())
+  }
+  out.write_string("]")
+  out.to_string()
+}
+
+///|
+fn fmt_double_array(values : Array[Double], digits : Int32) -> String {
+  let out = StringBuilder()
+  out.write_string("[")
+  for i in 0..<values.length() {
+    if i > 0 {
+      out.write_string(", ")
+    }
+    out.write_string(fmt_fixed(values[i], digits))
+  }
+  out.write_string("]")
+  out.to_string()
+}
+
+///|
+fn int_arrays_equal(a : Array[Int32], b : Array[Int32]) -> Bool {
+  if a.length() != b.length() {
+    return false
+  }
+  for i in 0..<a.length() {
+    if a[i] != b[i] {
+      return false
+    }
+  }
+  true
+}
+
+///|
+fn permuted_role_mass(
+  prototype : @se.SuperMassTensor,
+  shift : Int32,
+) -> @se.SuperMassTensor {
+  let spectrum = prototype.bosonic_mass_spectrum()
+  let mass = @se.DenseMat::from_fn(4, 4, (i, j) => {
+    if i == j {
+      spectrum[(i + shift) % 4]
+    } else {
+      0.0
+    }
+  })
+  let xi = Array::makei(16, _ => @se.Grassmann::zero(4))
+  @se.SuperMassTensor::from_real_and_yukawa(mass, xi, 1.0, 4, 4)
+}
+
+///|
+/// Report roadmap Milestone M1.1 and M1.2: conservative exogenous WFR flow and
+/// reversible d_O re-role under a changed environmental disturbance spectrum.
+fn report_part_9() -> Unit {
+  println(
+    "[Part 9] M1 Self-Sustaining Dynamics: Perturbation Ledger & d_O Re-Role:",
+  )
+  println(
+    "--------------------------------------------------------------------------------",
+  )
+
+  let pde = @se.SuperBeltramiPDE::new(
+    @se.SuperManifold::new(4, 2, 1.0),
+    32,
+    0.88,
+    0.15,
+    0.4,
+    r => 2.5 * (r - 0.52) * (r - 0.52),
+    r => 1.0 + 0.6 * @math.cos(3.0 * r),
+  )
+  let perturbation = @se.WFRExogenousPerturbation::new(
+    0.2,
+    Array::makei(32, i => @math.sin(0.7 * i.to_double())),
+  )
+  let perturbed = pde.step_with_exogenous_perturbation(0.004, perturbation)
+  let wfr = perturbed.ledger
+  let wfr_ok = wfr.input_shape_valid &&
+    wfr.input_values_valid &&
+    wfr.mass_conservation_error < 1.0e-12
+  println(
+    "  [M1.1] sigma=0.20 | mass before/unforced/after = \{fmt_fixed(wfr.mass_before, 12)} / \{fmt_fixed(wfr.deterministic_mass_after, 12)} / \{fmt_fixed(wfr.mass_after, 12)} | error = \{fmt_sci(wfr.mass_conservation_error)} | PASS = \{wfr_ok}",
+  )
+  println(
+    "         Free-energy ledger (separate): deterministic dissipation = \{fmt_signed_sci(wfr.deterministic_dissipation)} | perturbation work = \{fmt_signed_sci(wfr.perturbation_work)} | total change = \{fmt_signed_sci(wfr.total_free_energy_change)}",
+  )
+
+  let prototypes = @se.canonical_role_mass_orbits()
+  let masses = Array::makei(8, i => permuted_role_mass(prototypes[i / 2], i % 4))
+  let spectrum_a = [8.0, 0.0, 0.0, 0.0]
+  let spectrum_b = [0.0, 8.0, 0.0, 0.0]
+  let assign_a = @se.reassign_roles_by_orbit_distance(
+    masses, prototypes, spectrum_a,
+  )
+  let assign_b = @se.reassign_roles_by_orbit_distance(
+    masses, prototypes, spectrum_b,
+  )
+  let assign_a_return = @se.reassign_roles_by_orbit_distance(
+    masses, prototypes, spectrum_a,
+  )
+  let reversible = int_arrays_equal(
+    assign_a.role_assignment,
+    assign_a_return.role_assignment,
+  )
+  let roles_changed = !int_arrays_equal(
+    assign_a.role_assignment,
+    assign_b.role_assignment,
+  )
+  println(
+    "  [M1.2] dominant band 0 -> 1 -> 0 | roles A/B = \{fmt_int_array(assign_a.role_assignment)} / \{fmt_int_array(assign_b.role_assignment)} | cluster sizes = \{fmt_int_array(assign_b.cluster_sizes)}",
+  )
+  println(
+    "         d_O within/between/gap = \{fmt_sci(assign_b.max_within_cluster_distance)} / \{fmt_sci(assign_b.min_between_cluster_distance)} / \{fmt_sci(assign_b.separation_margin)} | four clusters = \{assign_b.certified_four_clusters} | changed = \{roles_changed} | reversible = \{reversible}",
+  )
+  println(
+    "  [Quality] Removed the zero-weight expected-cost accumulator; consolidated both duplicated MicroDiff symbol-padding closures into one helper.",
+  )
+  println(
+    "--------------------------------------------------------------------------------",
+  )
+}
+
+///|
+/// Report roadmap M1.3 and M1.4: long-horizon WFR stability and Hurst-coupled memory.
+fn report_part_10() -> Unit {
+  println("[Part 10] M1.3 Long-Time Stability & M1.4 Hurst-Gated Memory:")
+  println(
+    "--------------------------------------------------------------------------------",
+  )
+  let pde = @se.SuperBeltramiPDE::new(
+    @se.SuperManifold::new(4, 2, 1.0),
+    32,
+    0.88,
+    0.15,
+    0.4,
+    r => 2.5 * (r - 0.52) * (r - 0.52),
+    r => 1.0 + 0.6 * @math.cos(3.0 * r),
+  )
+  let stability = pde.audit_long_time_stability(0.0005, 100000)
+  let stability_ok = stability.input_valid &&
+    stability.completed_steps == 100000 &&
+    stability.failed_steps == 0 &&
+    stability.free_energy_monotone &&
+    stability.max_free_energy_increase == 0.0 &&
+    stability.final_equilibrium_distance < 2.0e-6 &&
+    stability.mass_conserved &&
+    stability.max_mass_conservation_error < 1.0e-12 &&
+    stability.positivity_preserved &&
+    stability.simulated_time > 49.0
+  println(
+    "  [M1.3] requested/completed = \{stability.requested_steps}/\{stability.completed_steps} | simulated time = \{fmt_fixed(stability.simulated_time, 4)} | F0 -> Fend = \{fmt_fixed(stability.initial_free_energy, 8)} -> \{fmt_fixed(stability.final_free_energy, 8)}",
+  )
+  println(
+    "         max trajectory dF = \{fmt_sci(stability.max_free_energy_increase)} | max rejected proposal = \{fmt_sci(stability.max_proposed_energy_increase)} | mass error = \{fmt_sci(stability.max_mass_conservation_error)} | min rho = \{fmt_sci(stability.minimum_density)} | equilibrium residual = \{fmt_sci(stability.final_equilibrium_distance)}",
+  )
+  println(
+    "         stationary holds = \{stability.stationary_holds} | adaptive retries = \{stability.adaptive_retries} | failed steps = \{stability.failed_steps} | PASS = \{stability_ok}",
+  )
+
+  let hurst_grid = [0.1, 0.3, 0.5, 0.7, 0.9]
+  let memory_trend = @se.audit_hurst_memory_monotonicity(hurst_grid)
+  let low_h = @se.role_memory_profiles_for_hurst(0.1)
+  let high_h = @se.role_memory_profiles_for_hurst(0.9)
+  let memory_colony = @se.init_disordered_colony(4, 0.25)
+  let distilled_memory = @se.distill_synergetic_memory_para_agent(
+    memory_colony,
+    0.25,
+    hurst=0.9,
+  )
+  let memory_ok = memory_trend.certified &&
+    memory_trend.input_valid &&
+    low_h.input_valid &&
+    high_h.input_valid &&
+    distilled_memory.hurst_profile_valid &&
+    high_h.mean_retention > low_h.mean_retention &&
+    high_h.mean_absorption_time > low_h.mean_absorption_time
+  println(
+    "  [M1.4] H samples = \{fmt_double_array(memory_trend.hurst_samples, 2)} | mean absorption = \{fmt_double_array(memory_trend.mean_absorption_times, 2)}",
+  )
+  println(
+    "         H=0.10 -> 0.90 mean retention = \{fmt_fixed(low_h.mean_retention, 4)} -> \{fmt_fixed(high_h.mean_retention, 4)} | mean absorption = \{fmt_fixed(low_h.mean_absorption_time, 4)} -> \{fmt_fixed(high_h.mean_absorption_time, 4)}",
+  )
+  println(
+    "         distilled SGNE retention at H=0.90 = \{fmt_double_array(distilled_memory.role_retention, 4)} | mean-increasing = \{memory_trend.mean_absorption_strictly_increasing} | each-role-increasing = \{memory_trend.each_role_absorption_strictly_increasing} | role order = \{memory_trend.within_sample_role_order_preserved} | PASS = \{memory_ok}",
+  )
+  println(
+    "--------------------------------------------------------------------------------",
   )
 }

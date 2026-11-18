@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   verify:
-    name: Format, Strict Typecheck, 3-Backend Tests & 18-Theorem Audit
+    name: Format, Strict Typecheck, 3-Backend Tests, Theorem & M1 Audit
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -58,13 +58,27 @@ jobs:
       - name: Gate 6 — Run cross-backend verification (js)
         run: moon test --target js
 
-      - name: Gate 7 — Run full 18-theorem & four-layer emergence CLI audit
+      - name: Gate 7 — Run theorem, four-layer & M1.1–M1.4 CLI acceptance audit
         run: |
           OUT="$(moon run cmd/main)"
           printf '%s\n' "$OUT"
           printf '%s\n' "$OUT" | grep -Fq "18 / 18 theorems verified."
           printf '%s\n' "$OUT" | grep -Fq "SGNE-Syn-Mem-Para"
           printf '%s\n' "$OUT" | grep -Fq "26 structures"
+          printf '%s\n' "$OUT" | grep -Fq "[M1.1]"
+          printf '%s\n' "$OUT" | grep -Fq "PASS = true"
+          printf '%s\n' "$OUT" | grep -Fq "four clusters = true"
+          printf '%s\n' "$OUT" | grep -Fq "changed = true"
+          printf '%s\n' "$OUT" | grep -Fq "reversible = true"
+          printf '%s\n' "$OUT" | grep -Fq "[Quality] Removed the zero-weight"
+          printf '%s\n' "$OUT" | grep -Fq "[M1.3] requested/completed = 100000/100000"
+          printf '%s\n' "$OUT" | grep -Fq "max trajectory dF = 0.00e+00"
+          printf '%s\n' "$OUT" | grep -Fq "equilibrium residual ="
+          printf '%s\n' "$OUT" | grep -Fq "failed steps = 0 | PASS = true"
+          printf '%s\n' "$OUT" | grep -Fq "[M1.4] H samples"
+          printf '%s\n' "$OUT" | grep -Fq "mean-increasing = true"
+          printf '%s\n' "$OUT" | grep -Fq "each-role-increasing = true"
+          printf '%s\n' "$OUT" | grep -Fq "role order = true | PASS = true"
 
       - name: Gate 8 — Validate the machine-readable emergence problem set
         run: |

@@ -27,7 +27,7 @@
 | 基礎定理 | 31 條，黑盒測試覆蓋 |
 | 湧現層 | 4 層：`SGNE-Flow` / `SGNE-Trop-Kan` / `SGNE-Germ-Micro` / `SGNE-Syn-Mem-Para` |
 | 角色 | 8 個原型單元 → 2 Coordinator / 2 Sensor / 2 Planner / 2 Executor |
-| 測試 | 58/58，三後端一致 |
+| 測試 | 62/62，三後端一致 |
 | 未解問題 | 見第三節 |
 
 ---
@@ -44,6 +44,13 @@
 | M1.2 | **角色再配置（re-role）**：當環境訊號（外生擾動頻譜）改變時，以 $d_{\mathcal{O}}$ 重新指派角色，檢驗分工是否可逆 | 分配置換後 $d_{\mathcal{O}}$ 仍分為四叢 |
 | M1.3 | **長時程穩定性**：$10^5$ 步連續積分之自由能單調性 | $\dot{\mathfrak{F}}\le 0$ 全程成立 |
 | M1.4 | **閘控記憶持久化**：將 `role_memory_profiles` 之保留率與環境 Hurst 指數掛鉤 | 吸收時間序隨 Hurst 單調變動 |
+
+**實作狀態（2026-11-18）**：M1.1–M1.4 全部落地並加入常駐測試、CLI 與 CI Gate 7 驗收；這不代表後續 M2–M10 完成。
+
+- **M1.1**：`SuperBeltramiPDE::step_with_exogenous_perturbation` 對有限體積密度加入可控的 `sigma * Xi(t)` 加性擾動；先投影到 Berezinian 加權零質量切空間，再以加權機率單純形回縮保正。`WFRFlowStepLedger` 分欄記錄質量、確定性耗散、擾動作功及總自由能變化。輸入格數不符或 forcing 非有限值會標記無效並退回確定性步。32 格、`sigma = 0.2` 的 CLI 質量誤差為 `2.22e-16`；自由能分帳為確定性耗散 `9.71e-4`、擾動作功 `1.37e-4`、總變化 `-8.34e-4`。
+- **M1.2**：`reassign_roles_by_orbit_distance` 先依非負擾動功率譜最大頻帶（模 4）循環平移軌道—角色對應，再以 `orbit_space_distance`（`d_O`）最近距離匹配。此純函式在頻譜回復時精確恢復原指派；八個置換質量樣本的四叢大小為 `[2, 2, 2, 2]`，叢間最小距離減叢內最大距離為 `1.53`，頻帶 `0 → 1 → 0` 可逆。
+- **M1.3**：原始顯式 `step(0.0005)` 在 100,000 步探測中曾因浮點 roundoff 出現 18,807 次極小正向自由能跳動（最大 `1.39e-16`）。新增 `step_energy_monotone` 回溯與近固定點 stationary hold，`audit_long_time_stability(0.0005, 100000)` 串流檢查每一步，不存整條軌跡；驗收包括 100,000 步完成、實際積分時間、最大已接受 `ΔF` 為零、質量誤差 `<1e-12`、正密度及 Gibbs 平衡距離。拒絕候選的 roundoff 增量另行記帳，與實際軌跡分開。
+- **M1.4**：`role_memory_profiles_for_hurst(H)` 以 `f(H)=f(1/2)+2(H-1/2)(1-f(1/2))` 調節每個 forget gate 與 retention（`0 < H < 1`；`H=0.5` 精確還原舊 profile）；`distill_synergetic_memory_para_agent(..., hurst=...)` 將環境指數帶入記憶蒸餾。四階段吸收期的精確尾和為 `4/(1-f)`；當 retention 高時改用此閉式避免 100,000 項截斷造成偏差。五個 Hurst 樣本上各角色吸收時間及平均吸收時間均嚴格遞增，角色內排序維持 Coordinator > Planner > Sensor > Executor。
 
 ### M2 — 把「信念」變成可推理的（v2.2）
 

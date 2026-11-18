@@ -804,6 +804,186 @@ pub fn role_memory_profiles() -> Array[RoleMemoryProfile] {
 }
 
 ///|
+/// Hurst-conditioned four-role retention profile and its exact absorbing-time response.
+#derive(Debug, Eq)
+pub(all) struct HurstMemoryResponse {
+  input_valid : Bool
+  hurst_exponent : Double
+  profiles : Array[RoleMemoryProfile]
+  role_absorption_times : Array[Double]
+  mean_retention : Double
+  mean_absorption_time : Double
+}
+
+///|
+/// Finite-grid monotonicity audit for the Hurst-to-memory-retention coupling.
+#derive(Debug, Eq)
+pub(all) struct HurstMemoryTrendReport {
+  input_valid : Bool
+  hurst_grid_strictly_increasing : Bool
+  mean_absorption_strictly_increasing : Bool
+  each_role_absorption_strictly_increasing : Bool
+  within_sample_role_order_preserved : Bool
+  hurst_samples : Array[Double]
+  mean_absorption_times : Array[Double]
+  role_absorption_times_by_sample : Array[Array[Double]]
+  minimum_mean_absorption_increment : Double
+  certified : Bool
+}
+
+///|
+/// Rescale each canonical forget-gate retention continuously with the environmental
+/// Hurst exponent H in (0, 1): f(H) = f(1/2) + 2(H - 1/2)(1 - f(1/2)).
+/// Thus H=1/2 exactly recovers the original profiles and every role's retention and
+/// expected absorption time strictly increase with H. Outside the open Hurst interval
+/// the response is explicitly invalid and carries no profiles.
+pub fn role_memory_profiles_for_hurst(hurst : Double) -> HurstMemoryResponse {
+  if !hurst.is_finite() || hurst <= 0.0 || hurst >= 1.0 {
+    return {
+      input_valid: false,
+      hurst_exponent: hurst,
+      profiles: [],
+      role_absorption_times: [],
+      mean_retention: 0.0,
+      mean_absorption_time: 0.0,
+    }
+  }
+  let base = role_memory_profiles()
+  let profiles = base.map(profile => {
+    let retention = profile.retention +
+      2.0 * (hurst - 0.5) * (1.0 - profile.retention)
+    {
+      role: profile.role,
+      gates: {
+        forget: retention,
+        input: profile.gates.input,
+        output: profile.gates.output,
+        candidate: profile.gates.candidate,
+      },
+      retention,
+    }
+  })
+  let mut profiles_valid = true
+  let role_absorption_times = profiles.map(profile => {
+    if profile.retention <= 0.0 ||
+      profile.retention >= 1.0 ||
+      !profile.retention.is_finite() ||
+      profile.gates.forget != profile.retention {
+      profiles_valid = false
+    }
+    // Four serial geometric memory phases; E[T] = 4 / (1 - f) exactly.
+    4.0 / (1.0 - profile.retention)
+  })
+  let mut mean_retention = 0.0
+  let mut mean_absorption_time = 0.0
+  for i in 0..<profiles.length() {
+    mean_retention = mean_retention + profiles[i].retention / 4.0
+    mean_absorption_time = mean_absorption_time + role_absorption_times[i] / 4.0
+  }
+  {
+    input_valid: profiles_valid,
+    hurst_exponent: hurst,
+    profiles,
+    role_absorption_times,
+    mean_retention,
+    mean_absorption_time,
+  }
+}
+
+///|
+/// Audit strictly increasing Hurst samples for per-role retention/absorption response,
+/// mean response, and preservation of Coordinator > Planner > Sensor > Executor memory
+/// lifetimes. Returns certificate evidence at every sampled environmental Hurst value.
+pub fn audit_hurst_memory_monotonicity(
+  hurst_samples : Array[Double],
+) -> HurstMemoryTrendReport {
+  let mut grid_valid = hurst_samples.length() >= 2
+  for i in 0..<hurst_samples.length() {
+    if !hurst_samples[i].is_finite() ||
+      hurst_samples[i] <= 0.0 ||
+      hurst_samples[i] >= 1.0 ||
+      (i > 0 && hurst_samples[i] <= hurst_samples[i - 1]) {
+      grid_valid = false
+    }
+  }
+  if !grid_valid {
+    return {
+      input_valid: false,
+      hurst_grid_strictly_increasing: false,
+      mean_absorption_strictly_increasing: false,
+      each_role_absorption_strictly_increasing: false,
+      within_sample_role_order_preserved: false,
+      hurst_samples,
+      mean_absorption_times: [],
+      role_absorption_times_by_sample: [],
+      minimum_mean_absorption_increment: 0.0,
+      certified: false,
+    }
+  }
+  let responses = hurst_samples.map(h => role_memory_profiles_for_hurst(h))
+  let mut responses_valid = true
+  for response in responses {
+    if !response.input_valid {
+      responses_valid = false
+    }
+  }
+  if !responses_valid {
+    return {
+      input_valid: false,
+      hurst_grid_strictly_increasing: true,
+      mean_absorption_strictly_increasing: false,
+      each_role_absorption_strictly_increasing: false,
+      within_sample_role_order_preserved: false,
+      hurst_samples,
+      mean_absorption_times: [],
+      role_absorption_times_by_sample: [],
+      minimum_mean_absorption_increment: 0.0,
+      certified: false,
+    }
+  }
+  let mean_absorption_times = responses.map(r => r.mean_absorption_time)
+  let role_times = responses.map(r => r.role_absorption_times)
+  let mut mean_increasing = true
+  let mut roles_increasing = true
+  let mut role_order_preserved = true
+  let mut min_mean_increment = 1.0e300
+  for i in 0..<responses.length() {
+    let times = role_times[i]
+    if !(times[0] > times[1] && times[1] > times[2] && times[2] > times[3]) {
+      role_order_preserved = false
+    }
+    if i > 0 {
+      let mean_increment = mean_absorption_times[i] -
+        mean_absorption_times[i - 1]
+      if mean_increment <= 0.0 {
+        mean_increasing = false
+      }
+      if mean_increment < min_mean_increment {
+        min_mean_increment = mean_increment
+      }
+      for role in 0..<4 {
+        if role_times[i][role] <= role_times[i - 1][role] {
+          roles_increasing = false
+        }
+      }
+    }
+  }
+  let certified = mean_increasing && roles_increasing && role_order_preserved
+  {
+    input_valid: true,
+    hurst_grid_strictly_increasing: true,
+    mean_absorption_strictly_increasing: mean_increasing,
+    each_role_absorption_strictly_increasing: roles_increasing,
+    within_sample_role_order_preserved: role_order_preserved,
+    hurst_samples,
+    mean_absorption_times,
+    role_absorption_times_by_sample: role_times,
+    minimum_mean_absorption_increment: min_mean_increment,
+    certified,
+  }
+}
+
+///|
 /// Role-dependent absorbing transition matrix over the 5 memory phases
 /// {ShortTerm, Encoding, LongTerm, Retrieval, Lost}: with per-step retention f the chain
 /// walks deterministically towards `Lost` with probability (1 - f) per step, and
@@ -821,13 +1001,19 @@ pub fn role_transition_matrix(retention : Double) -> Array[Array[Double]] {
 
 ///|
 /// Expected absorption time of a role-gated memory chain (exact Neumann fundamental matrix
-/// solution of (I - Q) t = r), plus the equivalent tail-series value as a cross-check.
+/// solution of (I - Q) t = r), plus its equivalent survival-tail sum. For fast-retention
+/// profiles, use the exact four-stage negative-binomial tail 4/(1-f) instead of a truncated
+/// series whose stopping error would be magnified as f approaches one.
 pub fn role_absorption_time(retention : Double) -> (Double, Double) {
   let p = role_transition_matrix(retention)
   let q = Array::makei(4, i => Array::makei(4, j => p[i][j]))
   let r = [1.0, 1.0, 1.0, 1.0]
   let lin = absorption_time_linear_solve(q, r)
-  let series = absorption_time_series(0, p, 4, 1.0e-12)
+  let series = if retention < 0.90 {
+    absorption_time_series(0, p, 4, 1.0e-12)
+  } else {
+    4.0 / (1.0 - retention)
+  }
   (lin[0], series)
 }
 
@@ -1051,6 +1237,8 @@ pub fn colony_para_fusion(
 /// (Sub-Algorithms A9 & A10).
 #derive(Debug, Eq)
 pub(all) struct SynMemParaReport {
+  hurst_exponent : Double
+  hurst_profile_valid : Bool
   role_retention : Array[Double]
   role_absorption_times : Array[Double]
   semigroup_closure_error : Double
@@ -1074,8 +1262,10 @@ pub(all) struct SynMemParaReport {
 pub fn distill_synergetic_memory_para_agent(
   agents : Array[ProtoAgent],
   c : Double,
+  hurst~ : Double = 0.5,
 ) -> SynMemParaReport {
-  let profiles = role_memory_profiles()
+  let memory_response = role_memory_profiles_for_hurst(hurst)
+  let profiles = memory_response.profiles
   let retention : Array[Double] = []
   let absorption : Array[Double] = []
   let mut closure_err = 0.0
@@ -1102,6 +1292,8 @@ pub fn distill_synergetic_memory_para_agent(
   let (bicomp_ok, po_size, pb_size) = finite_bicompleteness_certificate()
   let (no_expl, fused, contradictions) = colony_para_fusion(agents, c, 1.2)
   {
+    hurst_exponent: hurst,
+    hurst_profile_valid: memory_response.input_valid,
     role_retention: retention,
     role_absorption_times: absorption,
     semigroup_closure_error: closure_err,

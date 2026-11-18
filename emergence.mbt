@@ -153,6 +153,146 @@ fn role_anchor(role : Int32, c : Double) -> PoincarePoint {
 }
 
 ///|
+/// Four-role reassignment result certified directly in the gauge-invariant d_O metric.
+/// Role labels are 0=Coordinator, 1=Sensor, 2=Planner, 3=Executor.
+#derive(Debug, Eq)
+pub(all) struct OrbitRoleReassignment {
+  input_valid : Bool
+  role_assignment : Array[Int32]
+  matched_orbit_indices : Array[Int32]
+  cluster_sizes : Array[Int32]
+  dominant_spectrum_band : Int32
+  role_shift : Int32
+  max_within_cluster_distance : Double
+  min_between_cluster_distance : Double
+  separation_margin : Double
+  certified_four_clusters : Bool
+}
+
+///|
+/// Reassign mass-bearing agents by d_O to the four canonical super-mass orbits.
+/// The nonnegative environmental band-power spectrum cyclically shifts the target-orbit
+/// to role correspondence by its dominant band modulo four. Since this is a pure
+/// deterministic map, restoring an earlier spectrum restores the earlier assignment.
+/// Exactly four compatible role orbits and a nonempty, finite, nonnegative spectrum are required.
+pub fn reassign_roles_by_orbit_distance(
+  agent_masses : Array[SuperMassTensor],
+  role_orbits : Array[SuperMassTensor],
+  disturbance_spectrum : Array[Double],
+) -> OrbitRoleReassignment {
+  let n_agents = agent_masses.length()
+  let mut input_valid = role_orbits.length() == 4 &&
+    disturbance_spectrum.length() > 0
+  if role_orbits.length() == 4 {
+    for orbit in role_orbits {
+      if orbit.m_bos != role_orbits[0].m_bos ||
+        orbit.n_ferm != role_orbits[0].n_ferm ||
+        orbit.n_gen != role_orbits[0].n_gen {
+        input_valid = false
+      }
+    }
+    for mass in agent_masses {
+      if mass.m_bos != role_orbits[0].m_bos ||
+        mass.n_ferm != role_orbits[0].n_ferm ||
+        mass.n_gen != role_orbits[0].n_gen {
+        input_valid = false
+      }
+    }
+  }
+  for power in disturbance_spectrum {
+    if power < 0.0 || !power.is_finite() {
+      input_valid = false
+    }
+  }
+  if !input_valid {
+    return {
+      input_valid: false,
+      role_assignment: Array::make(n_agents, -1),
+      matched_orbit_indices: Array::make(n_agents, -1),
+      cluster_sizes: Array::make(4, 0),
+      dominant_spectrum_band: -1,
+      role_shift: 0,
+      max_within_cluster_distance: 0.0,
+      min_between_cluster_distance: 0.0,
+      separation_margin: 0.0,
+      certified_four_clusters: false,
+    }
+  }
+
+  let mut dominant_band = 0
+  for band in 1..<disturbance_spectrum.length() {
+    if disturbance_spectrum[band] > disturbance_spectrum[dominant_band] {
+      dominant_band = band
+    }
+  }
+  let role_shift = dominant_band % 4
+  let matched_orbit_indices = Array::make(n_agents, -1)
+  let role_assignment = Array::make(n_agents, -1)
+  let cluster_sizes = Array::make(4, 0)
+  for i in 0..<n_agents {
+    let mut best_role = 0
+    let mut best_orbit = (4 - role_shift) % 4
+    let mut best_distance = orbit_space_distance(
+      agent_masses[i],
+      role_orbits[best_orbit],
+    )
+    for role in 1..<4 {
+      let orbit = (role - role_shift + 4) % 4
+      let d = orbit_space_distance(agent_masses[i], role_orbits[orbit])
+      if d < best_distance {
+        best_role = role
+        best_orbit = orbit
+        best_distance = d
+      }
+    }
+    matched_orbit_indices[i] = best_orbit
+    role_assignment[i] = best_role
+    cluster_sizes[best_role] = cluster_sizes[best_role] + 1
+  }
+
+  let mut max_within = 0.0
+  let mut min_between = 1.0e300
+  for i in 0..<n_agents {
+    for j in (i + 1)..<n_agents {
+      let d = orbit_space_distance(agent_masses[i], agent_masses[j])
+      if role_assignment[i] == role_assignment[j] {
+        if d > max_within {
+          max_within = d
+        }
+      } else if d < min_between {
+        min_between = d
+      }
+    }
+  }
+  let all_roles_populated = cluster_sizes[0] > 0 &&
+    cluster_sizes[1] > 0 &&
+    cluster_sizes[2] > 0 &&
+    cluster_sizes[3] > 0
+  let has_between_cluster_pairs = min_between < 1.0e299
+  let separation_margin = if has_between_cluster_pairs {
+    min_between - max_within
+  } else {
+    0.0
+  }
+  {
+    input_valid: true,
+    role_assignment,
+    matched_orbit_indices,
+    cluster_sizes,
+    dominant_spectrum_band: dominant_band,
+    role_shift,
+    max_within_cluster_distance: max_within,
+    min_between_cluster_distance: if has_between_cluster_pairs {
+      min_between
+    } else {
+      0.0
+    },
+    separation_margin,
+    certified_four_clusters: all_roles_populated && separation_margin > 1.0e-9,
+  }
+}
+
+///|
 /// Master Algorithm: SGNE-Flow (Super-Geometric Neuro-Symbolic Emergence Flow).
 /// Evolves a colony of `n_agents` proto-agents over `n_steps` epochs by coupling:
 ///   1. Super-PoPE decoupled content-position attention with Pauli role complementarity,
@@ -429,10 +569,6 @@ pub fn run_sgne_emergence_simulation(
         let crowd = 2.8 * (role_coverage[r] - target_occ) / n_agents.to_double()
         0.5 * (d_a * d_a - 0.88 * d_0 * d_0) + crowd + spinor_affinity
       })
-      let mut expected_cost = 0.0
-      for r in 0..<4 {
-        expected_cost = expected_cost + p[r] * role_cost[r]
-      }
       // Exact Euclidean gradient of F_i = sum_r p_r (cost_r + T ln p_r) wrt eta_r (r = 0,1,2)
       let temp = 0.12
       let grad_eta = Array::makei(3, r => {
@@ -442,7 +578,7 @@ pub fn run_sgne_emergence_simulation(
           mean_u = mean_u +
             p[s] * (role_cost[s] + temp * (@math.ln(p[s].max(1.0e-12)) + 1.0))
         }
-        p[r] * (u_r - mean_u) + 0.0 * expected_cost
+        p[r] * (u_r - mean_u)
       })
       // Sub-Algorithm A2a: Amari Fisher-Rao Natural Gradient policy update
       let f_mat = categorical_fisher_matrix(ag.policy_eta)
@@ -1648,6 +1784,18 @@ fn verify_theorem_xiii() -> TheoremReport {
 }
 
 ///|
+/// Pad a real Taylor coefficient list into the complex symbol row expected by MicroDiffOp.
+fn pad_microdiff_symbol(cs : Array[Double], x_trunc : Int32) -> Array[Complex] {
+  Array::makei(x_trunc, i => {
+    if i < cs.length() {
+      Complex::new(cs[i], 0.0)
+    } else {
+      Complex::zero()
+    }
+  })
+}
+
+///|
 /// Machine-precision certificate for Theorem XIV.
 /// Split out of the former monolithic `verify_all_theorems` so that every
 /// theorem is independently auditable, independently callable and
@@ -1703,25 +1851,16 @@ fn verify_theorem_xiv() -> TheoremReport {
   //     exact two-sided elliptic parametrix P o P^{-1} == 1 AND P^{-1} o P == 1 + associativity!
   let xi_t = 5
   let x_t = 10
-  let pad_x = (cs : Array[Double]) => {
-    Array::makei(x_t, i => {
-      if i < cs.length() {
-        Complex::new(cs[i], 0.0)
-      } else {
-        Complex::zero()
-      }
-    })
-  }
   let p_op : MicroDiffOp = {
     order: 2,
     xi_trunc: xi_t,
     x_trunc: x_t,
     symbols: [
-      pad_x([1.0, 1.0, 0.5]),
-      pad_x([2.0, -1.0]),
-      pad_x([3.0, 0.4]),
-      pad_x([]),
-      pad_x([]),
+      pad_microdiff_symbol([1.0, 1.0, 0.5], x_t),
+      pad_microdiff_symbol([2.0, -1.0], x_t),
+      pad_microdiff_symbol([3.0, 0.4], x_t),
+      pad_microdiff_symbol([], x_t),
+      pad_microdiff_symbol([], x_t),
     ],
   }
   let char_op : MicroDiffOp = {
@@ -2112,20 +2251,16 @@ pub fn distill_germ_microlocal_phase() -> GermMicrolocalReport {
   let res_charge = euler_jacobi_residue_sum(role_roots, 3).re
   // 6. SKK elliptic Fokker-Planck-Schrodinger microdifferential parametrix P o P^{-1} == 1
   let x_t = 9
-  let pad = (cs : Array[Double]) => {
-    Array::makei(x_t, i => {
-      if i < cs.length() {
-        Complex::new(cs[i], 0.0)
-      } else {
-        Complex::zero()
-      }
-    })
-  }
   let fp_op : MicroDiffOp = {
     order: 2,
     xi_trunc: 4,
     x_trunc: x_t,
-    symbols: [pad([1.0, 0.5, 0.25]), pad([-0.8, 1.2]), pad([1.5]), pad([])],
+    symbols: [
+      pad_microdiff_symbol([1.0, 0.5, 0.25], x_t),
+      pad_microdiff_symbol([-0.8, 1.2], x_t),
+      pad_microdiff_symbol([1.5], x_t),
+      pad_microdiff_symbol([], x_t),
+    ],
   }
   let param_err = match fp_op.elliptic_inverse() {
     Ok(inv_op) =>

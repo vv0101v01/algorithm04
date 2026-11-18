@@ -18,7 +18,7 @@
 | `affine_tensor.mbt` | **(2) 仿射張量空間**：仿射 Torsor 與 Fréchet 雙曲質心、混合變異 $\mathbb{Z}_2$-分次張量 $T^{(r,s)}(V_{m\mid n})$、Yang–Baxter 編織、音樂同構、仿射聯絡（含撓率 contorsion）、Riemann/Ricci 曲率與 Bianchi 恆等式 |
 | `pope.mbt` | **(3) PoPE 位置編碼函數**：極座標位置編碼（Gopalakrishnan et al., 2025）內容-位置雅可比正交解耦、Bochner–Mercer 正定核、以及 $\mathcal{M}^{m\mid 2k}_c$ 上之 Pauli 互補 `super_pope_score` |
 | `ncg_supermatrix.mbt` | **(4) 非交換幾何與超矩陣方程**：$\mathrm{Mat}(m\mid n,\Lambda_N)$、超轉置 $M^{st}$、超跡 $\mathrm{str}$、雙逆元 Frobenius–Banachiewicz 超逆、Berezinian $\mathrm{Ber}(M)$、Super-Liouville 定理、Super-Sylvester / Riccati / Lax 方程、Connes 偶譜三元組與譜距離 $d_{\mathcal{D}}$ |
-| `pde_flow.mbt` | **(5) 偏微分演化流**：Wasserstein–Fisher–Rao Fokker–Planck–Beltrami–Berezin 守恆耗散流（自由能 H 定理）、Witten–Hodge 超對稱熱流 $\partial_t\Psi=-H\Psi$、以及自適應 Poincaré–Ricci–Fisher 曲率流 |
+| `pde_flow.mbt` | **(5) 偏微分演化流**：Wasserstein–Fisher–Rao Fokker–Planck–Beltrami–Berezin 守恆耗散流（自由能 H 定理、可控外生擾動與分離質量／自由能帳本、10⁵ 步穩定性審核）、Witten–Hodge 超對稱熱流 $\partial_t\Psi=-H\Psi$、以及自適應 Poincaré–Ricci–Fisher 曲率流 |
 | `super_jacobi.mbt` | **(6) 雅可比與超雅可比恆等式**：$\mathfrak{gl}(m\mid n)$、$\mathfrak{osp}(m\mid 2k)$、$\mathfrak{so}(m)$、相超空間 Super-Poisson 括號 $\{F,G\}_{SP}$、全 8 宇稱扇區驗證與協議 Jacobiator 異常檢測 |
 | `super_mass_orbit.mbt` | **(7) 二階超質量張量軌道空間**：偶分次對稱慣量張量 $\mathcal{I}$、超合同規範作用 $g^{st}\mathcal{I}g$、Schur–Berezin 么冪標準形 $M_{\mathrm{eff}}=M+\Xi\Omega^{-1}\Xi^T$、$\mathrm{OSp}$ Casimir 不變量、軌道-穩定子分解與商空間測地距離 $d_{\mathcal{O}}$ |
 | `neuro_symbolic_susy.mbt` | **(8) 符號-神經混合之代數合一算子與超對稱變換**：一階項代數、同步安全代換么半群、Robinson MGU + 雙曲上位概念提升 + Pauli–Grassmann 矛盾阻斷之分次合一 $\mathcal{U}_\tau$、以及 $\mathcal{N}=2$ Witten–Hodge 超對稱複形與拓撲 Witten 指數 $\Delta_W$ |
@@ -36,17 +36,17 @@
 | `bundle.mbt` | **(24) 湧現算子叢**：Čech 轉移上邊條件 $g_{\alpha\beta}g_{\beta\gamma}=g_{\alpha\gamma}$、截面拼接 $s_\beta=g_{\alpha\beta}s_\alpha g_{\alpha\beta}^{-1}$、交換子跡共軛不變與量變不變譜隙 |
 | `quaternion_ktheory.mbt` | **(25) 希爾伯特四元數與非交換圖 $K_0$ 譜對象**：Hamilton 四元數除環、$K_0$ 譜投影恆等式（退化譜 $0/0$ 已修）、Cayley–Hamilton、任意 $n$ 四元數非交換圖、**實四維嵌入 $\iota:\mathbb{H}\hookrightarrow\mathrm{Mat}_4(\mathbb{R})$** 與整數 $K_0$ 直接和指標 |
 | `para_universe.mbt` | **(26) 仿宇宙與 Belnap 四值雙格 $B_4$**：$\mathrm{Nv}/\mathrm{Fv}/\mathrm{Tv}/\mathrm{Bv}$ 資訊序與真值序、副相容不爆炸、Knaster–Tarski 最小不動點、跨世界逐點融合 |
-| `unified_bridges.mbt` | **統一橋接層（第 4 層）**：Schur-質量 Metriplectic 保守-耗散流、Belnap–Grassmann–Poincaré 副相容統一、Čech 超算子叢餘擺與 Kramers 四重實嵌入、角色閘控記憶半群與 Haken–超熱帶對偶、有限雙完全性與 Cantor Gödel 引擎 |
+| `unified_bridges.mbt` | **統一橋接層（第 4 層）**：Schur-質量 Metriplectic 保守-耗散流、Belnap–Grassmann–Poincaré 副相容統一、Čech 超算子叢餘擺與 Kramers 四重實嵌入、角色閘控記憶半群（保留率依環境 Hurst 指數調整）與 Haken–超熱帶對偶、有限雙完全性與 Cantor Gödel 引擎 |
 | `emergence.mbt` | **四層類智能體湧現與驗證主引擎**：微觀 **`SGNE-Flow`**（A1–A4）、半熱帶泛函宏觀蒸餾 **`SGNE-Trop-Kan`**（A5–A6）、奇點胚-微局部相變認證 **`SGNE-Germ-Micro`**（A7–A8）、**跨層蒸餾 `SGNE-Syn-Mem-Para`（A9–A10）**，以及統一 **18 大定理**數值證明器 `verify_all_theorems()` |
 | `extends.mbt` | MoonBit v0.10.21 顯式 `pub extend Type with Trait::{...}` 方法掛載宣告 |
-| `super_emergence_test.mbt` | 涵蓋 18 大模組、18 條複合定理與邊界迴歸測試之黑盒測試套件 |
+| `super_emergence_test.mbt` | 涵蓋 18 大模組、18 條複合定理、邊界迴歸及 M1.1–M1.4 長時穩定、Hurst 單調記憶與可逆四叢驗收之黑盒測試套件 |
 | `math_structures_test.mbt` | 涵蓋 8 大基礎模組、31 條基礎定理與 6 項缺陷回歸測試之黑盒測試套件 |
-| `cmd/main/main.mbt` | 可執行 18 大定理驗證報告與四層湧現模擬 CLI |
+| `cmd/main/main.mbt` | 可執行 18 大定理、四層湧現及 M1.1–M1.4 穩定性與 Hurst 記憶證據 CLI |
 | `THEOREMS_AND_ALGORITHMS.md` | 完整數學形式化、18 條複合定理嚴格證明、四層演算法偽代碼、31 條基礎定理附錄與工程重構審計專論 |
 | `MERGE_ANALYSIS.md` | 合併前利弊分析、僅合併可得之數學紅利、合併方案選擇與損害最小化對策 |
 | `AGENT_EMERGENCE_PLAN.md` | 數理類智能體（**非 LLM**）湧現之後續路線圖與前端 NL2Math 小模型規格 |
 | `EMERGENCE_PROBLEM_SET.md` / `benchmarks/emergence_problem_set.json` | 迫出類智能體之問題集（可機器讀取） |
-| `.github/workflows/ci.yml` | GitHub Actions 嚴格八道門檻 CI（格式、`--deny-warn`、`.mbti` 介面一致性、三後端測試、18 定理 CLI 驗證、問題集 JSON 機器驗證） |
+| `.github/workflows/ci.yml` | GitHub Actions 嚴格八道門檻 CI（格式、`--deny-warn`、`.mbti` 介面一致性、三後端測試、18 定理與 M1.1–M1.4 CLI 驗收、問題集 JSON 機器驗證） |
 
 ## 快速執行與持續整合門檻
 
@@ -57,8 +57,18 @@ moon info && git diff --exit-code       # 公開介面 pkg.generated.mbti 一致
 moon test --target wasm-gc              # Wasm-GC 後端執行全部測試與文件測試
 moon test --target wasm                 # Wasm 線性記憶體後端交叉驗證
 moon test --target js                   # JavaScript (V8) 後端交叉驗證
-moon run cmd/main                       # 執行 18 大定理驗證與四層湧現模擬報告
+moon run cmd/main                       # 執行 18 大定理、四層湧現與 M1.1–M1.4 報告
 ```
+
+## M1.1–M1.4：自持動力學與 Hurst 調節記憶
+
+截至 2026-11-18，路線圖 M1.1–M1.4 均已實作並納入常駐測試與 CLI 驗收。
+
+- **外生 WFR 擾動**：使用 `WFRExogenousPerturbation::new(sigma, xi)` 與 `SuperBeltramiPDE::step_with_exogenous_perturbation(dt, perturbation)`。`xi` 是每格的時間局部加性密度率；擾動會投影到 Berezinian 加權零質量空間，並透過保正的單純形回縮保持總質量。回傳的 `WFRPerturbedStep` 含 `state` 與 `WFRFlowStepLedger`，分開記錄確定性耗散、擾動作功、總自由能變化及質量誤差；若 forcing 格數不符或含非有限值，帳本會由 `input_shape_valid`／`input_values_valid` 明示並退回未擾動步。
+- **譜驅動角色再配置**：`canonical_role_mass_orbits()` 提供 Coordinator、Sensor、Planner、Executor 的四個標準軌道。`reassign_roles_by_orbit_distance(agent_masses, role_orbits, disturbance_spectrum)` 先依最大功率頻帶索引模 4 循環平移軌道—角色對應，再以 `d_O` 最近距離指派；回傳結果含指派、叢大小、最大叢內距、最小叢間距與四叢證書。輸入頻譜回復時指派會精確回復，無隱藏狀態或遲滯。
+- **M1.3 長時穩定性**：`SuperBeltramiPDE::audit_long_time_stability(dt, steps)` 以能量回溯、質量回縮及串流帳本執行長時程審核；小於自由能的離散步才接受，近固定點時只有在候選密度位移 `< 1e-8` 且能量差處於 roundoff 界內才作 stationary hold。32 格、`dt = 0.0005` 連續 100,000 步的 CLI 證據包含軌跡最大 `ΔF = 0`、質量誤差及 Gibbs 平衡距離。
+- **M1.4 Hurst 記憶**：`role_memory_profiles_for_hurst(H)` 用 `f(H)=f(1/2)+2(H-1/2)(1-f(1/2))` 同步調整 forget gate 與 retention（`0 < H < 1`；`H=0.5` 精確還原原始四角色）。`distill_synergetic_memory_para_agent(..., hurst=...)` 可將環境 H 直接帶入記憶蒸餾；四階段鏈吸收時間使用精確值 `4/(1-f)`，避免 retention 趨近 1 時截斷尾和造成偏差。`audit_hurst_memory_monotonicity` 檢查每角色吸收時間隨 H 嚴格上升及角色內排序不變。
+- **本地 CLI 見證**：M1.1 的 32 格 mass error 為 `2.22e-16`；M1.2 的八個置換軌道形成 `[2, 2, 2, 2]` 四叢、分離間隙 `1.53`，dominant band `0 → 1 → 0` 可逆。M1.3/M1.4 的長時穩定與 Hurst 單調性亦由 CI Gate 7 驗收。
 
 ```mbt check
 ///|

@@ -30,11 +30,15 @@ pub fn approx(Double, Double, Double) -> Bool
 
 pub fn audit_complete_intersection(MapGerm, koszul_check_deg? : Int32) -> CompleteIntersectionReport
 
+pub fn audit_hurst_memory_monotonicity(Array[Double]) -> HurstMemoryTrendReport
+
 pub fn audit_serre_normality(MapGerm) -> SerreNormalityReport
 
 pub fn build_canonical_super_bundle() -> SuperOperatorBundle
 
 pub fn build_global_section(Array[Array[Double]], Array[Array[Double]], Int32, Double) -> Bool
+
+pub fn canonical_role_mass_orbits() -> Array[SuperMassTensor]
 
 pub fn canonical_symplectic(Int32) -> DenseMat
 
@@ -74,7 +78,7 @@ pub fn default_neural_h() -> NeuralH
 
 pub fn distill_germ_microlocal_phase() -> GermMicrolocalReport
 
-pub fn distill_synergetic_memory_para_agent(Array[ProtoAgent], Double) -> SynMemParaReport
+pub fn distill_synergetic_memory_para_agent(Array[ProtoAgent], Double, hurst? : Double) -> SynMemParaReport
 
 pub fn distill_tropical_kan_macro_agent(Array[ProtoAgent], Array[ProtoAgent]) -> TropicalKanMacroAgent
 
@@ -266,11 +270,15 @@ pub fn rayleigh_imag_residual(Hermitian2, Array[Quat]) -> Double
 
 pub fn rayleigh_real(Hermitian2, Array[Quat]) -> Double
 
+pub fn reassign_roles_by_orbit_distance(Array[SuperMassTensor], Array[SuperMassTensor], Array[Double]) -> OrbitRoleReassignment
+
 pub fn rebuild_from_coords(Double, Double) -> Complex
 
 pub fn role_absorption_time(Double) -> (Double, Double)
 
 pub fn role_memory_profiles() -> Array[RoleMemoryProfile]
+
+pub fn role_memory_profiles_for_hurst(Double) -> HurstMemoryResponse
 
 pub fn role_semigroup_closure_error(RoleMemoryProfile, Double, Int32) -> Double
 
@@ -817,6 +825,30 @@ pub fn[A, X, Y] HomFunctor::fmap(Self[A, X], (X) -> Y) -> Self[A, Y]
 pub fn[A] HomFunctor::universal_id() -> Self[A, A]
 
 #derive(Eq, @debug.Debug)
+pub(all) struct HurstMemoryResponse {
+  input_valid : Bool
+  hurst_exponent : Double
+  profiles : Array[RoleMemoryProfile]
+  role_absorption_times : Array[Double]
+  mean_retention : Double
+  mean_absorption_time : Double
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct HurstMemoryTrendReport {
+  input_valid : Bool
+  hurst_grid_strictly_increasing : Bool
+  mean_absorption_strictly_increasing : Bool
+  each_role_absorption_strictly_increasing : Bool
+  within_sample_role_order_preserved : Bool
+  hurst_samples : Array[Double]
+  mean_absorption_times : Array[Double]
+  role_absorption_times_by_sample : Array[Array[Double]]
+  minimum_mean_absorption_increment : Double
+  certified : Bool
+}
+
+#derive(Eq, @debug.Debug)
 pub(all) struct HyperfunctionGerm {
   x0 : Double
   f_plus : HalfPlaneGerm
@@ -1015,6 +1047,20 @@ pub(all) struct Obj {
 pub fn Obj::equal(Self, Self) -> Bool
 pub fn Obj::not_equal(Self, Self) -> Bool
 pub fn Obj::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct OrbitRoleReassignment {
+  input_valid : Bool
+  role_assignment : Array[Int32]
+  matched_orbit_indices : Array[Int32]
+  cluster_sizes : Array[Int32]
+  dominant_spectrum_band : Int32
+  role_shift : Int32
+  max_within_cluster_distance : Double
+  min_between_cluster_distance : Double
+  separation_margin : Double
+  certified_four_clusters : Bool
+}
 
 #derive(Eq, @debug.Debug)
 pub(all) struct ParaUnifyReport {
@@ -1277,12 +1323,15 @@ pub(all) struct SuperBeltramiPDE {
   potential : Array[Double]
   density : Array[Double]
 }
+pub fn SuperBeltramiPDE::audit_long_time_stability(Self, Double, Int32) -> WFRLongTimeStabilityReport
 pub fn SuperBeltramiPDE::equal(Self, Self) -> Bool
 pub fn SuperBeltramiPDE::free_energy(Self) -> Double
 pub fn SuperBeltramiPDE::gibbs_equilibrium(Self) -> Array[Double]
 pub fn SuperBeltramiPDE::new(SuperManifold, Int32, Double, Double, Double, (Double) -> Double, (Double) -> Double) -> Self
 pub fn SuperBeltramiPDE::not_equal(Self, Self) -> Bool
 pub fn SuperBeltramiPDE::step(Self, Double) -> Self
+pub fn SuperBeltramiPDE::step_energy_monotone(Self, Double) -> WFRMonotoneStep
+pub fn SuperBeltramiPDE::step_with_exogenous_perturbation(Self, Double, WFRExogenousPerturbation) -> WFRPerturbedStep
 pub fn SuperBeltramiPDE::to_repr(Self) -> @debug.Repr
 pub fn SuperBeltramiPDE::total_mass(Self) -> Double
 
@@ -1474,6 +1523,8 @@ pub fn SymTerm::to_repr(Self) -> @debug.Repr
 
 #derive(Eq, @debug.Debug)
 pub(all) struct SynMemParaReport {
+  hurst_exponent : Double
+  hurst_profile_valid : Bool
   role_retention : Array[Double]
   role_absorption_times : Array[Double]
   semigroup_closure_error : Double
@@ -1629,6 +1680,66 @@ pub fn UniversalUnfolding::fiber_at(Self, Array[Double]) -> MapGerm
 pub fn UniversalUnfolding::induce_perturbation_params(Self, MapGerm) -> Array[Double]
 pub fn UniversalUnfolding::not_equal(Self, Self) -> Bool
 pub fn UniversalUnfolding::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct WFRExogenousPerturbation {
+  sigma : Double
+  xi : Array[Double]
+}
+pub fn WFRExogenousPerturbation::new(Double, Array[Double]) -> Self
+
+#derive(Eq, @debug.Debug)
+pub(all) struct WFRFlowStepLedger {
+  input_shape_valid : Bool
+  input_values_valid : Bool
+  mass_before : Double
+  deterministic_mass_after : Double
+  mass_after : Double
+  mass_conservation_error : Double
+  free_energy_before : Double
+  deterministic_free_energy_after : Double
+  free_energy_after : Double
+  deterministic_dissipation : Double
+  perturbation_work : Double
+  total_free_energy_change : Double
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct WFRLongTimeStabilityReport {
+  input_valid : Bool
+  requested_steps : Int32
+  completed_steps : Int32
+  stationary_holds : Int32
+  failed_steps : Int32
+  adaptive_retries : Int32
+  simulated_time : Double
+  initial_free_energy : Double
+  final_free_energy : Double
+  final_equilibrium_distance : Double
+  max_free_energy_increase : Double
+  max_proposed_energy_increase : Double
+  max_mass_conservation_error : Double
+  minimum_density : Double
+  free_energy_monotone : Bool
+  mass_conserved : Bool
+  positivity_preserved : Bool
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct WFRMonotoneStep {
+  state : SuperBeltramiPDE
+  accepted : Bool
+  stationary_hold : Bool
+  retries : Int32
+  effective_dt : Double
+  max_proposed_energy_increase : Double
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct WFRPerturbedStep {
+  state : SuperBeltramiPDE
+  ledger : WFRFlowStepLedger
+}
 
 #derive(Eq, @debug.Debug)
 pub(all) struct WittenSUSYSystem {

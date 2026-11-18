@@ -274,6 +274,30 @@ pub fn SuperMassTensor::bosonic_mass_spectrum(
 }
 
 ///|
+/// Canonical four-role super-mass orbit prototypes, ordered as Coordinator, Sensor,
+/// Planner, Executor. Their separated bosonic spectra make the d_O clustering fixture
+/// well-conditioned; permutations of each diagonal spectrum represent the same orbit.
+pub fn canonical_role_mass_orbits() -> Array[SuperMassTensor] {
+  let role_spectra : Array[Array[Double]] = [
+    [0.70, 0.85, 1.00, 1.15],
+    [1.25, 1.40, 1.55, 1.70],
+    [1.85, 2.05, 2.25, 2.45],
+    [2.65, 2.90, 3.15, 3.40],
+  ]
+  Array::makei(4, role => {
+    let m_real = DenseMat::from_fn(4, 4, (i, j) => {
+      if i == j {
+        role_spectra[role][i]
+      } else {
+        0.0
+      }
+    })
+    let xi = Array::makei(16, _ => Grassmann::zero(4))
+    SuperMassTensor::from_real_and_yukawa(m_real, xi, 1.0, 4, 4)
+  })
+}
+
+///|
 /// Gauge-invariant O(m)-orbit spectral distance + soul-renormalization distance
 /// between two SuperMassTensors [I_1], [I_2] in Sym^2_s(V^*_{m|2k}) / OSp(m|2k):
 ///   d_O([I_1], [I_2]) = sqrt( sum_i (ln lambda_i(I_1) - ln lambda_i(I_2))^2
