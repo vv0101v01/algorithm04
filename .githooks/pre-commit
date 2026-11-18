@@ -1,3 +1,8 @@
 #!/bin/sh
-
-moon check
+# Pre-commit gate: zero warnings and zero errors, exactly as CI Gate 2.
+set -e
+if [ -x "$HOME/.moon/bin/moon" ]; then
+  PATH="$HOME/.moon/bin:$PATH"
+  export PATH
+fi
+moon check --deny-warn
