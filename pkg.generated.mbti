@@ -90,6 +90,8 @@ pub fn energy_drift(Bool, Int32, Double) -> Double
 
 pub fn epistemic_least_fixed_point((FourVal) -> FourVal) -> FourVal
 
+pub fn epistemic_quarantine_map(FourVal) -> FourVal
+
 pub fn euler_jacobi_residue_sum(Array[Complex], Int32) -> Complex
 
 pub fn eval_supertropical_poly(Array[Double], Array[Array[Double]], Array[Double], tie_tol? : Double) -> SuperTropical
@@ -902,7 +904,6 @@ pub fn MeromorphicGerm::deriv(Self) -> Self
 pub fn MeromorphicGerm::div(Self, Self) -> Self
 pub fn MeromorphicGerm::equal(Self, Self) -> Bool
 pub fn MeromorphicGerm::eval(Self, Complex) -> Complex
-pub fn MeromorphicGerm::from_laurent(Int32, Array[Complex], prec? : Int32) -> Self
 pub fn MeromorphicGerm::from_real(Int32, Array[Double], prec? : Int32) -> Self
 pub fn MeromorphicGerm::inv(Self) -> Self
 pub fn MeromorphicGerm::is_holomorphic(Self) -> Bool
@@ -1340,7 +1341,6 @@ pub(all) struct SuperManifold {
 }
 pub fn SuperManifold::effective_volume_density_at_radius(Self, Double) -> Double
 pub fn SuperManifold::equal(Self, Self) -> Bool
-pub fn SuperManifold::flat_osp_metric(Self) -> DenseMat
 pub fn SuperManifold::new(Int32, Int32, Double, n_gen? : Int32) -> Self
 pub fn SuperManifold::not_equal(Self, Self) -> Bool
 pub fn SuperManifold::super_dim(Self) -> Int32

@@ -389,13 +389,7 @@ pub fn TropMatrix::from_fn(
   cols : Int32,
   f : (Int32, Int32) -> Double,
 ) -> TropMatrix {
-  let data = Array::make(rows * cols, TROP_NEG_INF)
-  for i in 0..<rows {
-    for j in 0..<cols {
-      data[i * cols + j] = f(i, j)
-    }
-  }
-  { rows, cols, data, }
+  { rows, cols, data: dense_from_fn_body(rows, cols, f), }
 }
 
 ///|

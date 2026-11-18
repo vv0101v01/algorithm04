@@ -607,8 +607,13 @@ pub fn Grassmann::parity(self : Grassmann) -> Parity {
 ///|
 /// Exact multiplicative inverse (b + s)^{-1} = b^{-1} sum_{k=0}^{N} (-s / b)^k.
 /// Terminates exactly at k = n_gen because s^{n_gen + 1} == 0 identically.
+/// ZERO-DIVISOR GUARD: an element whose body vanishes has no inverse; in that case
+/// the zero element is returned instead of letting 1/0 = Inf propagate as NaN.
 pub fn Grassmann::inv(self : Grassmann) -> Grassmann {
   let b = self.body()
+  if b.abs() <= 1.0e-300 {
+    return Grassmann::zero(self.n_gen)
+  }
   let inv_b = 1.0 / b
   let u = self.soul().smul(-inv_b)
   let mut acc = Grassmann::scalar(self.n_gen, 1.0)
@@ -658,8 +663,13 @@ pub fn Grassmann::exp(self : Grassmann) -> Grassmann {
 
 ///|
 /// Exact super-logarithm ln(b + s) = ln(b) + sum_{k=1}^{N} (-1)^{k-1} (s/b)^k / k.
+/// DOMAIN: b != 0. Outside the domain the zero element is returned rather than
+/// letting ln(0) = -Inf and 1/0 = Inf propagate as NaN.
 pub fn Grassmann::ln(self : Grassmann) -> Grassmann {
   let b = self.body()
+  if b.abs() <= 1.0e-300 {
+    return Grassmann::zero(self.n_gen)
+  }
   let u = self.soul().smul(1.0 / b)
   let mut acc = Grassmann::scalar(self.n_gen, @math.ln(b))
   let mut power = Grassmann::scalar(self.n_gen, 1.0)
@@ -673,8 +683,13 @@ pub fn Grassmann::ln(self : Grassmann) -> Grassmann {
 
 ///|
 /// Exact principal square root sqrt(b + s) for b > 0.
+/// DOMAIN: b > 0. Outside the domain the zero element is returned rather than
+/// letting sqrt(b < 0) and 1/b propagate as NaN.
 pub fn Grassmann::sqrt(self : Grassmann) -> Grassmann {
   let b = self.body()
+  if b <= 0.0 {
+    return Grassmann::zero(self.n_gen)
+  }
   let sb = b.sqrt()
   let u = self.soul().smul(1.0 / b)
   let mut acc = Grassmann::scalar(self.n_gen, 1.0)
@@ -763,18 +778,30 @@ pub fn DenseMat::eye(n : Int32) -> DenseMat {
 }
 
 ///|
-pub fn DenseMat::from_fn(
+/// Shared row-major body construction: fill `rows x cols` from the index generator `f`.
+/// Used by both `DenseMat::from_fn` and `TropMatrix::from_fn`, whose constructors differ
+/// only in the container they wrap (the pre-fill value is always overwritten by `f`).
+fn dense_from_fn_body(
   rows : Int32,
   cols : Int32,
   f : (Int32, Int32) -> Double,
-) -> DenseMat {
+) -> Array[Double] {
   let data = Array::make(rows * cols, 0.0)
   for i in 0..<rows {
     for j in 0..<cols {
       data[i * cols + j] = f(i, j)
     }
   }
-  { rows, cols, data, }
+  data
+}
+
+///|
+pub fn DenseMat::from_fn(
+  rows : Int32,
+  cols : Int32,
+  f : (Int32, Int32) -> Double,
+) -> DenseMat {
+  { rows, cols, data: dense_from_fn_body(rows, cols, f), }
 }
 
 ///|
@@ -952,6 +979,12 @@ pub fn DenseMat::solve_vec(self : DenseMat, b : Array[Double]) -> Array[Double] 
 
 ///|
 /// Matrix inverse via guarded Gauss-Jordan elimination with partial pivoting.
+///
+/// SINGULAR-PIVOT CONTRACT: a degenerate pivot (`best <= 1e-15`) means the matrix is
+/// singular and no inverse exists, so the ZERO matrix is returned (the same neutral
+/// element convention as `Grassmann::inv`, `gmat_even_det` and `gmat_even_inv`)
+/// instead of a partially eliminated matrix that silently fails to satisfy
+/// `A * A^{-1} == I`. Use `DenseMat::det` to test invertibility first.
 pub fn DenseMat::inv(self : DenseMat) -> DenseMat {
   let n = self.rows
   let a = self.clone()
@@ -959,7 +992,8 @@ pub fn DenseMat::inv(self : DenseMat) -> DenseMat {
   for k in 0..<n {
     let (piv, best) = a.find_pivot(k, k)
     if best <= 1.0e-15 {
-      continue
+      // SINGULAR: no inverse exists -> return the zero matrix (documented contract).
+      return DenseMat::zeros(n, n)
     }
     a.swap_rows(k, piv)
     inv_m.swap_rows(k, piv)

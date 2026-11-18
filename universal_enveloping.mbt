@@ -385,6 +385,21 @@ pub fn UEAElement::pbw_norm(self : UEAElement) -> Double {
 }
 
 ///|
+/// Replace the generator at position `k` of a PBW word by `c`, shortening the word
+/// by one (the relation X_b X_a -> sum_c C^c_{ba} X_c consumes one generator).
+fn replace_word_at(word : Array[Int32], k : Int32, c : Int32) -> Array[Int32] {
+  Array::makei(word.length() - 1, idx => {
+    if idx < k {
+      word[idx]
+    } else if idx == k {
+      c
+    } else {
+      word[idx + 1]
+    }
+  })
+}
+
+///|
 /// Expand a raw word [i_0, i_1, ..., i_{L-1}] of generators into canonical Super-PBW form
 /// by straightening the leftmost inversion (or duplicate odd generator):
 ///   - If i_k > i_{k+1}: X_b X_a = (-1)^{|a||b|} X_a X_b + sum_c C^c_{ba} X_c,
@@ -414,16 +429,7 @@ fn straighten_word(
       for c in 0..<g.dim {
         let sc = g.coeff(b, a, c)
         if sc != 0.0 {
-          let shorter = Array::makei(len - 1, idx => {
-            if idx < k {
-              word[idx]
-            } else if idx == k {
-              c
-            } else {
-              word[idx + 1]
-            }
-          })
-          straighten_word(g, shorter, coeff * sc, out)
+          straighten_word(g, replace_word_at(word, k, c), coeff * sc, out)
         }
       }
       return
@@ -433,16 +439,7 @@ fn straighten_word(
       for c in 0..<g.dim {
         let sc = 0.5 * g.coeff(a, a, c)
         if sc != 0.0 {
-          let shorter = Array::makei(len - 1, idx => {
-            if idx < k {
-              word[idx]
-            } else if idx == k {
-              c
-            } else {
-              word[idx + 1]
-            }
-          })
-          straighten_word(g, shorter, coeff * sc, out)
+          straighten_word(g, replace_word_at(word, k, c), coeff * sc, out)
         }
       }
       return

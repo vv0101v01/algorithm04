@@ -41,7 +41,9 @@ pub fn patch_sections(
   eps : Double,
 ) -> Bool {
   let g = mat2_from_flat(gab)
-  if g.det().abs() <= 1.0e-15 {
+  // NaN-SAFE SINGULARITY GUARD: `det <= eps` is false for NaN, so the positive form
+  // would let a NaN frame through into the inverse.
+  if !(g.det().abs() > 1.0e-15) {
     return false
   }
   let diff = conjugate_dense(mat2_from_flat(sa), g) - mat2_from_flat(sb)
@@ -65,7 +67,7 @@ pub fn emergent_commutator_trace(
   let ma = mat2_from_flat(a)
   let mb = mat2_from_flat(b)
   let mg = mat2_from_flat(g)
-  if mg.det().abs() <= 1.0e-15 {
+  if !(mg.det().abs() > 1.0e-15) {
     return false
   }
   let c0 = classical_commutator(ma, mb).trace()

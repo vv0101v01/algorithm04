@@ -1,7 +1,7 @@
 # 超幾何・泛性質・半熱帶射影・奇點胚・微局部・辛相調・算子叢・副相容類智能體湧現專論：由 MoonBit 計算機抽象導出之二十六大數學結構、十八條複合定理與四層湧現演算法
 
 > **工具鏈環境**：MoonBit 最新穩定版 `moon 0.1.20261117` / `moonc v0.10.21+06da1ed44`（2026-11-17）  
-> **程式碼倉庫與 CI**：`vv0101v01/super_emergence`（套件 `arena/super_emergence` v2.0.0，`vv0101v01/algorithm04` `d85a35f` 與 `vv0101v01/algo8` `99bdadf` 之雙親統一合併；`moon check --deny-warn` 零錯誤零警告，`wasm-gc` / `wasm` / `js` 三後端 53/53 測試與文件測試全數通過）  
+> **程式碼倉庫與 CI**：`vv0101v01/algorithm04`（套件 `arena/super_emergence` v2.0.0，`vv0101v01/algorithm04` `d85a35f` 與 `vv0101v01/algo8` `99bdadf` 之雙親統一合併；`moon check --deny-warn` 零錯誤零警告，`wasm-gc` / `wasm` / `js` 三後端 58/58 測試與文件測試全數通過）  
 > **核心命題**：以範疇化泛性質函子、$\mathbb{Z}_2$-分次超代數 Trait、半熱帶射影幾何、萬有展開（李超代數萬有包絡 + Thom–Mather 萬有開折）、解析映射胚奇點論、佐藤（Sato–Kawai–Kashiwara）微局部分析、Schur–Berezin 超質量軌道、辛相調流、Čech 算子叢、四元數 $K_0$ 譜對象與 Belnap 副相容雙格作為計算機抽象，當**二十六現代數學結構**在同一嚴格型別宇宙中複合時，其介面公理、泛伴隨律、接觸不變量、留數/波前守恆律、叢餘擺律與四值格律共同支配**四層**類智能體湧現架構：微觀對稱破缺引擎 **`SGNE-Flow`**、半熱帶泛函宏觀蒸餾引擎 **`SGNE-Trop-Kan`**、奇點胚開折與佐藤微局部相變認證引擎 **`SGNE-Germ-Micro`**，以及跨層蒸餾引擎 **`SGNE-Syn-Mem-Para`**。
 
 ---
@@ -792,7 +792,7 @@ Output: SynergeticMemoryParaReport (role absorption times, WTA Tangible/Ghost du
    - `BUG-14`（`unified_bridges.mbt`）：修復超熱帶 WTA 幽靈偵測器僅比較「最大值與次大值」而將**並列極大**誤判為 Tangible；現改為計數**全體**極大者，並列即為幽靈；
    - `BUG-15`（`unified_bridges.mbt`）：修復定理 XV 誤以 $\Delta M$ 之經典特徵值最小值作為「Schur 質量位移」證據——奇–奇 Schur 修正之偶體恆為零，故改以靈魂範數、零偶體跡與顯式 Grassmann 有效質量恆等式三者聯合認證；
    - `BUG-16`（`unified_bridges.mbt`）：修復有限範疇fixture 之餘錐／錐映射方向錯誤，以及定理 XVI 兩世界fixture 無法維持正交假命題穿越融合——現加入第三條正交假命題並以角色吸收時間按保留率重新排序。
-2. **去重（Deduplication）**：抽離共用列主元交換、數值穩定 `softmax_vec`（統一策略流形與注意力正規化）、中心差分 `numerical_grad`/`numerical_jacobian`、`is_trop_finite`/`row_trop_dot`、張量槽位變換 `GradedTensor::transform_slot`、Cauchy 冪級數逆元 `cauchy_series_inv`（共用 `MeromorphicGerm::inv` 與 `MicroDiffOp::elliptic_inverse`）、超函數極點半平面建構子 `pure_pole_half_germ`、`concat_words`、軟合一符號對處理 `unify_symbol_pair`，以及統一 18 定理驗證器 `verify_all_theorems()`（消除重複 `SGNE-Flow` 模擬）。
+2. **去重（Deduplication）**：抽離共用列主元交換、數值穩定 `softmax_vec`（統一策略流形與注意力正規化）、中心差分 `numerical_grad`/`numerical_jacobian`、`is_trop_finite`/`row_trop_dot`、張量槽位變換 `GradedTensor::transform_slot`、Cauchy 冪級數逆元 `cauchy_series_inv`（共用 `MeromorphicGerm::inv` 與 `MicroDiffOp::elliptic_inverse`）、超函數極點半平面建構子 `pure_pole_half_germ`、`concat_words`、軟合一符號對處理 `unify_symbol_pair`，以及統一 18 定理驗證器 `verify_all_theorems()`（消除重複 `SGNE-Flow` 模擬；其內部已依定理拆分為 VIII–XIV 與 Layer 4 之 XV–XVIII 各自獨立之認證函式）。
 3. **減債與清死碼（Debt & Dead-Code Elimination）**：全面遷移至 `moonc v0.10.21`（`Double::from_int` $\to$ `Int::to_double`、完整顯式 `pub extend`、消除未使用接收者 `self`），移除全部零引用公開函式/方法（含重載名稱遮蔽之 `TropProjPoint::dim`）並收斂內部輔助函式可見性；以 GitHub Actions CI 八道門檻永久鎖定 `0 errors, 0 warnings, 0 drift, 0 dead symbols`。
 
 

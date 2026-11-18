@@ -363,6 +363,13 @@ fn gmat_swap_rows(
 ///|
 /// Exact inverse of an n x n matrix over the commutative ring Lambda_{N, even}
 /// via Gauss-Jordan elimination pivoting on max |body(a_{ik})|.
+///
+/// SINGULAR-PIVOT CONTRACT: a matrix over Lambda_{N, even} is invertible iff its body
+/// matrix is invertible, so a degenerate body pivot (`best <= 1e-15`) means no inverse
+/// exists. In that case the ZERO matrix is returned (the same neutral-element
+/// convention as `Grassmann::inv` and `gmat_even_det`) instead of a partially
+/// eliminated matrix that silently fails to satisfy `A * A^{-1} == I`.
+/// Use `gmat_even_det` to test invertibility before calling this function.
 pub fn gmat_even_inv(
   mat : Array[Grassmann],
   n : Int32,
@@ -373,7 +380,8 @@ pub fn gmat_even_inv(
   for k in 0..<n {
     let (piv, best) = gmat_find_pivot(a, n, k)
     if best <= 1.0e-15 {
-      continue
+      // SINGULAR: no inverse exists -> return the zero matrix (documented contract).
+      return Array::makei(n * n, _ => Grassmann::zero(n_gen))
     }
     gmat_swap_rows(a, n, k, piv)
     gmat_swap_rows(inv_m, n, k, piv)
@@ -445,6 +453,22 @@ pub fn SuperMatrix::blocks(
 }
 
 ///|
+/// Bosonic Schur complement S_A = A - B * D^{-1} * C over the commutative even
+/// subalgebra Lambda_{N, even}, given the pre-computed product `bd` = B * D^{-1}.
+/// Single implementation shared by `schur_bosonic`, `berezinian` and `inverse`.
+fn gmat_schur_complement(
+  a : Array[Grassmann],
+  bd : Array[Grassmann],
+  c : Array[Grassmann],
+  m : Int32,
+  n : Int32,
+  g : Int32,
+) -> Array[Grassmann] {
+  let bdc = gmat_mul(bd, m, n, c, m, g)
+  Array::makei(m * m, i => a[i] - bdc[i])
+}
+
+///|
 /// Bosonic Schur complement S_A = A - B * D^{-1} * C for an invertible Even SuperMatrix.
 pub fn SuperMatrix::schur_bosonic(self : SuperMatrix) -> Array[Grassmann] {
   let m = self.m_bos
@@ -455,8 +479,7 @@ pub fn SuperMatrix::schur_bosonic(self : SuperMatrix) -> Array[Grassmann] {
   }
   let d_inv = gmat_even_inv(d, n, self.n_gen)
   let bd = gmat_mul(b, m, n, d_inv, n, self.n_gen)
-  let bdc = gmat_mul(bd, m, n, c, m, self.n_gen)
-  Array::makei(m * m, i => a[i] - bdc[i])
+  gmat_schur_complement(a, bd, c, m, n, self.n_gen)
 }
 
 ///|
@@ -473,8 +496,8 @@ pub fn SuperMatrix::berezinian(self : SuperMatrix) -> Grassmann {
     return gmat_even_det(a, m, g)
   }
   let d_inv = gmat_even_inv(d, n, g)
-  let bdc = gmat_mul(gmat_mul(b, m, n, d_inv, n, g), m, n, c, m, g)
-  let s_a = Array::makei(m * m, i => a[i] - bdc[i])
+  let bd = gmat_mul(b, m, n, d_inv, n, g)
+  let s_a = gmat_schur_complement(a, bd, c, m, n, g)
   gmat_even_det(s_a, m, g) / gmat_even_det(d, n, g)
 }
 
@@ -507,8 +530,7 @@ pub fn SuperMatrix::inverse(self : SuperMatrix) -> SuperMatrix {
   }
   let bd = gmat_mul(b, m, n, d_inv, n, g)
   let dc = gmat_mul(d_inv, n, n, c, m, g)
-  let bdc = gmat_mul(bd, m, n, c, m, g)
-  let sa = Array::makei(m * m, i => a[i] - bdc[i])
+  let sa = gmat_schur_complement(a, bd, c, m, n, g)
   let sa_inv = gmat_even_inv(sa, m, g)
   let sa_bd = gmat_mul(sa_inv, m, m, bd, n, g)
   let top_r = sa_bd.map(x => -x)

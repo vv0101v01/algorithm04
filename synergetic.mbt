@@ -62,7 +62,9 @@ pub fn functor_laws_synergetic(
   let e = net.encode(x)
   let zero = Array::make(u1.length(), 0.0)
   let fid = net.push_morphism(e, zero)
-  if vec_norm(vec_sub(fid, e)) > 1.0e-12 {
+  // NaN-SAFE COMPARISON: a NaN residual must FAIL the law, never silently pass it.
+  // `x > eps` is false for NaN, so the positive form would let a NaN through.
+  if !(vec_norm(vec_sub(fid, e)) <= 1.0e-12) {
     return false
   }
   let e12 = net.push_morphism(net.push_morphism(e, u1), u2)

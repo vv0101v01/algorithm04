@@ -27,7 +27,7 @@
 | 基礎定理 | 31 條，黑盒測試覆蓋 |
 | 湧現層 | 4 層：`SGNE-Flow` / `SGNE-Trop-Kan` / `SGNE-Germ-Micro` / `SGNE-Syn-Mem-Para` |
 | 角色 | 8 個原型單元 → 2 Coordinator / 2 Sensor / 2 Planner / 2 Executor |
-| 測試 | 53/53，三後端一致 |
+| 測試 | 58/58，三後端一致 |
 | 未解問題 | 見第三節 |
 
 ---

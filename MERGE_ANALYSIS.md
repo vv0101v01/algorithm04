@@ -115,7 +115,7 @@ Tier 3  驗證與介面
 | 複合定理 | 14 | 0 | **18** |
 | 基礎定理 | 0 | 31 | **31** |
 | 湧現層 | 3 | 0 | **4** |
-| 測試（`wasm-gc`） | 14 | 31 | **53** |
+| 測試（`wasm-gc`） | 14 | 31 | **58** |
 | 跨後端 | 3 | 3 | **3** |
 | 編譯警告 | 0 | 0 | **0** |
 | 格式漂移 | 0 | 0 | **0** |
@@ -156,17 +156,74 @@ Tier 3  驗證與介面
 | Gate 1 | `moon fmt --check` 零格式漂移 | ✓ |
 | Gate 2 | `moon check --deny-warn` 零錯誤零警告 | ✓ |
 | Gate 3 | `moon info && git diff --exit-code pkg.generated.mbti` 零介面漂移 | ✓ |
-| Gate 4 | `moon test --target wasm-gc`（53/53） | ✓ |
-| Gate 5 | `moon test --target wasm`（53/53） | ✓ |
-| Gate 6 | `moon test --target js`（53/53） | ✓ |
+| Gate 4 | `moon test --target wasm-gc`（58/58） | ✓ |
+| Gate 5 | `moon test --target wasm`（58/58） | ✓ |
+| Gate 6 | `moon test --target js`（58/58） | ✓ |
 | Gate 7 | `moon run cmd/main` 輸出 `18 / 18 theorems verified.` 且含 `SGNE-Syn-Mem-Para` 與 `26 structures` | ✓ |
 | Gate 8 | `benchmarks/emergence_problem_set.json` 機器驗證（36 題、ID 唯一、kind/layer 合法） | ✓ |
+
+---
+
+## 九、合併後品質精修（post-merge quality pass）
+
+合併完成後再執行一輪「除錯、去重、降債、移除死碼」精修，範圍涵蓋
+`838cc6b` 合併點之後的全部原始碼改動。**數學內容與定理命題一律未變**，
+所有既有 CLI 不變量（Schur 靈魂位移 `6.62e-01`、零偶體跡 `0.00e+00`、
+Schur 恆等式殘差 `2.78e-17`、雙阱逃逸 `0/12` vs `12/12`）經逐位元比對後
+**完全一致**。
+
+### 9.1 潛在缺陷之除錯
+
+| 編號 | 位置 | 缺陷 | 對策與回歸測試 |
+| :--- | :--- | :--- | :--- |
+| `BUG-18` | `algebra.mbt` | `DenseMat::inv` 於奇異主元處 `continue`，**靜默回傳不滿足 $AA^{-1}=I$ 之半消元矩陣** | 改為回傳零矩陣（與 `Grassmann::inv`、`gmat_even_det` 之中性元素慣例一致），並以 `R7` 鎖定 |
+| `BUG-19` | `ncg_supermatrix.mbt` | `gmat_even_inv` 有與 `BUG-18` 相同之奇異主元語意缺口 | 同上，並以 `R8` 鎖定 |
+| `BUG-20` | `synergetic.mbt`、`bundle.mbt` | 殘差比較若採正向形式 `residual > eps`，`NaN` 殘差會**靜默通過** | 全數改為 `!(residual <= eps)` 形式，並以 `R11`（含 `cocycle_condition`、`patch_sections`、`emergent_commutator_trace`、`functor_laws_synergetic`、`approx` 五種路徑）鎖定 |
+
+### 9.2 重複實作之消除
+
+| 重複內容 | 位置 | 消除方式 |
+| :--- | :--- | :--- |
+| 隔離映射閉包（`Nv/Nv, Fv/Bv, Tv/Bv, Bv/Bv`） | `emergence.mbt`、`super_emergence_test.mbt` | 改用 `para_universe.mbt` 之公開 `epistemic_quarantine_map` |
+| 矩陣建構子 `from_fn` 之列優先填裝迴圈 | `algebra.mbt`（`DenseMat`）、`semitropical_projective.mbt`（`TropMatrix`） | 抽出共用 `dense_from_fn_body`；兩者元素型別與預設值語意均保持不變 |
+| Schur 補運算 | `ncg_supermatrix.mbt` | 收斂為單一 `gmat_schur_complement`（`schur_bosonic`／`berezinian`／`inverse` 共用） |
+| ICIS 三變數耦合曲線 germ fixture | `emergence.mbt`（定理 XII 與第四層微函數認證各一份） | 抽出 `icis_coupled_curve_germ()` 與 `jet_basis_3d()` |
+
+### 9.3 實作負債之降低
+
+| 項目 | 精修前 | 精修後 |
+| :--- | :--- | :--- |
+| `emergence.mbt` 定理認證 | 單一 `verify_all_theorems`（623 行） | 依定理拆分為 VIII–XIV 各自獨立認證函式 + Layer 4 之 XV–XVIII + 彙整器 |
+| `cmd/main/main.mbt` | 單一 `main`（317 行） | 拆分為 `report_part_1` … `report_part_8`，共用單次 SGNE 模擬 |
+| 跨檔 8 行以上重複區塊 | 1 處（矩陣建構子） | **0 處** |
+| 公開但無任何引用之宣告 | — | **0 處**（含外部測試與 CLI 之引用） |
+
+### 9.4 死碼移除
+
+| 移除項目 | 理由 |
+| :--- | :--- |
+| `SuperManifold::flat_osp_metric` | 零引用，回傳未被消費之 `DenseMat` |
+| `MeromorphicGerm::from_laurent` | 零引用，與 `from_real` 之 Laurent 係數路徑重疊 |
+
+### 9.5 新增回歸測試
+
+| 編號 | 內容 |
+| :--- | :--- |
+| `R7` | 奇異矩陣之逆必須為零矩陣（且全為有限值），可逆矩陣仍精確滿足 $AA^{-1}=I$ |
+| `R8` | 奇異偶 Grassmann 矩陣之逆必須為零矩陣，且 `gmat_even_det` 同步回報奇異 |
+| `R9` | 零體／純靈魂元素之 `inv`／`ln`／`sqrt` 必須回傳零元素而非 `Inf`/`NaN` |
+| `R10` | 零向量之四元數 Rayleigh 商與虛部殘差必須為 `0.0` 而非 `NaN` |
+| `R11` | 五條 NaN 路徑之驗證謂詞必須全部「失敗」而非「靜默通過」 |
+
+> `R7`／`R8`／`R11` 之判別力已以「反向還原缺陷」實測確認：還原後對應測試立即失敗，
+> 還原修復後 58/58 全數通過。
 
 ---
 
 ## 八、後續維護建議
 
 1. **橋接層單一職責守恆**：任何新的跨域耦合必須先進 `unified_bridges.mbt` 並附定理證據鏈，不得下沉至 Tier 0。
-2. **回歸測試常駐**：`math_structures_test.mbt` 之 6 項缺陷回歸測試必須永久保留，任何重構若使其失敗即為回歸。
-3. **定理數目單一來源**：`verify_all_theorems()` 之長度即權威；CI 與文件表格須以之為準。
-4. **合併前先審計**：任何未來之雙親合併，應先於合併分支執行跨倉庫缺陷審計，以避免缺陷被 elevate 為「已驗證」。
+2. **回歸測試常駐**：`math_structures_test.mbt` 之 11 項缺陷回歸測試（`R1`–`R11`）必須永久保留，任何重構若使其失敗即為回歸。
+3. **定理數目單一來源**：`verify_all_theorems()` 之長度即權威；CI 與文件表格須以之為準。各定理之認證函式（VIII–XVIII）可獨立呼叫，但報告順序不得改變。
+4. **奇異主元契約一致**：所有求逆／求逆元函式（`DenseMat::inv`、`gmat_even_inv`、`Grassmann::inv`、`Complex::div`）一律回傳中性元素（零），不得回傳半消元或 `Inf`/`NaN` 結果。
+5. **合併前先審計**：任何未來之雙親合併，應先於合併分支執行跨倉庫缺陷審計，以避免缺陷被 elevate 為「已驗證」。

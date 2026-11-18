@@ -1279,14 +1279,9 @@ test "Layer 4 (Theorems XV-XVIII): unified bridge theorems — Schur-Metriplecti
   assert_true(no_expl)
   assert_true(fused[0] == @super_emergence.Bv)
   assert_true(fused[2] == @super_emergence.Fv)
-  let lfp = @super_emergence.epistemic_least_fixed_point(v => {
-    match v {
-      @super_emergence.Nv => @super_emergence.Nv
-      @super_emergence.Fv => @super_emergence.Bv
-      @super_emergence.Tv => @super_emergence.Bv
-      @super_emergence.Bv => @super_emergence.Bv
-    }
-  })
+  let lfp = @super_emergence.epistemic_least_fixed_point(
+    @super_emergence.epistemic_quarantine_map,
+  )
   assert_true(lfp == @super_emergence.Nv)
 
   // --- THEOREM XVII: Cech super-operator bundle & quaternionic Connes bridge ---

@@ -314,11 +314,12 @@ pub fn double_well_barrier_escape(
 }
 
 ///|
-/// Canonical single-well / double-well metriplectic instance built from the Schur-Berezin
-/// renormalized mass of a genuine `SuperMassTensor` (algorithm04) fused with the double-well
-/// landscape (algo8). This is the concrete MERGE-ONLY object of Theorem XV.
-pub fn schur_metriplectic_instance() -> SuperHamiltonian {
-  // Bare bosonic mass M = [[2.4, 0.3], [0.3, 1.8]] (SPD)
+/// Canonical Schur-Berezin fixture shared by every Theorem XV certificate:
+/// bare bosonic mass M = [[2.4, 0.3], [0.3, 1.8]] (SPD), an odd Yukawa coupling
+/// Xi (2 x 2) over Lambda_4 and symplectic stiffness Omega = 1.2 * J_2.
+/// Single source of truth for the fixture used by the metriplectic instance,
+/// the soul-mass certificate and the effective-mass identity.
+fn schur_fixture_tensor() -> SuperMassTensor {
   let m = DenseMat::from_fn(2, 2, (i, j) => {
     if i == j {
       if i == 0 {
@@ -330,14 +331,21 @@ pub fn schur_metriplectic_instance() -> SuperHamiltonian {
       0.3
     }
   })
-  // Odd Yukawa coupling Xi (2 x 2) and symplectic stiffness Omega = kappa * J_2
   let xi_odd = [
     Grassmann::generator(4, 0, coeff=0.45),
     Grassmann::generator(4, 1, coeff=-0.30),
     Grassmann::generator(4, 2, coeff=0.25),
     Grassmann::generator(4, 3, coeff=0.35),
   ]
-  let sm = SuperMassTensor::from_real_and_yukawa(m, xi_odd, 1.2, 2, 4)
+  SuperMassTensor::from_real_and_yukawa(m, xi_odd, 1.2, 2, 4)
+}
+
+///|
+/// Canonical single-well / double-well metriplectic instance built from the Schur-Berezin
+/// renormalized mass of a genuine `SuperMassTensor` (algorithm04) fused with the double-well
+/// landscape (algo8). This is the concrete MERGE-ONLY object of Theorem XV.
+pub fn schur_metriplectic_instance() -> SuperHamiltonian {
+  let sm = schur_fixture_tensor()
   let (_, _, m_eff) = sm.schur_canonical_form()
   let meff = DenseMat::from_fn(2, 2, (i, j) => m_eff[i * 2 + j].body())
   { m_eff: meff, kappa: [0.5, 0.5], gamma: 0.35, }
@@ -352,39 +360,15 @@ pub fn schur_metriplectic_instance() -> SuperHamiltonian {
 /// super-inertia to the bosonic mass without changing its classical (body) value.
 /// Returns (soul Frobenius norm of Delta M, body trace of Delta M).
 pub fn schur_soul_mass_shift() -> (Double, Double) {
-  let m = DenseMat::from_fn(2, 2, (i, j) => {
-    if i == j {
-      if i == 0 {
-        2.4
-      } else {
-        1.8
-      }
-    } else {
-      0.3
-    }
-  })
-  let xi_odd = [
-    Grassmann::generator(4, 0, coeff=0.45),
-    Grassmann::generator(4, 1, coeff=-0.30),
-    Grassmann::generator(4, 2, coeff=0.25),
-    Grassmann::generator(4, 3, coeff=0.35),
-  ]
-  let sm = SuperMassTensor::from_real_and_yukawa(m, xi_odd, 1.2, 2, 4)
-  let (a_blk, xi, _, om) = sm.mat.blocks()
-  let g = DEFAULT_GRASSMANN_GEN
+  let sm = schur_fixture_tensor()
+  let (a_blk, _, _, _) = sm.mat.blocks()
+  let (_, _, m_eff) = sm.schur_canonical_form()
   let mb : Int32 = 2
-  let nf : Int32 = 2
-  let om_inv = gmat_even_inv(om, nf, g)
-  let xi_t = Array::makei(nf * mb, idx => {
-    let alpha = idx / mb
-    let i = idx % mb
-    xi[i * nf + alpha]
-  })
-  let bdc = gmat_mul(gmat_mul(xi, mb, nf, om_inv, nf, g), mb, nf, xi_t, mb, g)
+  // Delta M = M_eff - M is the literal Schur-Berezin renormalization shift.
   let mut soul = 0.0
   let mut body_trace = 0.0
   for i in 0..<(mb * mb) {
-    let delta = bdc[i] - a_blk[i] + a_blk[i]
+    let delta = m_eff[i] - a_blk[i]
     soul = soul + delta.soul().l2_norm()
     body_trace = body_trace + delta.body()
   }
@@ -396,24 +380,7 @@ pub fn schur_soul_mass_shift() -> (Double, Double) {
 ///   || M_eff - (M + Xi Omega^{-1} Xi^T) ||  in the Grassmann algebra Lambda_4^even,
 /// where M_eff is the effective bosonic mass returned by `schur_canonical_form`.
 pub fn schur_effective_mass_identity() -> Double {
-  let m = DenseMat::from_fn(2, 2, (i, j) => {
-    if i == j {
-      if i == 0 {
-        2.4
-      } else {
-        1.8
-      }
-    } else {
-      0.3
-    }
-  })
-  let xi_odd = [
-    Grassmann::generator(4, 0, coeff=0.45),
-    Grassmann::generator(4, 1, coeff=-0.30),
-    Grassmann::generator(4, 2, coeff=0.25),
-    Grassmann::generator(4, 3, coeff=0.35),
-  ]
-  let sm = SuperMassTensor::from_real_and_yukawa(m, xi_odd, 1.2, 2, 4)
+  let sm = schur_fixture_tensor()
   let (_, _, m_eff) = sm.schur_canonical_form()
   let (a_blk, xi, _, om) = sm.mat.blocks()
   let g = DEFAULT_GRASSMANN_GEN

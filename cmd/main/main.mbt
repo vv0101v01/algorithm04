@@ -77,6 +77,27 @@ fn main {
     "================================================================================",
   )
   println("")
+  // One shared SGNE-Flow run feeds every downstream report section.
+  let (snaps, final_agents) = @se.run_sgne_emergence_simulation(
+    n_agents=8,
+    n_steps=24,
+    dt=0.18,
+  )
+  let c_end = snaps[snaps.length() - 1].curvature_c
+
+  report_part_1()
+  report_part_2()
+  report_part_3(snaps)
+  report_part_4(final_agents, c_end)
+  report_part_5(final_agents)
+  report_part_6()
+  report_part_7(final_agents, c_end)
+  report_part_8()
+}
+
+///|
+/// Report section 1 of the unified emergence CLI.
+fn report_part_1() -> Unit {
   println(
     "[Part 1] Computational Verification of 18 Composite Mathematical Theorems:",
   )
@@ -105,6 +126,11 @@ fn main {
   println("")
 
   // Part 2: Natural Gradient vs Euclidean Gradient + PoPE vs RoPE quantitative check
+}
+
+///|
+/// Report section 2 of the unified emergence CLI.
+fn report_part_2() -> Unit {
   println("[Part 2] Key Algorithmic Contrasts:")
   println(
     "--------------------------------------------------------------------------------",
@@ -144,6 +170,11 @@ fn main {
   println("")
 
   // Part 3: Full SGNE-Flow Quasi-Agentic Emergence Trajectory
+}
+
+///|
+/// Report section 3 of the unified emergence CLI.
+fn report_part_3(snaps : Array[@se.EmergenceSnapshot]) -> Unit {
   println(
     "[Part 3] Master Algorithm SGNE-Flow: 8 Proto-Agents on Critical M^{4|4}_c",
   )
@@ -152,11 +183,6 @@ fn main {
   )
   println(
     "  Step | Curv c | FreeEng | SUSY_H  | WitIdx | HierSpr | OrbDiv | PolEnt | Unif | Synergy",
-  )
-  let (snaps, final_agents) = @se.run_sgne_emergence_simulation(
-    n_agents=8,
-    n_steps=24,
-    dt=0.18,
   )
   for s in snaps {
     if s.step % 4 == 0 {
@@ -168,12 +194,16 @@ fn main {
   println(
     "--------------------------------------------------------------------------------",
   )
+}
+
+///|
+/// Report section 4 of the unified emergence CLI.
+fn report_part_4(final_agents : Array[@se.ProtoAgent], c_end : Double) -> Unit {
   println("[Part 4] Emerged Specialized Quasi-Agent Roles & Super-Mass Orbits:")
   let role_labels = [
     "Coordinator (Root Anchor)", "Sensor (Perception)", "Planner (Symbolic Verifier)",
     "Executor (Boundary Actor)",
   ]
-  let c_end = snaps[snaps.length() - 1].curvature_c
   let orig = @se.PoincarePoint::origin(c_end, 4)
   for ag in final_agents {
     let probs = @se.categorical_probs(ag.policy_eta)
@@ -194,6 +224,11 @@ fn main {
   println(
     "--------------------------------------------------------------------------------",
   )
+}
+
+///|
+/// Report section 5 of the unified emergence CLI.
+fn report_part_5(final_agents : Array[@se.ProtoAgent]) -> Unit {
   println(
     "[Part 5] SGNE-Trop-Kan Universal Functor & Semitropical Projective Distillation:",
   )
@@ -223,6 +258,11 @@ fn main {
   println(
     "--------------------------------------------------------------------------------",
   )
+}
+
+///|
+/// Report section 6 of the unified emergence CLI.
+fn report_part_6() -> Unit {
   println(
     "[Part 6] SGNE-Germ-Micro Enveloping, Singularity Germ & Sato Microlocal Audit:",
   )
@@ -242,6 +282,11 @@ fn main {
   println(
     "--------------------------------------------------------------------------------",
   )
+}
+
+///|
+/// Report section 7 of the unified emergence CLI.
+fn report_part_7(final_agents : Array[@se.ProtoAgent], c_end : Double) -> Unit {
   println(
     "[Part 7] SGNE-Syn-Mem-Para (Layer 4): Schur-Metriplectic + Role-Gated Memory + B4 Fusion",
   )
@@ -285,6 +330,11 @@ fn main {
   println(
     "--------------------------------------------------------------------------------",
   )
+}
+
+///|
+/// Report section 8 of the unified emergence CLI.
+fn report_part_8() -> Unit {
   println("[Part 8] Merged Mathematical-Structure Demos (algo8 lineage):")
   println(
     "--------------------------------------------------------------------------------",

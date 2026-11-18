@@ -165,15 +165,24 @@ fn hermitian2_quad_form(h : Hermitian2, v : Array[Quat]) -> (Quat, Double) {
 
 ///|
 /// Real part of quaternionic Rayleigh quotient <v, H v> / ||v||^2 in [lambda_-, lambda_+].
+/// DOMAIN: v != 0. For the zero vector the quotient is undefined and 0.0 is returned
+/// instead of letting 0/0 = NaN propagate into a comparison.
 pub fn rayleigh_real(h : Hermitian2, v : Array[Quat]) -> Double {
   let (ip, nrm) = hermitian2_quad_form(h, v)
+  if nrm <= 0.0 {
+    return 0.0
+  }
   ip.w / nrm
 }
 
 ///|
 /// Imaginary residual ||Im(<v, H v>)|| / ||v||^2 (identically 0 for self-adjoint H = H^*).
+/// DOMAIN: v != 0 (zero vector yields 0.0 rather than NaN).
 pub fn rayleigh_imag_residual(h : Hermitian2, v : Array[Quat]) -> Double {
   let (ip, nrm) = hermitian2_quad_form(h, v)
+  if nrm <= 0.0 {
+    return 0.0
+  }
   (ip.x * ip.x + ip.y * ip.y + ip.z * ip.z).sqrt() / nrm
 }
 

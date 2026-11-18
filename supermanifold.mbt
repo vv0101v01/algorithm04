@@ -230,12 +230,6 @@ pub fn symplectic_odd_inner(
 }
 
 ///|
-/// Flat orthosymplectic metric G_0 = diag(I_m, J_{2k}) of signature (m | 2k).
-pub fn SuperManifold::flat_osp_metric(self : SuperManifold) -> DenseMat {
-  flat_osp_metric_mat(self.m_bos, self.n_ferm)
-}
-
-///|
 /// Lambda_N-valued point z = (x^1, ..., x^m | xi^1, ..., xi^{2k}) on M^{m|2k}_c.
 /// `bos` holds m even Grassmann supernumbers with c * sum body(x^i)^2 < 1;
 /// `ferm` holds 2k odd Grassmann supernumbers.

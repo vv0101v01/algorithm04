@@ -730,12 +730,7 @@ test "M8.2 Paraconsistency: B /\\ ~B stays designated and explosion has a counte
 test "M8.3 Knaster-Tarski: every <=_i-monotone belief operator has a least fixed point" {
   assert_true(@super_emergence.all_monotone_maps_have_fixed_point())
   let lfp = @super_emergence.tarski_least_fixed_point(v => {
-    match v {
-      @super_emergence.Nv => @super_emergence.Nv
-      @super_emergence.Fv => @super_emergence.Bv
-      @super_emergence.Tv => @super_emergence.Bv
-      @super_emergence.Bv => @super_emergence.Bv
-    }
+    @super_emergence.epistemic_quarantine_map(v)
   })
   assert_true(lfp == @super_emergence.Nv)
 }
@@ -901,4 +896,149 @@ test "R6 Belnap values and quaternions must be compared STRUCTURALLY, not via st
   let q1 = @super_emergence.Quat::new(0.5, 0.25, -0.1, 0.3)
   let q2 = @super_emergence.Quat::new(0.5, 0.25, -0.1, 0.3)
   assert_true(q1 == q2)
+}
+
+///|
+test "R7 singular matrix inverse must return the zero matrix, never a bogus partial inverse" {
+  // Regression: the Gauss-Jordan inverse used to `continue` past a degenerate pivot,
+  // silently returning a matrix that did NOT satisfy A * A^{-1} == I.
+  // SINGULAR-PIVOT CONTRACT: a degenerate pivot means no inverse exists, so the zero
+  // matrix is returned (same neutral-element convention as Grassmann::inv).
+  let sing = @super_emergence.DenseMat::zeros(3, 3)
+  sing.set(0, 0, 2.0)
+  sing.set(1, 1, 4.0)
+  assert_true(@super_emergence.DenseMat::det(sing).abs() < 1.0e-15)
+  let inv_s = sing.inv()
+  // Zero matrix, finite, and clearly distinguishable from a plausible-looking inverse.
+  assert_true(inv_s.frob_norm() == 0.0)
+  for v in inv_s.data {
+    assert_true(v.is_finite())
+  }
+  // An invertible matrix still inverts exactly.
+  let ok = @super_emergence.DenseMat::from_fn(2, 2, (i, j) => {
+    if i == j {
+      4.0
+    } else {
+      1.0
+    }
+  })
+  let inv_ok = ok.inv()
+  assert_true(
+    (ok * inv_ok - @super_emergence.DenseMat::eye(2)).frob_norm() < 1.0e-12,
+  )
+}
+
+///|
+test "R8 singular even Grassmann matrix inverse must return the zero matrix" {
+  // The same singular-pivot contract must hold over the commutative even subalgebra
+  // Lambda_{N, even}: gmat_even_det already reported singularity as zero, so
+  // gmat_even_inv must not hand back a partially eliminated "inverse".
+  let g = 4
+  let n = 2
+  let one = @super_emergence.Grassmann::scalar(g, 1.0)
+  let sing = [one, one, one, one]
+  assert_true(@super_emergence.gmat_even_det(sing, n, g).l2_norm() == 0.0)
+  let inv_s = @super_emergence.gmat_even_inv(sing, n, g)
+  assert_true(inv_s.length() == n * n)
+  for v in inv_s {
+    assert_true(v.l2_norm() == 0.0)
+    assert_true(v.l2_norm().is_finite())
+  }
+  // An invertible even matrix still inverts exactly: A * A^{-1} == I.
+  let ok = [
+    @super_emergence.Grassmann::scalar(g, 2.0),
+    @super_emergence.Grassmann::scalar(g, 1.0),
+    @super_emergence.Grassmann::scalar(g, 0.0),
+    @super_emergence.Grassmann::scalar(g, 3.0),
+  ]
+  let inv_ok = @super_emergence.gmat_even_inv(ok, n, g)
+  let prod = @super_emergence.gmat_mul(ok, n, n, inv_ok, n, g)
+  let eye = @super_emergence.gmat_eye(n, g)
+  for i in 0..<(n * n) {
+    assert_true((prod[i] - eye[i]).l2_norm() < 1.0e-14)
+  }
+}
+
+///|
+test "R9 zero-body Grassmann inverse, logarithm and square root must stay finite" {
+  // Zero-divisor / out-of-domain guards: these must return the zero element rather
+  // than letting 1/0 = Inf, ln(0) = -Inf or sqrt(b < 0) propagate as NaN.
+  let z = @super_emergence.Grassmann::zero(4)
+  assert_true(z.inv().l2_norm() == 0.0)
+  assert_true(z.ln().l2_norm() == 0.0)
+  assert_true(z.sqrt().l2_norm() == 0.0)
+  // A pure soul element (zero body) has no multiplicative inverse either.
+  let psi = @super_emergence.Grassmann::generator(4, 0)
+  assert_true(psi.inv().l2_norm() == 0.0)
+  assert_true(psi.ln().l2_norm() == 0.0)
+  assert_true(psi.sqrt().l2_norm() == 0.0)
+  // Negative body is outside the square-root domain -> zero element, still finite.
+  let neg = @super_emergence.Grassmann::scalar(4, -4.0)
+  assert_true(neg.sqrt().l2_norm() == 0.0)
+  assert_true(neg.sqrt().l2_norm().is_finite())
+}
+
+///|
+test "R10 quaternion Rayleigh quotient at the zero vector must not produce NaN" {
+  // 0/0 in the Rayleigh quotient is undefined; the guarded implementation returns 0.0.
+  let h : @super_emergence.Hermitian2 = {
+    a: 2.0,
+    b: 3.0,
+    q: @super_emergence.Quat::new(0.0, 0.0, 0.0, 1.0),
+  }
+  let zero_v = [@super_emergence.Quat::zero(), @super_emergence.Quat::zero()]
+  let r = @super_emergence.rayleigh_real(h, zero_v)
+  assert_true(r.is_finite())
+  assert_true(r == 0.0)
+  let ri = @super_emergence.rayleigh_imag_residual(h, zero_v)
+  assert_true(ri.is_finite())
+  assert_true(ri == 0.0)
+}
+
+///|
+test "R11 NaN defects must FAIL every verification predicate, never silently pass" {
+  // `NaN > eps` is false in IEEE-754, so a positive-form guard (`if residual > eps`)
+  // would let a NaN defect through unnoticed. Every predicate that compares a
+  // residual must therefore use the NaN-safe form (`!(residual <= eps)`).
+  let inf_v = 1.0 / 0.0
+  let nan_v = inf_v - inf_v
+  assert_true(nan_v.is_nan())
+
+  // (a) Cocycle condition: the defect `gab * gbc - gac` is NaN (Inf - Inf).
+  let gab = [inf_v, 0.0, 0.0, 1.0]
+  let gbc = [1.0, 0.0, 0.0, 1.0]
+  let gac = [inf_v, 0.0, 0.0, 1.0]
+  assert_true(!@super_emergence.cocycle_condition(gab, gbc, gac, 1.0e-12))
+
+  // (b) Section patching / commutator trace: the frame determinant is NaN.
+  let nan_frame = [inf_v, 0.0, 0.0, 0.0]
+  assert_true(
+    !@super_emergence.patch_sections(
+      [1.0, 0.5, 0.0, 2.0],
+      [1.0, 0.5, 0.0, 2.0],
+      nan_frame,
+      1.0e-12,
+    ),
+  )
+  assert_true(
+    !@super_emergence.emergent_commutator_trace(
+      [1.0, 2.0, 0.0, -1.0],
+      [0.0, 1.0, 1.0, 0.0],
+      nan_frame,
+      1.0e-10,
+    ),
+  )
+
+  // (c) Functor law: a NaN-encoded layer must NOT satisfy the functoriality law.
+  let nan_layer : @super_emergence.Layer = { w: [[(-1.0).sqrt()]], b: [0.0], }
+  let net : @super_emergence.SynergeticNet = { encoder: nan_layer, n_order: 1, }
+  assert_true(
+    !@super_emergence.functor_laws_synergetic(net, [1.0], [1.0], [2.0]),
+  )
+
+  // (d) The NaN-safe proximity helper must reject NaN on both sides.
+  let approx_a = @super_emergence.approx(0.0, 0.0, 1.0e-12)
+  assert_true(approx_a)
+  let approx_b = @super_emergence.approx(nan_v, 0.0, 1.0e-12)
+  assert_true(!approx_b)
 }

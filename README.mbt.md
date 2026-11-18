@@ -1,6 +1,6 @@
 # `arena/super_emergence` — 統一數理類智能體湧現框架：超幾何・泛性質・半熱帶射影・奇點胚・微局部分析・辛相調・算子叢・副相容邏輯 (MoonBit v0.10.21)
 
-[![MoonBit CI](https://github.com/vv0101v01/super_emergence/actions/workflows/ci.yml/badge.svg)](https://github.com/vv0101v01/super_emergence/actions/workflows/ci.yml)
+[![MoonBit CI](https://github.com/vv0101v01/algorithm04/actions/workflows/ci.yml/badge.svg)](https://github.com/vv0101v01/algorithm04/actions/workflows/ci.yml)
 
 以最新穩定版 **MoonBit**（`moonc v0.10.21` / `moon 0.1.20261117`）之嚴格型別系統、多型代數 Trait 與顯式 `pub extend` 方法擴充機制，將 **`algorithm04`（十八大現代數學結構 + 14 條定理）** 與 **`algo8`（八大數學結構 + 31 條定理）** 融合為單一零外部依賴、零編譯警告（`--deny-warn`）、零死碼且跨三後端（`wasm-gc` / `wasm` / `js`）機器精度驗證之 **26 大數學結構 + 18 條複合定理 + 31 條基礎定理** 計算框架，並驅動 **四層類智能體湧現引擎 `SGNE-Flow` + `SGNE-Trop-Kan` + `SGNE-Germ-Micro` + `SGNE-Syn-Mem-Para`**。
 

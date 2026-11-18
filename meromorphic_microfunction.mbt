@@ -69,15 +69,6 @@ pub fn MeromorphicGerm::zero(prec~ : Int32 = 12) -> MeromorphicGerm {
 }
 
 ///|
-pub fn MeromorphicGerm::from_laurent(
-  order : Int32,
-  coeffs : Array[Complex],
-  prec~ : Int32 = 12,
-) -> MeromorphicGerm {
-  mero_normalize(order, prec, coeffs)
-}
-
-///|
 /// Construct a real-coefficient Laurent germ sum_j c_j z^{order + j}.
 pub fn MeromorphicGerm::from_real(
   order : Int32,

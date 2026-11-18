@@ -33,4 +33,4 @@ keywords = [
 
 preferred_target = "wasm-gc"
 
-description = "Unified mathematical-logical-algorithmic emergence framework (algorithm04 + algo8) in MoonBit: 24 mathematical structures, 18 composite + 31 foundational machine-verified theorems, and a four-layer quasi-agentic emergence engine."
+description = "Unified mathematical-logical-algorithmic emergence framework (algorithm04 + algo8) in MoonBit: 26 mathematical structures, 18 composite + 31 foundational machine-verified theorems, and a four-layer quasi-agentic emergence engine."

@@ -159,6 +159,23 @@ pub fn four_le(x : FourVal, y : FourVal) -> Bool {
 }
 
 ///|
+/// The canonical monotone "quarantine" belief operator on B_4:
+///   Nv |-> Nv  (no information stays no information)
+///   Fv |-> Bv  (a false belief is quarantined as a contradiction)
+///   Tv |-> Bv  (a true belief is quarantined as a contradiction)
+///   Bv |-> Bv  (an existing contradiction stays quarantined)
+/// It is <=_i-monotone with least fixed point Nv, and it is THE reference operator
+/// for the paraconsistent quarantine semantics of Theorems XVI and XVIII.
+pub fn epistemic_quarantine_map(v : FourVal) -> FourVal {
+  match v {
+    Nv => Nv
+    Fv => Bv
+    Tv => Bv
+    Bv => Bv
+  }
+}
+
+///|
 /// Constructive Knaster-Tarski least fixed point lfp_{<=_i}(f) = |_|_{k>=0} f^k(Nv)
 /// for any <=_i-monotone belief operator f : B_4 -> B_4 (stabilizes in <= 2 steps since height(B_4) = 2).
 pub fn tarski_least_fixed_point(f : (FourVal) -> FourVal) -> FourVal {

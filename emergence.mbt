@@ -525,6 +525,40 @@ pub fn run_sgne_emergence_simulation(
 }
 
 ///|
+/// The canonical 2-variable jet basis (degrees up to 4) shared by the Theorem XII
+/// germ certificates and the Theorem XIII Weierstrass-preparation certificate.
+fn jet_basis_2d() -> JetBasis {
+  JetBasis::new(2, 5)
+}
+
+///|
+/// The canonical 3-variable jet basis (degrees up to 4) shared by the Theorem XII
+/// complete-intersection certificate and the Layer-4 micro-function certificate.
+fn jet_basis_3d() -> JetBasis {
+  JetBasis::new(3, 4)
+}
+
+///|
+/// The canonical coupled ICIS curve germ V(x^2+y^2+z^2, x^2+2y^2+3z^2) in three
+/// variables (mu = tau = 5, H_1 = 0), shared by the Theorem XII complete-intersection
+/// certificate and the Layer-4 micro-function / SKK certificate.
+fn icis_coupled_curve_germ() -> MapGerm {
+  let jb3 = jet_basis_3d()
+  MapGerm::new([
+    PolyGerm::from_terms(jb3, [
+      ([2, 0, 0], 1.0),
+      ([0, 2, 0], 1.0),
+      ([0, 0, 2], 1.0),
+    ]),
+    PolyGerm::from_terms(jb3, [
+      ([2, 0, 0], 1.0),
+      ([0, 2, 0], 2.0),
+      ([0, 0, 2], 3.0),
+    ]),
+  ])
+}
+
+///|
 /// Layer-1 computational verifier: Theorems I-VII (returns shared SGNE colony to avoid duplicate run).
 fn verify_layer1_super_theorems() -> (
   Array[TheoremReport],
@@ -1041,7 +1075,7 @@ pub fn distill_tropical_kan_macro_agent(
 }
 
 ///|
-/// Unified Automated Theorem Prover / Verifier covering ALL 14 derived theorems:
+/// Unified Automated Theorem Prover / Verifier covering ALL 18 composite theorems:
 ///   - Layer 1 (Theorems I-VII)  : Super-Geometry, PoPE, Super-Jacobi/SUSY, Super-Mass Orbits,
 ///                                 Fisher-Poincare, Connes NCG & Graded MGU, WFR-Witten SGNE-Flow;
 ///   - Layer 2 (Theorems VIII-X) : Universal Property Functors, Semitropical Projective TP^{n-1},
@@ -1049,10 +1083,39 @@ pub fn distill_tropical_kan_macro_agent(
 ///   - Layer 3 (Theorems XI-XIV) : Super-PBW Universal Enveloping Hopf Algebra, Mather Contact
 ///                                 Equivalence & Universal Unfolding & ICIS & Quotient Germs,
 ///                                 Serre R_1+S_2 Normal Ring Germs & Meromorphic Weierstrass/Residues,
-///                                 and Sato Microfunction Germs & SKK Elliptic Parametrix!
+///                                 and Sato Microfunction Germs & SKK Elliptic Parametrix;
+///   - Layer 4 (Theorems XV-XVIII): Schur-Mass Metriplectic Flow, Belnap-Grassmann-Poincare
+///                                 Paraconsistent Unification, Cech SuperOperatorBundle Holonomy &
+///                                 Quaternionic Kramers-Connes K_0 Bridge, and SGNE-Syn-Mem-Para.
+/// Each theorem below is certified by its own independent function so that it can be
+/// audited, called and tested in isolation.
 pub fn verify_all_theorems() -> Array[TheoremReport] {
   let (reports, init_col, end_col) = verify_layer1_super_theorems()
 
+  // --- THEOREMS VIII-XIV: one independent certificate function each ---
+  reports.push(verify_theorem_viii())
+  reports.push(verify_theorem_ix())
+  reports.push(verify_theorem_x(init_col, end_col))
+  reports.push(verify_theorem_xi())
+  reports.push(verify_theorem_xii())
+  reports.push(verify_theorem_xiii())
+  reports.push(verify_theorem_xiv())
+
+  // --- Layer 4: UNIFIED BRIDGE THEOREMS (XV-XVIII), the six MERGE-ONLY dividends ---
+  let c_last = end_col[0].belief.c
+  for r in verify_layer4_bridge_theorems(end_col, c_last) {
+    reports.push(r)
+  }
+
+  reports
+}
+
+///|
+/// Machine-precision certificate for Theorem VIII.
+/// Split out of the former monolithic `verify_all_theorems` so that every
+/// theorem is independently auditable, independently callable and
+/// independently testable.
+fn verify_theorem_viii() -> TheoremReport {
   // --- THEOREM VIII: Universal Property Functors (Yoneda, Exterior Lift, MGU Coequalizer & Kan) ---
   // (a) Yoneda round-trip & Coyoneda O(1) fusion law
   let seed = [1.0, -2.0, 3.5, 0.5]
@@ -1163,15 +1226,22 @@ pub fn verify_all_theorems() -> Array[TheoremReport] {
     }
   }
   let res_t8 = yoneda_err.max(ext_hom_err).max(kan_law_err).max(adj_viol)
-  reports.push({
+  return {
     id: "Theorem VIII",
     title: "Universal Property Functors: Yoneda, Exterior Lift, MGU Coequalizer & Tropical Kan",
     passed: res_t8 < 1.0e-13 && coeq_ok && maslov_kan_ok,
     max_residual: res_t8,
     key_invariant: lan[0],
     summary: "Phi(xy)==Phi(x)Phi(y) exact; MGU unique h factors theta==h.mgu; Lan_K -| K^* -| Ran_K exact.",
-  })
+  }
+}
 
+///|
+/// Machine-precision certificate for Theorem IX.
+/// Split out of the former monolithic `verify_all_theorems` so that every
+/// theorem is independently auditable, independently callable and
+/// independently testable.
+fn verify_theorem_ix() -> TheoremReport {
   // --- THEOREM IX: Semitropical Projective Galois Projection & Karp-Maslov Spectral Theorem ---
   let v0 = TropProjPoint::from_homogeneous([0.0, -1.5, -2.8, -0.7])
   let v1 = TropProjPoint::from_homogeneous([-2.1, 0.0, -0.9, -1.8])
@@ -1226,15 +1296,25 @@ pub fn verify_all_theorems() -> Array[TheoremReport] {
     .max(eig_vec_err)
     .max(eig_proj_err)
     .max(pope_maslov_err)
-  reports.push({
+  return {
     id: "Theorem IX",
     title: "Semitropical Projective Galois Projection & Karp-Maslov Spectral Convergence",
     passed: res_t9 < 1.0e-12 && pf_sandwich_ok,
     max_residual: res_t9,
     key_invariant: lam_t,
     summary: "Pi_V^2==Pi_V minimizes d_TH globally; [A(*)v*]==[v*] exact; lam_T <= hbar ln rho <= lam_T + hbar ln n.",
-  })
+  }
+}
 
+///|
+/// Machine-precision certificate for Theorem X.
+/// Split out of the former monolithic `verify_all_theorems` so that every
+/// theorem is independently auditable, independently callable and
+/// independently testable.
+fn verify_theorem_x(
+  init_col : Array[ProtoAgent],
+  end_col : Array[ProtoAgent],
+) -> TheoremReport {
   // --- THEOREM X: Poincare-to-Trop Gr(2, N) Sharp Gromov Bound & Ghost Phase Emergence ---
   // Verify asymptotic sharpness of 2 ln(2) / sqrt(c) on a near-ideal square in B_c^2 (c = 4.0):
   // asymptotic expansion gives S_(1) - S_(2) = (2 ln 2 - 3 eps^2) / sqrt(c) + O(eps^3),
@@ -1262,15 +1342,22 @@ pub fn verify_all_theorems() -> Array[TheoremReport] {
     macro_ag.poincare_plucker_defect < macro_ag.gromov_sharp_bound &&
     macro_ag.polytope_proj_contraction <= 1.0 + 1.0e-12
   let res_t10 = macro_ag.ultrametric_plucker_defect
-  reports.push({
+  return {
     id: "Theorem X",
     title: "Poincare-to-Trop Gr(2,N) Sharp Gromov Bound & Semitropical Ghost Phase Transition",
     passed: res_t10 < 1.0e-14 && sharp_ok && phase_ok,
     max_residual: res_t10,
     key_invariant: macro_ag.karp_cycle_eigenvalue,
     summary: "Ghost agents 8/8 -> 0/8; d_Plucker < 2 ln 2/sqrt(c) (sharp); Trop Gr(2,8) ghost defect = 0.",
-  })
+  }
+}
 
+///|
+/// Machine-precision certificate for Theorem XI.
+/// Split out of the former monolithic `verify_all_theorems` so that every
+/// theorem is independently auditable, independently callable and
+/// independently testable.
+fn verify_theorem_xi() -> TheoremReport {
   // --- THEOREM XI: Super-PBW Universal Enveloping Algebra U(osp(1|2)), Hopf & Central Casimir ---
   let osp = SuperLieTable::osp1_2()
   let pbw_ok = osp.enumerate_pbw_basis(3).length() == osp.pbw_filtration_dim(3) &&
@@ -1319,18 +1406,25 @@ pub fn verify_all_theorems() -> Array[TheoremReport] {
     .max(lift_err2)
     .max(antipode_err)
     .max(cas_err)
-  reports.push({
+  return {
     id: "Theorem XI",
     title: "Super-PBW Universal Enveloping Algebra U(osp(1|2)), Hopf Coproduct & Casimir Center",
     passed: pbw_ok && res_t11 < 1.0e-13,
     max_residual: res_t11,
     key_invariant: c2.universal_lift_rep(rep).get(0, 0),
     summary: "dim U_3(osp(1|2))=44; rho_hat(uv)=rho_hat(u)rho_hat(v); S^2=id; [C_2, X_a]_s=0 & rho(C_2)=2 I.",
-  })
+  }
+}
 
+///|
+/// Machine-precision certificate for Theorem XII.
+/// Split out of the former monolithic `verify_all_theorems` so that every
+/// theorem is independently auditable, independently callable and
+/// independently testable.
+fn verify_theorem_xii() -> TheoremReport {
   // --- THEOREM XII: Contact K-Equivalence, Universal K-Unfolding, ICIS Le-Greuel & Quotient Germs ---
   // (a) D_4 umbilic f(x, y) = x^2 y + y^3: nonlinear contact transform g = u(x,y) * f(phi(x,y))
-  let jb2 = JetBasis::new(2, 5)
+  let jb2 = jet_basis_2d()
   let x2 = PolyGerm::coord(jb2, 0)
   let y2 = PolyGerm::coord(jb2, 1)
   let d4 = MapGerm::new([
@@ -1380,19 +1474,7 @@ pub fn verify_all_theorems() -> Array[TheoremReport] {
   // (d) 1D Space-Curve ICIS V(x^2+y^2+z^2, x^2+2y^2+3z^2) (mu = tau = 5, H_1 = 0)
   //     + 0D Gorenstein ICIS V(x^3, y^2) (socle_dim = 1, Jacobian in Soc, nondeg pairing)
   //     + rejection of non-CI (x^2, x y) (H_1 > 0)!
-  let jb3 = JetBasis::new(3, 4)
-  let icis_curve = MapGerm::new([
-    PolyGerm::from_terms(jb3, [
-      ([2, 0, 0], 1.0),
-      ([0, 2, 0], 1.0),
-      ([0, 0, 2], 1.0),
-    ]),
-    PolyGerm::from_terms(jb3, [
-      ([2, 0, 0], 1.0),
-      ([0, 2, 0], 2.0),
-      ([0, 0, 2], 3.0),
-    ]),
-  ])
+  let icis_curve = icis_coupled_curve_germ()
   let ci1 = audit_complete_intersection(icis_curve, koszul_check_deg=2)
   let icis_0d = MapGerm::new([
     PolyGerm::from_terms(jb2, [([3, 0], 1.0)]),
@@ -1436,7 +1518,7 @@ pub fn verify_all_theorems() -> Array[TheoremReport] {
     Err(_) => (false, 1.0)
   }
   let res_t12 = ci1.koszul_d2_residual.max(ci0.koszul_d2_residual).max(quot_res)
-  reports.push({
+  return {
     id: "Theorem XII",
     title: "Mather Contact K-Equivalence, Universal Unfolding, ICIS Le-Greuel & Quotient Germs",
     passed: k_inv_ok &&
@@ -1449,11 +1531,20 @@ pub fn verify_all_theorems() -> Array[TheoremReport] {
     max_residual: res_t12,
     key_invariant: ci1.le_greuel_milnor.to_double(),
     summary: "tau(M.f o phi)=tau; tau=10<mu=11 non-QH; ICIS mu=tau=5 & 1D Soc; h=hbar o pi exact.",
-  })
+  }
+}
 
+///|
+/// Machine-precision certificate for Theorem XIII.
+/// Split out of the former monolithic `verify_all_theorems` so that every
+/// theorem is independently auditable, independently callable and
+/// independently testable.
+fn verify_theorem_xiii() -> TheoremReport {
   // --- THEOREM XIII: Serre R_1+S_2 Normal Ring Germs & Meromorphic Weierstrass-Residue Theorem ---
   // (a) Serre R_1 + S_2 normality: smooth line (Normal), A_2 cusp y^2-x^3 (NOT normal, codim=1),
   //     2D quadratic cone x^2+y^2-z^2 (NORMAL, codim=2!), 2D Whitney umbrella x^2-yz^2 (NOT normal, codim=1!)
+  let jb2 = jet_basis_2d()
+  let y2 = PolyGerm::coord(jb2, 1)
   let n_smooth = audit_serre_normality(MapGerm::new([y2]))
   let n_cusp = audit_serre_normality(
     MapGerm::new([PolyGerm::from_terms(jb2, [([0, 2], 1.0), ([3, 0], -1.0)])]),
@@ -1546,15 +1637,22 @@ pub fn verify_all_theorems() -> Array[TheoremReport] {
     .max(vt_err)
     .max(w_err)
     .max(ej_err)
-  reports.push({
+  return {
     id: "Theorem XIII",
     title: "Serre R_1+S_2 Normal Ring Germs, Weierstrass Preparation & Euler-Jacobi Residue",
     passed: serre_ok && w_ok && res_t13 < 1.0e-11,
     max_residual: res_t13,
     key_invariant: norm_e8.conductor.to_double(),
     summary: "Cone R_1+S_2 normal, Whitney not; c=2*delta=8; Res(m'/m)=-3; f=u*W & sum Res=1 exact.",
-  })
+  }
+}
 
+///|
+/// Machine-precision certificate for Theorem XIV.
+/// Split out of the former monolithic `verify_all_theorems` so that every
+/// theorem is independently auditable, independently callable and
+/// independently testable.
+fn verify_theorem_xiv() -> TheoremReport {
   // --- THEOREM XIV: Sato Microfunction Exact Sequence, Sokhotski-Plemelj & SKK Elliptic Parametrix ---
   // (a) Sato exact sequence 0 -> A_0 -> B_0 --sp--> C_0 -> 0: sp kills analytic germs identically!
   let holo_b = HyperfunctionGerm::from_analytic(
@@ -1676,22 +1774,14 @@ pub fn verify_all_theorems() -> Array[TheoremReport] {
     .max(kothe_err)
     .max(prod_err)
     .max(ell_err)
-  reports.push({
+  return {
     id: "Theorem XIV",
     title: "Sato Microfunction Exact Sequence, Antipodal Product & SKK Elliptic Parametrix",
     passed: prod_ok && ell_ok && res_t14 < 1.0e-11,
     max_residual: res_t14,
     key_invariant: 2.0,
     summary: "sp(A_0)=0; 1/(x+i0)=pv-i*pi*delta; d_x^{-1}delta=Y; P o P^{-1}=P^{-1} o P=1 exact.",
-  })
-
-  // --- Layer 4: UNIFIED BRIDGE THEOREMS (XV-XVIII), the six MERGE-ONLY dividends ---
-  let c_last = end_col[0].belief.c
-  for r in verify_layer4_bridge_theorems(end_col, c_last) {
-    reports.push(r)
   }
-
-  reports
 }
 
 ///|
@@ -1704,7 +1794,18 @@ fn verify_layer4_bridge_theorems(
   c_end : Double,
 ) -> Array[TheoremReport] {
   let reports : Array[TheoremReport] = []
+  reports.push(verify_theorem_xv())
+  reports.push(verify_theorem_xvi())
+  reports.push(verify_theorem_xvii())
+  reports.push(verify_theorem_xviii(end_col, c_end))
+  reports
+}
 
+///|
+/// Machine-precision certificate for Theorem XV (Layer-4 unified bridge).
+/// Split out of `verify_layer4_bridge_theorems` so that each merge-only
+/// theorem is independently auditable and independently testable.
+fn verify_theorem_xv() -> TheoremReport {
   // ===================== THEOREM XV: SCHUR-MASS METRIPLECTIC FLOW =====================
   let metri = schur_metriplectic_instance()
   let mq = [0.9, -0.8]
@@ -1736,15 +1837,21 @@ fn verify_layer4_bridge_theorems(
     esc.conservative_escapes == 0 &&
     esc.metriplectic_escapes > 0 &&
     contraction < 1.0
-  reports.push({
+  return {
     id: "Theorem XV",
     title: "Schur-Mass Metriplectic Structure-Preserving Flow (conservative + dissipative)",
     passed: t15_ok,
     max_residual: res_t15,
     key_invariant: esc.metriplectic_escapes.to_double(),
     summary: "A^T Omega + Omega A = -gamma Omega exact; conservative J^T Omega J = Omega, det J = 1; soul mass shift > 0; conservative flow trapped (0 escapes), metriplectic flow escapes.",
-  })
+  }
+}
 
+///|
+/// Machine-precision certificate for Theorem XVI (Layer-4 unified bridge).
+/// Split out of `verify_layer4_bridge_theorems` so that each merge-only
+/// theorem is independently auditable and independently testable.
+fn verify_theorem_xvi() -> TheoremReport {
   // ================= THEOREM XVI: BELNAP-GRASSMANN-POINCARE UNIFICATION =================
   let emb_a = PoincarePoint::new(1.0, [0.10, 0.0, 0.0, 0.0])
   let emb_b = PoincarePoint::new(1.0, [0.90, 0.0, 0.0, 0.0])
@@ -1782,14 +1889,7 @@ fn verify_layer4_bridge_theorems(
   let w1 = ParaUniverse::new(["p", "q", "r"], [Tv, Fv, Fv])
   let w2 = ParaUniverse::new(["p", "q", "r"], [Fv, Tv, Fv])
   let (no_expl, fused) = paraconsistent_no_explosion([w1, w2])
-  let lfp = epistemic_least_fixed_point(v => {
-    match v {
-      Nv => Nv
-      Fv => Bv
-      Tv => Bv
-      Bv => Bv
-    }
-  })
+  let lfp = epistemic_least_fixed_point(epistemic_quarantine_map)
   let t16_ok = pauli_rep.value == Bv &&
     pauli_rep.quarantined &&
     pauli_rep.pauli_excluded &&
@@ -1804,7 +1904,7 @@ fn verify_layer4_bridge_theorems(
   let res_t16 = (pauli_rep.coherence - 1.0)
     .abs()
     .max((coherent_rep.coherence - 1.0).abs())
-  reports.push({
+  return {
     id: "Theorem XVI",
     title: "Belnap-Grassmann-Poincare Paraconsistent Unification (quarantine without explosion)",
     passed: t16_ok,
@@ -1815,8 +1915,14 @@ fn verify_layer4_bridge_theorems(
       0.0
     },
     summary: "Pauli-Grassmann exclusion and structural clash quarantined as Bv (never exploded); coherent unification yields Tv; multi-world fusion keeps orthogonal propositions undesignated; Knaster-Tarski lfp exists.",
-  })
+  }
+}
 
+///|
+/// Machine-precision certificate for Theorem XVII (Layer-4 unified bridge).
+/// Split out of `verify_layer4_bridge_theorems` so that each merge-only
+/// theorem is independently auditable and independently testable.
+fn verify_theorem_xvii() -> TheoremReport {
   // ============ THEOREM XVII: CECH SUPEROPERATOR BUNDLE & QUATERNIONIC CONNES ============
   let bundle = build_canonical_super_bundle()
   let cocycle_defect = bundle.cocycle_defect()
@@ -1871,15 +1977,24 @@ fn verify_layer4_bridge_theorems(
     k0_idx >= 2 &&
     k0_idx <= 4 &&
     k0_err < 1.0e-9
-  reports.push({
+  return {
     id: "Theorem XVII",
     title: "Cech SuperOperatorBundle Holonomy & Quaternionic Kramers-Connes K_0 Bridge",
     passed: t17_ok,
     max_residual: res_t17,
     key_invariant: mult_profile.length().to_double(),
     summary: "g_ab g_bc = g_ac exact; holonomy = id; str/Ber gauge invariant; real 4n embedding has Kramers 4-fold degeneracy; Connes distance is a metric; K_0 index = \{k0_idx} in Z.",
-  })
+  }
+}
 
+///|
+/// Machine-precision certificate for Theorem XVIII (Layer-4 unified bridge).
+/// Split out of `verify_layer4_bridge_theorems` so that each merge-only
+/// theorem is independently auditable and independently testable.
+fn verify_theorem_xviii(
+  end_col : Array[ProtoAgent],
+  c_end : Double,
+) -> TheoremReport {
   // ================= THEOREM XVIII: SGNE-Syn-Mem-Para (LAYER 4 ALGORITHM) =================
   let smp = distill_synergetic_memory_para_agent(end_col, c_end)
   let t18_ok = smp.semigroup_closure_error < 1.0e-9 &&
@@ -1892,16 +2007,14 @@ fn verify_layer4_bridge_theorems(
     smp.role_absorption_times[1] > smp.role_absorption_times[2] &&
     smp.role_absorption_times[2] > smp.role_absorption_times[3]
   let res_t18 = smp.semigroup_closure_error.max(smp.slaving_collapse_error)
-  reports.push({
+  return {
     id: "Theorem XVIII",
     title: "SGNE-Syn-Mem-Para: Role-Gated Memory, Haken-Supertropical Duality & Finite Bicompleteness",
     passed: t18_ok,
     max_residual: res_t18,
     key_invariant: smp.role_absorption_times[0],
     summary: "Role absorption times strictly ordered by retention; O(log t) closed form == iteration; WTA Tangible/Ghost duality exact; slaving collapse; limits+colimits+Cantor Godel injective; B_4 fusion without explosion.",
-  })
-
-  reports
+  }
 }
 
 ///|
@@ -1986,21 +2099,7 @@ pub fn distill_germ_microlocal_phase() -> GermMicrolocalReport {
   let eq_cls = classify_contact_equiv_class(a3_germ)
   let unf = a3_germ.universal_k_unfolding()
   // 3. Coupled neuro-symbolic ICIS constraint germ V(x^2+y^2+z^2, x^2+2y^2+3z^2)
-  let jb3 = JetBasis::new(3, 4)
-  let ci = audit_complete_intersection(
-    MapGerm::new([
-      PolyGerm::from_terms(jb3, [
-        ([2, 0, 0], 1.0),
-        ([0, 2, 0], 1.0),
-        ([0, 0, 2], 1.0),
-      ]),
-      PolyGerm::from_terms(jb3, [
-        ([2, 0, 0], 1.0),
-        ([0, 2, 0], 2.0),
-        ([0, 0, 2], 3.0),
-      ]),
-    ]),
-  )
+  let ci = audit_complete_intersection(icis_coupled_curve_germ())
   // 4. Cuspidal concept-branch normalization O = C{t^3, t^5} -> C{t}
   let norm = normalize_semigroup_curve_germ([3, 5])
   // 5. Euler-Jacobi global topological residue charge across 4 unfolded role attractors
