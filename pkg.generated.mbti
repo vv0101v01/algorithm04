@@ -1,0 +1,1210 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "arena/super_emergence"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub const DEFAULT_GRASSMANN_GEN : Int32 = 4
+
+pub const TROP_NEG_INF : Double = -1.0e30
+
+pub fn[L : LieSuperAlgebra] adjoint_leibniz_defect(L, L, L) -> L
+
+pub fn affine_barycenter(Array[AffinePoint], Array[Double]) -> AffinePoint
+
+pub fn anticommutator_family_defect(Array[DenseMat]) -> Double
+
+pub fn audit_complete_intersection(MapGerm, koszul_check_deg? : Int32) -> CompleteIntersectionReport
+
+pub fn audit_serre_normality(MapGerm) -> SerreNormalityReport
+
+pub fn canonical_symplectic(Int32) -> DenseMat
+
+pub fn categorical_fisher_matrix(Array[Double]) -> DenseMat
+
+pub fn categorical_probs(Array[Double]) -> Array[Double]
+
+pub fn chirality_grading_mat(Int32, Int32) -> DenseMat
+
+pub fn classical_commutator(DenseMat, DenseMat) -> DenseMat
+
+pub fn classical_jacobiator(DenseMat, DenseMat, DenseMat) -> DenseMat
+
+pub fn classify_contact_equiv_class(MapGerm) -> GermEquivClass
+
+pub fn compare_natural_vs_euclidean_kl(Array[Double], Array[Double], Int32, Double) -> (Double, Double)
+
+pub fn compute_finite_pushout(Int32, Int32, Array[Int32], Array[Int32]) -> FinitePushout
+
+pub fn distill_germ_microlocal_phase() -> GermMicrolocalReport
+
+pub fn distill_tropical_kan_macro_agent(Array[ProtoAgent], Array[ProtoAgent]) -> TropicalKanMacroAgent
+
+pub fn euler_jacobi_residue_sum(Array[Complex], Int32) -> Complex
+
+pub fn eval_supertropical_poly(Array[Double], Array[Array[Double]], Array[Double], tie_tol? : Double) -> SuperTropical
+
+pub fn evolve_ricci_fisher_curvature(Double, Int32, Double, Double, Double, Double, Int32) -> (Array[Double], Double)
+
+pub fn evolve_susy_heat_flow(WittenSUSYSystem, Array[Double], Double) -> Array[Double]
+
+pub fn factor_through_quotient_germ(MapGerm, PolyGerm, Int32, tol? : Double) -> Result[PolyGerm, String]
+
+pub fn fermionic_creation_operators(Int32) -> Array[DenseMat]
+
+pub fn flat_osp_metric_mat(Int32, Int32) -> DenseMat
+
+pub fn funk_metric(Array[Double], Array[Double]) -> Double
+
+pub fn gaussian_fisher_distance(Double, Double, Double, Double) -> Double
+
+pub fn gaussian_fisher_matrix(Double, Double) -> DenseMat
+
+pub fn gaussian_poincare_pullback_metric(Double, Double, eps? : Double) -> DenseMat
+
+pub fn gaussian_to_poincare_isometry(Double, Double) -> PoincarePoint
+
+pub fn gmat_even_det(Array[Grassmann], Int32, Int32) -> Grassmann
+
+pub fn gmat_even_inv(Array[Grassmann], Int32, Int32) -> Array[Grassmann]
+
+pub fn gmat_eye(Int32, Int32) -> Array[Grassmann]
+
+pub fn gmat_mul(Array[Grassmann], Int32, Int32, Array[Grassmann], Int32, Int32) -> Array[Grassmann]
+
+pub fn[L : LieSuperAlgebra] graded_skew_defect(L, L) -> L
+
+pub fn[A : Ring + Module] grassmann_universal_lift(Grassmann, A, A, Array[A]) -> A
+
+pub fn grassmann_universal_lift_mat(Grassmann, Int32, Array[DenseMat]) -> DenseMat
+
+pub fn ideal_colength(JetBasis, Array[PolyGerm]) -> Int32
+
+pub fn init_disordered_colony(Int32, Double) -> Array[ProtoAgent]
+
+pub fn is_k_versal_unfolding(MapGerm, Array[MapGerm]) -> Bool
+
+pub fn kl_divergence(Array[Double], Array[Double]) -> Double
+
+pub fn koszul_h1_check(MapGerm, Int32) -> (Double, Int32)
+
+pub fn koszul_sign(Parity, Parity) -> Double
+
+pub fn laplace_beltrami_berezin_1d(SuperManifold, (Double) -> Double, Double, eps? : Double) -> Double
+
+pub fn make_osp_even_generator(Int32, Int32, Int32, DenseMat, DenseMat, Array[Grassmann]) -> SuperMatrix
+
+pub fn make_osp_odd_generator(Int32, Int32, Int32, DenseMat) -> SuperMatrix
+
+pub fn maslov_add(Double, Double, Double) -> Double
+
+pub fn maslov_left_kan_extension(Array[Int32], DenseMat, Array[Double], Double) -> Array[Double]
+
+pub fn maslov_sum(Array[Double], Double) -> Double
+
+pub fn mgu_universal_mediating_subst(Substitution, Substitution) -> Result[Substitution, String]
+
+pub fn micro_product(MicrofunctionGerm, MicrofunctionGerm) -> Result[MicrofunctionGerm, String]
+
+pub fn mobius_add(Double, Array[Double], Array[Double]) -> Array[Double]
+
+pub fn mobius_gyration(Double, Array[Double], Array[Double], Array[Double]) -> Array[Double]
+
+pub fn monom_deg(Array[Int32]) -> Int32
+
+pub fn natural_gradient(DenseMat, Array[Double], damping? : Double) -> Array[Double]
+
+pub fn natural_gradient_kl_step(DenseMat, Array[Double], Double, damping? : Double) -> Array[Double]
+
+pub fn normalize_semigroup_curve_germ(Array[Int32], branches? : Int32) -> CurveNormalization
+
+pub fn numerical_grad((Array[Double]) -> Double, Array[Double], eps? : Double) -> Array[Double]
+
+pub fn numerical_jacobian((Array[Double]) -> Array[Double], Array[Double], eps? : Double) -> DenseMat
+
+pub fn occurs_in(String, SymTerm) -> Bool
+
+pub fn orbit_space_distance(SuperMassTensor, SuperMassTensor) -> Double
+
+pub fn osp1_2_fundamental_rep() -> Array[DenseMat]
+
+pub fn osp1_2_quadratic_casimir() -> UEAElement
+
+pub fn osp_invariance_defect(SuperMatrix) -> Double
+
+pub fn poincare_frechet_mean(Array[PoincarePoint], Array[Double], max_iters? : Int32) -> PoincarePoint
+
+pub fn poincare_gromov_plucker_bound(Double) -> Double
+
+pub fn popcount(Int32) -> Int32
+
+pub fn project_to_tropical_grassmannian_ultrametric(DenseMat) -> DenseMat
+
+pub fn protocol_super_jacobi_anomaly(SuperMatrix, SuperMatrix, SuperMatrix, (SuperMatrix, SuperMatrix) -> SuperMatrix) -> Double
+
+pub fn quantum_bures_fisher_matrix(DenseMat, Array[DenseMat]) -> DenseMat
+
+pub fn rope_attention_score(Array[Double], Double, Array[Double], Double, base? : Double) -> Double
+
+pub fn run_sgne_emergence_simulation(n_agents? : Int32, n_steps? : Int32, dt? : Double) -> (Array[EmergenceSnapshot], Array[ProtoAgent])
+
+pub fn same_map_germ_stalk((Array[Double]) -> Array[Double], (Array[Double]) -> Array[Double], Array[Double], tol? : Double) -> Bool
+
+pub fn sigmoid(Double) -> Double
+
+pub fn sl2_quadratic_casimir() -> UEAElement
+
+pub fn softmax_vec(Array[Double]) -> Array[Double]
+
+pub fn softplus(Double) -> Double
+
+pub fn solve_grassmann_super_sylvester(SuperMatrix, SuperMatrix, SuperMatrix) -> SuperMatrix
+
+pub fn solve_super_sylvester(DenseMat, Parity, DenseMat, DenseMat, Parity) -> DenseMat
+
+pub fn solve_sylvester(DenseMat, DenseMat, DenseMat, sign? : Double) -> DenseMat
+
+pub fn spd_affine_invariant_distance(DenseMat, DenseMat) -> Double
+
+pub fn step_super_lax(SuperMatrix, SuperMatrix, Double) -> SuperMatrix
+
+pub fn step_super_riccati(SuperMatrix, SuperMatrix, SuperMatrix, SuperMatrix, Double) -> SuperMatrix
+
+pub fn super_fisher_matrix(Array[Double], DenseMat, Array[DenseMat]) -> DenseMat
+
+pub fn super_geodesic_dist(SuperPoint, SuperPoint) -> Grassmann
+
+pub fn[L : LieSuperAlgebra] super_jacobiator(L, L, L) -> L
+
+pub fn super_mobius_add(SuperPoint, SuperPoint) -> SuperPoint
+
+pub fn super_osp_inner(SuperPoint, SuperPoint) -> Grassmann
+
+pub fn super_poisson_bracket((Double, Double) -> Grassmann, Parity, (Double, Double) -> Grassmann, Double, Double, eps? : Double) -> Grassmann
+
+pub fn super_pope_score(PoPEConfig, SuperPoint, Double, SuperPoint, Double, alpha_ferm? : Double) -> Grassmann
+
+pub fn symmetric_log_derivative(DenseMat, DenseMat) -> DenseMat
+
+pub fn symplectic_odd_inner(Array[Grassmann], Array[Grassmann], Int32) -> Grassmann
+
+pub fn tropical_functor_law_violation(DenseMat, Array[Double]) -> Double
+
+pub fn tropical_grassmannian_plucker_defect(DenseMat, tie_tol? : Double) -> (Double, Bool)
+
+pub fn tropical_hilbert_dist(TropProjPoint, TropProjPoint) -> Double
+
+pub fn tropical_left_kan_extension(Array[Int32], DenseMat, Array[Double]) -> Array[Double]
+
+pub fn tropical_projective_geodesic(TropProjPoint, TropProjPoint, Double) -> TropProjPoint
+
+pub fn tropical_right_kan_extension(Array[Int32], DenseMat, Array[Double]) -> Array[Double]
+
+pub fn unify_neuro_symbolic(NeuroSymState, NeuroSymState, (String) -> PoincarePoint, tau? : Double, min_coherence? : Double) -> UnifyResult
+
+pub fn universal_tensor_factorization(Int32, Int32, Int32, (Array[Double], Array[Double]) -> Array[Double]) -> DenseMat
+
+pub fn universal_tensor_pair(Array[Double], Array[Double]) -> Array[Double]
+
+pub fn vec_add(Array[Double], Array[Double]) -> Array[Double]
+
+pub fn vec_dot(Array[Double], Array[Double]) -> Double
+
+pub fn vec_norm(Array[Double]) -> Double
+
+pub fn vec_norm_sq(Array[Double]) -> Double
+
+pub fn vec_scale(Array[Double], Double) -> Array[Double]
+
+pub fn vec_sub(Array[Double], Array[Double]) -> Array[Double]
+
+pub fn verify_all_8_super_jacobi_sectors((SuperMatrix, SuperMatrix, SuperMatrix), (SuperMatrix, SuperMatrix, SuperMatrix)) -> (Double, Double, Double)
+
+pub fn verify_all_theorems() -> Array[TheoremReport]
+
+pub fn[A : Module] verify_free_module_adjunction(Int32, Array[A], FreeVec) -> Double
+
+pub fn verify_natural_gradient_covariance(Array[Double], (Array[Double]) -> Array[Double], (Array[Double]) -> Double, eps? : Double) -> (Double, Double)
+
+pub fn wedge_sign(Int32, Int32, Int32) -> Double
+
+pub fn weierstrass_prepare_2d(PolyGerm) -> Result[(PolyGerm, PolyGerm), String]
+
+pub fn what_where_entanglement_norms(PoPEConfig, Array[Double]) -> (Double, Double)
+
+pub fn[A, X] yoneda_from_value(Array[A], HomFunctor[A, X]) -> Array[X]
+
+pub fn[A] yoneda_to_value((HomFunctor[A, A]) -> Array[A]) -> Array[A]
+
+// Errors
+
+// Types and methods
+#derive(Eq, @debug.Debug)
+pub(all) struct AffineConnection {
+  c : Double
+  dim : Int32
+  contorsion : Double
+}
+pub fn AffineConnection::christoffel(Self, Array[Double], Int32, Int32, Int32) -> Double
+pub fn AffineConnection::equal(Self, Self) -> Bool
+pub fn AffineConnection::first_bianchi_residual(Self, Array[Double]) -> Double
+pub fn AffineConnection::levi_civita(Double, Int32) -> Self
+pub fn AffineConnection::not_equal(Self, Self) -> Bool
+pub fn AffineConnection::parallel_transport_ode(Self, PoincarePoint, PoincarePoint, Array[Double], steps? : Int32) -> Array[Double]
+pub fn AffineConnection::ricci_matrix(Self, Array[Double]) -> DenseMat
+pub fn AffineConnection::riemann_tensor(Self, Array[Double]) -> GradedTensor
+pub fn AffineConnection::scalar_curvature(Self, Array[Double]) -> Double
+pub fn AffineConnection::to_repr(Self) -> @debug.Repr
+pub fn AffineConnection::torsion_tensor(Self, Array[Double]) -> GradedTensor
+
+#derive(Eq, @debug.Debug)
+pub(all) struct AffinePoint {
+  coords : Array[Double]
+}
+pub fn AffinePoint::affine_interp(Self, Self, Double) -> Self
+pub fn AffinePoint::diff_vec(Self, Self) -> Array[Double]
+pub fn AffinePoint::equal(Self, Self) -> Bool
+pub fn AffinePoint::new(Array[Double]) -> Self
+pub fn AffinePoint::not_equal(Self, Self) -> Bool
+pub fn AffinePoint::to_repr(Self) -> @debug.Repr
+pub fn AffinePoint::translate(Self, Array[Double]) -> Self
+pub impl AffineTorsor for AffinePoint
+
+#derive(Eq, @debug.Debug)
+pub(all) struct CompleteIntersectionReport {
+  ambient_dim : Int32
+  num_eqs : Int32
+  krull_dim : Int32
+  koszul_d2_residual : Double
+  koszul_h1_low_deg : Int32
+  is_complete_intersection : Bool
+  le_greuel_milnor : Int32
+  tjurina : Int32
+  socle_dim : Int32
+  jacobian_in_socle : Bool
+  gorenstein_pairing_nondeg : Bool
+}
+pub fn CompleteIntersectionReport::equal(Self, Self) -> Bool
+pub fn CompleteIntersectionReport::not_equal(Self, Self) -> Bool
+pub fn CompleteIntersectionReport::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct Complex {
+  re : Double
+  im : Double
+}
+pub fn Complex::abs(Self) -> Double
+pub fn Complex::add(Self, Self) -> Self
+pub fn Complex::conj(Self) -> Self
+pub fn Complex::div(Self, Self) -> Self
+pub fn Complex::equal(Self, Self) -> Bool
+pub fn Complex::from_polar(Double, Double) -> Self
+pub fn Complex::hermitian_dot(Self, Self) -> Self
+pub fn Complex::i_unit() -> Self
+pub fn Complex::inv(Self) -> Self
+pub fn Complex::mul(Self, Self) -> Self
+pub fn Complex::neg(Self) -> Self
+pub fn Complex::new(Double, Double) -> Self
+pub fn Complex::norm_sq(Self) -> Double
+pub fn Complex::not_equal(Self, Self) -> Bool
+pub fn Complex::one() -> Self
+pub fn Complex::phase(Self) -> Double
+pub fn Complex::scale(Self, Double) -> Self
+pub fn Complex::sub(Self, Self) -> Self
+pub fn Complex::to_repr(Self) -> @debug.Repr
+pub fn Complex::zero() -> Self
+pub impl Add for Complex
+pub impl Div for Complex
+pub impl Mul for Complex
+pub impl Neg for Complex
+pub impl Sub for Complex
+
+pub(all) struct Coyoneda[S, A] {
+  seeds : Array[S]
+  morph : (S) -> A
+}
+pub fn[S, A, B] Coyoneda::fmap(Self[S, A], (A) -> B) -> Self[S, B]
+pub fn[A] Coyoneda::lift(Array[A]) -> Self[A, A]
+pub fn[S, A] Coyoneda::lower(Self[S, A]) -> Array[A]
+
+#derive(Eq, @debug.Debug)
+pub(all) struct CurveNormalization {
+  gaps : Array[Int32]
+  delta_invariant : Int32
+  conductor : Int32
+  is_normal : Bool
+  is_gorenstein : Bool
+  milnor_jung_number : Int32
+}
+pub fn CurveNormalization::equal(Self, Self) -> Bool
+pub fn CurveNormalization::not_equal(Self, Self) -> Bool
+pub fn CurveNormalization::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct DenseMat {
+  rows : Int32
+  cols : Int32
+  data : Array[Double]
+}
+pub fn DenseMat::add(Self, Self) -> Self
+pub fn DenseMat::clone(Self) -> Self
+pub fn DenseMat::det(Self) -> Double
+pub fn DenseMat::equal(Self, Self) -> Bool
+pub fn DenseMat::eye(Int32) -> Self
+pub fn DenseMat::frob_norm(Self) -> Double
+pub fn DenseMat::from_fn(Int32, Int32, (Int32, Int32) -> Double) -> Self
+pub fn DenseMat::get(Self, Int32, Int32) -> Double
+pub fn DenseMat::inv(Self) -> Self
+pub fn DenseMat::mat_exp(Self) -> Self
+pub fn DenseMat::matvec(Self, Array[Double]) -> Array[Double]
+pub fn DenseMat::mul(Self, Self) -> Self
+pub fn DenseMat::neg(Self) -> Self
+pub fn DenseMat::not_equal(Self, Self) -> Bool
+pub fn DenseMat::numerical_rank(Self, tol? : Double) -> Int32
+pub fn DenseMat::op_norm(Self) -> Double
+pub fn DenseMat::rref_with_pivots(Self, tol? : Double) -> (Self, Array[Int32])
+pub fn DenseMat::scale(Self, Double) -> Self
+pub fn DenseMat::set(Self, Int32, Int32, Double) -> Unit
+pub fn DenseMat::solve_vec(Self, Array[Double]) -> Array[Double]
+pub fn DenseMat::sub(Self, Self) -> Self
+pub fn DenseMat::sym_eigen(Self) -> (Array[Double], Self)
+pub fn DenseMat::to_repr(Self) -> @debug.Repr
+pub fn DenseMat::trace(Self) -> Double
+pub fn DenseMat::transpose(Self) -> Self
+pub fn DenseMat::zeros(Int32, Int32) -> Self
+pub impl Add for DenseMat
+pub impl Mul for DenseMat
+pub impl Neg for DenseMat
+pub impl Sub for DenseMat
+
+#derive(Eq, @debug.Debug)
+pub(all) struct EmergenceSnapshot {
+  step : Int32
+  curvature_c : Double
+  free_energy : Double
+  susy_frustration : Double
+  witten_index : Double
+  hierarchy_spread : Double
+  mass_orbit_diversity : Double
+  policy_entropy : Double
+  unified_rules : Int32
+  connes_diameter : Double
+  emergence_synergy : Double
+}
+pub fn EmergenceSnapshot::equal(Self, Self) -> Bool
+pub fn EmergenceSnapshot::not_equal(Self, Self) -> Bool
+pub fn EmergenceSnapshot::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct FinitePushout {
+  n_apex : Int32
+  inl : Array[Int32]
+  inr : Array[Int32]
+}
+pub fn FinitePushout::equal(Self, Self) -> Bool
+pub fn[X : Eq] FinitePushout::mediating_map(Self, Array[X], Array[X]) -> Result[Array[X], String]
+pub fn FinitePushout::not_equal(Self, Self) -> Bool
+pub fn FinitePushout::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct FreeVec {
+  coeffs : Array[Double]
+}
+pub fn FreeVec::equal(Self, Self) -> Bool
+pub fn[A : Module] FreeVec::lift_linear(Self, (Int32) -> A) -> A
+pub fn FreeVec::new(Array[Double]) -> Self
+pub fn FreeVec::not_equal(Self, Self) -> Bool
+pub fn FreeVec::to_repr(Self) -> @debug.Repr
+pub fn FreeVec::unit_gen(Int32, Int32) -> Self
+pub impl UniversalFreeObject for FreeVec
+
+#derive(Eq, @debug.Debug)
+pub(all) struct GermEquivClass {
+  label : String
+  corank : Int32
+  milnor : Int32
+  tjurina : Int32
+  strict_k_codim : Int32
+  is_quasihomogeneous : Bool
+}
+pub fn GermEquivClass::equal(Self, Self) -> Bool
+pub fn GermEquivClass::not_equal(Self, Self) -> Bool
+pub fn GermEquivClass::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct GermMicrolocalReport {
+  pbw_dim_deg3 : Int32
+  osp_casimir_eigenvalue : Double
+  catastrophe_class : String
+  unfolding_codim : Int32
+  icis_milnor : Int32
+  normalization_delta : Int32
+  normalization_conductor : Int32
+  residue_charge : Double
+  microlocal_parametrix_err : Double
+}
+pub fn GermMicrolocalReport::equal(Self, Self) -> Bool
+pub fn GermMicrolocalReport::not_equal(Self, Self) -> Bool
+pub fn GermMicrolocalReport::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct GradedTensor {
+  m_bos : Int32
+  n_ferm : Int32
+  variances : Array[SlotVariance]
+  data : Array[Double]
+}
+pub fn GradedTensor::equal(Self, Self) -> Bool
+pub fn GradedTensor::frob_norm(Self) -> Double
+pub fn GradedTensor::get(Self, Array[Int32]) -> Double
+pub fn GradedTensor::graded_swap(Self, Int32) -> Self
+pub fn GradedTensor::index_parity(Self, Int32) -> Parity
+pub fn GradedTensor::kronecker_delta(Int32, Int32) -> Self
+pub fn GradedTensor::lower_index(Self, Int32, DenseMat) -> Self
+pub fn GradedTensor::not_equal(Self, Self) -> Bool
+pub fn GradedTensor::raise_index(Self, Int32, DenseMat) -> Self
+pub fn GradedTensor::rank(Self) -> Int32
+pub fn GradedTensor::set(Self, Array[Int32], Double) -> Unit
+pub fn GradedTensor::super_contract(Self, Int32, Int32) -> Self
+pub fn GradedTensor::tensor_product(Self, Self) -> Self
+pub fn GradedTensor::to_repr(Self) -> @debug.Repr
+pub fn GradedTensor::total_dim(Self) -> Int32
+pub fn GradedTensor::zeros(Int32, Int32, Array[SlotVariance]) -> Self
+
+#derive(Eq, @debug.Debug)
+pub(all) struct Grassmann {
+  n_gen : Int32
+  coeffs : Array[Double]
+}
+pub fn Grassmann::add(Self, Self) -> Self
+pub fn Grassmann::add_elem(Self, Self) -> Self
+pub fn Grassmann::atanh(Self) -> Self
+pub fn Grassmann::berezin_deriv(Self, Int32) -> Self
+pub fn Grassmann::berezin_integral(Self) -> Double
+pub fn Grassmann::blade(Int32, Int32, coeff? : Double) -> Self
+pub fn Grassmann::body(Self) -> Double
+pub fn Grassmann::coeff_at(Self, Int32) -> Double
+pub fn Grassmann::div(Self, Self) -> Self
+pub fn Grassmann::equal(Self, Self) -> Bool
+pub fn Grassmann::even_part(Self) -> Self
+pub fn Grassmann::exp(Self) -> Self
+pub fn Grassmann::generator(Int32, Int32, coeff? : Double) -> Self
+pub fn Grassmann::grade_involution(Self) -> Self
+pub fn Grassmann::inv(Self) -> Self
+pub fn Grassmann::l2_norm(Self) -> Double
+pub fn Grassmann::lift_taylor(Self, Array[Double]) -> Self
+pub fn Grassmann::ln(Self) -> Self
+pub fn Grassmann::mul(Self, Self) -> Self
+pub fn Grassmann::mul_elem(Self, Self) -> Self
+pub fn Grassmann::neg(Self) -> Self
+pub fn Grassmann::neg_elem(Self) -> Self
+pub fn Grassmann::norm_sq(Self) -> Double
+pub fn Grassmann::not_equal(Self, Self) -> Bool
+pub fn Grassmann::odd_part(Self) -> Self
+pub fn Grassmann::one_elem() -> Self
+pub fn Grassmann::parity(Self) -> Parity
+pub fn Grassmann::scalar(Int32, Double) -> Self
+pub fn Grassmann::scale(Self, Double) -> Self
+pub fn Grassmann::smul(Self, Double) -> Self
+pub fn Grassmann::softplus(Self) -> Self
+pub fn Grassmann::soul(Self) -> Self
+pub fn Grassmann::sqrt(Self) -> Self
+pub fn Grassmann::sub(Self, Self) -> Self
+pub fn Grassmann::sub_elem(Self, Self) -> Self
+pub fn Grassmann::tanh(Self) -> Self
+pub fn Grassmann::to_repr(Self) -> @debug.Repr
+pub fn Grassmann::zero(Int32) -> Self
+pub fn Grassmann::zero_elem() -> Self
+pub impl AbelianGroup for Grassmann
+pub impl Module for Grassmann
+pub impl Ring for Grassmann
+pub impl SuperAlgebra for Grassmann
+pub impl Add for Grassmann
+pub impl Div for Grassmann
+pub impl Mul for Grassmann
+pub impl Neg for Grassmann
+pub impl Sub for Grassmann
+
+#derive(Eq, @debug.Debug)
+pub(all) struct HalfPlaneGerm {
+  poles : Array[Complex]
+  log_coeff : Complex
+  holo : Array[Complex]
+}
+pub fn HalfPlaneGerm::equal(Self, Self) -> Bool
+pub fn HalfPlaneGerm::not_equal(Self, Self) -> Bool
+pub fn HalfPlaneGerm::to_repr(Self) -> @debug.Repr
+
+pub(all) struct HomFunctor[A, X] {
+  run : (A) -> X
+}
+pub fn[A, X, Y] HomFunctor::fmap(Self[A, X], (X) -> Y) -> Self[A, Y]
+pub fn[A] HomFunctor::universal_id() -> Self[A, A]
+
+#derive(Eq, @debug.Debug)
+pub(all) struct HyperfunctionGerm {
+  x0 : Double
+  f_plus : HalfPlaneGerm
+  f_minus : HalfPlaneGerm
+}
+pub fn HyperfunctionGerm::add(Self, Self) -> Self
+pub fn HyperfunctionGerm::cauchy_minus(Double, order? : Int32) -> Self
+pub fn HyperfunctionGerm::cauchy_plus(Double, order? : Int32) -> Self
+pub fn HyperfunctionGerm::deriv(Self) -> Self
+pub fn HyperfunctionGerm::dirac_delta(Double) -> Self
+pub fn HyperfunctionGerm::equal(Self, Self) -> Bool
+pub fn HyperfunctionGerm::from_analytic(Double, Array[Complex], gauge? : Array[Complex]) -> Self
+pub fn HyperfunctionGerm::heaviside(Double) -> Self
+pub fn HyperfunctionGerm::mul_by_x_shift(Self) -> Self
+pub fn HyperfunctionGerm::not_equal(Self, Self) -> Bool
+pub fn HyperfunctionGerm::pair_analytic(Self, Array[Complex]) -> Complex
+pub fn HyperfunctionGerm::principal_value_inv(Double) -> Self
+pub fn HyperfunctionGerm::scale(Self, Complex) -> Self
+pub fn HyperfunctionGerm::sp(Self) -> MicrofunctionGerm
+pub fn HyperfunctionGerm::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct JetBasis {
+  n_vars : Int32
+  max_deg : Int32
+  monoms : Array[Array[Int32]]
+}
+pub fn JetBasis::dim(Self) -> Int32
+pub fn JetBasis::equal(Self, Self) -> Bool
+pub fn JetBasis::index_of(Self, Array[Int32]) -> Int32
+pub fn JetBasis::new(Int32, Int32) -> Self
+pub fn JetBasis::not_equal(Self, Self) -> Bool
+pub fn JetBasis::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct MapGerm {
+  basis : JetBasis
+  comps : Array[PolyGerm]
+}
+pub fn MapGerm::apply_contact_transform(Self, Array[Array[PolyGerm]], Array[PolyGerm]) -> Self
+pub fn MapGerm::compose(Self, Self) -> Self
+pub fn MapGerm::contact_hilbert_function(Self) -> Array[Int32]
+pub fn MapGerm::corank(Self) -> Int32
+pub fn MapGerm::equal(Self, Self) -> Bool
+pub fn MapGerm::jacobian_at_origin(Self) -> DenseMat
+pub fn MapGerm::milnor_number(Self) -> Int32
+pub fn MapGerm::new(Array[PolyGerm]) -> Self
+pub fn MapGerm::not_equal(Self, Self) -> Bool
+pub fn MapGerm::strict_k_codimension(Self) -> Int32
+pub fn MapGerm::target_dim(Self) -> Int32
+pub fn MapGerm::tjurina_number(Self) -> Int32
+pub fn MapGerm::to_repr(Self) -> @debug.Repr
+pub fn MapGerm::universal_k_unfolding(Self) -> UniversalUnfolding
+
+#derive(Eq, @debug.Debug)
+pub(all) struct MeromorphicGerm {
+  order : Int32
+  prec : Int32
+  coeffs : Array[Complex]
+}
+pub fn MeromorphicGerm::add(Self, Self) -> Self
+pub fn MeromorphicGerm::coeff_at(Self, Int32) -> Complex
+pub fn MeromorphicGerm::contour_residue(Self, Double, n_pts? : Int32) -> Complex
+pub fn MeromorphicGerm::deriv(Self) -> Self
+pub fn MeromorphicGerm::div(Self, Self) -> Self
+pub fn MeromorphicGerm::equal(Self, Self) -> Bool
+pub fn MeromorphicGerm::eval(Self, Complex) -> Complex
+pub fn MeromorphicGerm::from_laurent(Int32, Array[Complex], prec? : Int32) -> Self
+pub fn MeromorphicGerm::from_real(Int32, Array[Double], prec? : Int32) -> Self
+pub fn MeromorphicGerm::inv(Self) -> Self
+pub fn MeromorphicGerm::is_holomorphic(Self) -> Bool
+pub fn MeromorphicGerm::is_zero(Self) -> Bool
+pub fn MeromorphicGerm::log_deriv(Self) -> Self
+pub fn MeromorphicGerm::mittag_leffler_split(Self) -> (Self, Self)
+pub fn MeromorphicGerm::mul(Self, Self) -> Self
+pub fn MeromorphicGerm::not_equal(Self, Self) -> Bool
+pub fn MeromorphicGerm::residue(Self) -> Complex
+pub fn MeromorphicGerm::scale(Self, Complex) -> Self
+pub fn MeromorphicGerm::sub(Self, Self) -> Self
+pub fn MeromorphicGerm::to_repr(Self) -> @debug.Repr
+pub fn MeromorphicGerm::tropical_valuation(Self) -> Tropical
+pub fn MeromorphicGerm::zero(prec? : Int32) -> Self
+
+#derive(Eq, @debug.Debug)
+pub(all) struct MicroDiffOp {
+  order : Int32
+  xi_trunc : Int32
+  x_trunc : Int32
+  symbols : Array[Array[Complex]]
+}
+pub fn MicroDiffOp::compose(Self, Self) -> Self
+pub fn MicroDiffOp::elliptic_inverse(Self) -> Result[Self, String]
+pub fn MicroDiffOp::equal(Self, Self) -> Bool
+pub fn MicroDiffOp::identity(Int32, Int32) -> Self
+pub fn MicroDiffOp::is_elliptic_at_origin(Self, tol? : Double) -> Bool
+pub fn MicroDiffOp::not_equal(Self, Self) -> Bool
+pub fn MicroDiffOp::symbol_dist(Self, Self, Int32) -> Double
+pub fn MicroDiffOp::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct MicrofunctionGerm {
+  x0 : Double
+  plus_poles : Array[Complex]
+  plus_log : Complex
+  minus_poles : Array[Complex]
+  minus_log : Complex
+}
+pub fn MicrofunctionGerm::dist(Self, Self) -> Double
+pub fn MicrofunctionGerm::equal(Self, Self) -> Bool
+pub fn MicrofunctionGerm::integrate_microlocal(Self) -> Self
+pub fn MicrofunctionGerm::not_equal(Self, Self) -> Bool
+pub fn MicrofunctionGerm::singular_spectrum(Self, tol? : Double) -> (Bool, Bool)
+pub fn MicrofunctionGerm::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct MultiMeroGerm {
+  num : PolyGerm
+  den : PolyGerm
+}
+pub fn MultiMeroGerm::add(Self, Self) -> Self
+pub fn MultiMeroGerm::equal(Self, Self) -> Bool
+pub fn MultiMeroGerm::equiv(Self, Self, tol? : Double) -> Bool
+pub fn MultiMeroGerm::mul(Self, Self) -> Self
+pub fn MultiMeroGerm::not_equal(Self, Self) -> Bool
+pub fn MultiMeroGerm::origin_status(Self, tol? : Double) -> String
+pub fn MultiMeroGerm::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct NeuroSymState {
+  term : SymTerm
+  emb : PoincarePoint
+  logic : Grassmann
+}
+pub fn NeuroSymState::equal(Self, Self) -> Bool
+pub fn NeuroSymState::not_equal(Self, Self) -> Bool
+pub fn NeuroSymState::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, Hash, @debug.Debug)
+pub(all) enum Parity {
+  Even
+  Odd
+}
+pub fn Parity::add_z2(Self, Self) -> Self
+pub fn Parity::degree(Self) -> Int32
+pub fn Parity::equal(Self, Self) -> Bool
+pub fn Parity::hash(Self) -> Int32
+pub fn Parity::hash_combine(Self, Hasher) -> Unit
+pub fn Parity::not_equal(Self, Self) -> Bool
+pub fn Parity::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct PoPEConfig {
+  dim : Int32
+  base : Double
+  freqs : Array[Double]
+  delta : Array[Double]
+}
+pub fn PoPEConfig::attention_score(Self, Array[Double], Double, Array[Double], Double) -> Double
+pub fn PoPEConfig::encode_key(Self, Array[Double], Double) -> Array[Complex]
+pub fn PoPEConfig::encode_query(Self, Array[Double], Double) -> Array[Complex]
+pub fn PoPEConfig::equal(Self, Self) -> Bool
+pub fn PoPEConfig::grad_delta(Self, Array[Double], Double, Array[Double], Double) -> Array[Double]
+pub fn PoPEConfig::kernel_gram_matrix(Self, Array[Array[Double]], Array[Double]) -> DenseMat
+pub fn PoPEConfig::new(Int32, base? : Double, delta? : Array[Double]) -> Self
+pub fn PoPEConfig::not_equal(Self, Self) -> Bool
+pub fn PoPEConfig::score_from_complex(Array[Complex], Array[Complex]) -> Double
+pub fn PoPEConfig::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct PoincarePoint {
+  c : Double
+  coords : Array[Double]
+}
+pub fn PoincarePoint::conformal_factor(Self) -> Double
+pub fn PoincarePoint::dim(Self) -> Int32
+pub fn PoincarePoint::equal(Self, Self) -> Bool
+pub fn PoincarePoint::exp_map(Self, Array[Double]) -> Self
+pub fn PoincarePoint::geodesic_dist(Self, Self) -> Double
+pub fn PoincarePoint::geodesic_interp(Self, Self, Double) -> Self
+pub fn PoincarePoint::log_map(Self, Self) -> Array[Double]
+pub fn PoincarePoint::metric_inner(Self, Array[Double], Array[Double]) -> Double
+pub fn PoincarePoint::metric_matrix(Self) -> DenseMat
+pub fn PoincarePoint::new(Double, Array[Double]) -> Self
+pub fn PoincarePoint::not_equal(Self, Self) -> Bool
+pub fn PoincarePoint::origin(Double, Int32) -> Self
+pub fn PoincarePoint::parallel_transport(Self, Self, Array[Double]) -> Array[Double]
+pub fn PoincarePoint::to_repr(Self) -> @debug.Repr
+pub impl RiemannianGeometry for PoincarePoint
+
+#derive(Eq, @debug.Debug)
+pub(all) struct PolyGerm {
+  basis : JetBasis
+  coeffs : Array[Double]
+}
+pub fn PolyGerm::add(Self, Self) -> Self
+pub fn PolyGerm::compose(Self, Array[Self]) -> Self
+pub fn PolyGerm::constant(JetBasis, Double) -> Self
+pub fn PolyGerm::coord(JetBasis, Int32) -> Self
+pub fn PolyGerm::equal(Self, Self) -> Bool
+pub fn PolyGerm::eval(Self, Array[Double]) -> Double
+pub fn PolyGerm::from_terms(JetBasis, Array[(Array[Int32], Double)]) -> Self
+pub fn PolyGerm::jet_norm(Self) -> Double
+pub fn PolyGerm::monomial(JetBasis, Array[Int32], Double) -> Self
+pub fn PolyGerm::mul(Self, Self) -> Self
+pub fn PolyGerm::not_equal(Self, Self) -> Bool
+pub fn PolyGerm::partial(Self, Int32) -> Self
+pub fn PolyGerm::scale(Self, Double) -> Self
+pub fn PolyGerm::sub(Self, Self) -> Self
+pub fn PolyGerm::to_repr(Self) -> @debug.Repr
+pub fn PolyGerm::unit_inv(Self) -> Self
+pub fn PolyGerm::val_at_origin(Self) -> Double
+pub fn PolyGerm::zero(JetBasis) -> Self
+
+#derive(Eq, @debug.Debug)
+pub(all) struct ProtoAgent {
+  id : Int32
+  pos_index : Double
+  belief : PoincarePoint
+  ferm_spinor : Array[Grassmann]
+  policy_eta : Array[Double]
+  mass : SuperMassTensor
+  rule : SymTerm
+  logic_blade : Grassmann
+}
+pub fn ProtoAgent::equal(Self, Self) -> Bool
+pub fn ProtoAgent::not_equal(Self, Self) -> Bool
+pub fn ProtoAgent::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct SerreNormalityReport {
+  dim_x : Int32
+  dim_sing : Int32
+  codim_sing : Int32
+  satisfies_r1 : Bool
+  satisfies_s2 : Bool
+  is_normal : Bool
+}
+pub fn SerreNormalityReport::equal(Self, Self) -> Bool
+pub fn SerreNormalityReport::not_equal(Self, Self) -> Bool
+pub fn SerreNormalityReport::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, Hash, @debug.Debug)
+pub(all) enum SlotVariance {
+  Contravariant
+  Covariant
+}
+pub fn SlotVariance::equal(Self, Self) -> Bool
+pub fn SlotVariance::hash(Self) -> Int32
+pub fn SlotVariance::hash_combine(Self, Hasher) -> Unit
+pub fn SlotVariance::not_equal(Self, Self) -> Bool
+pub fn SlotVariance::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct SpectralTriple {
+  m_bos : Int32
+  n_ferm : Int32
+  gamma : DenseMat
+  dirac : DenseMat
+}
+pub fn SpectralTriple::chirality_anticommutator_norm(Self) -> Double
+pub fn SpectralTriple::connes_distance(Self, Array[Double], Array[Double]) -> Double
+pub fn SpectralTriple::diff_one_form(Self, DenseMat) -> DenseMat
+pub fn SpectralTriple::equal(Self, Self) -> Bool
+pub fn SpectralTriple::from_yukawa(DenseMat) -> Self
+pub fn SpectralTriple::lip_seminorm(Self, DenseMat) -> Double
+pub fn SpectralTriple::not_equal(Self, Self) -> Bool
+pub fn SpectralTriple::spectral_action(Self, Double) -> Double
+pub fn SpectralTriple::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct Substitution {
+  bindings : Array[(String, SymTerm)]
+}
+pub fn Substitution::apply(Self, SymTerm) -> SymTerm
+pub fn Substitution::compose(Self, Self) -> Self
+pub fn Substitution::empty() -> Self
+pub fn Substitution::equal(Self, Self) -> Bool
+pub fn Substitution::extend_idempotent(Self, String, SymTerm) -> Self
+pub fn Substitution::lookup(Self, String) -> SymTerm?
+pub fn Substitution::not_equal(Self, Self) -> Bool
+pub fn Substitution::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct SuperBeltramiPDE {
+  manifold : SuperManifold
+  n_cells : Int32
+  r_max : Double
+  dr : Double
+  diffusivity : Double
+  fisher_rate : Double
+  grid : Array[Double]
+  vol_weights : Array[Double]
+  potential : Array[Double]
+  density : Array[Double]
+}
+pub fn SuperBeltramiPDE::equal(Self, Self) -> Bool
+pub fn SuperBeltramiPDE::free_energy(Self) -> Double
+pub fn SuperBeltramiPDE::gibbs_equilibrium(Self) -> Array[Double]
+pub fn SuperBeltramiPDE::new(SuperManifold, Int32, Double, Double, Double, (Double) -> Double, (Double) -> Double) -> Self
+pub fn SuperBeltramiPDE::not_equal(Self, Self) -> Bool
+pub fn SuperBeltramiPDE::step(Self, Double) -> Self
+pub fn SuperBeltramiPDE::to_repr(Self) -> @debug.Repr
+pub fn SuperBeltramiPDE::total_mass(Self) -> Double
+
+#derive(Eq, @debug.Debug)
+pub(all) struct SuperLieTable {
+  name : String
+  dim : Int32
+  parities : Array[Parity]
+  struct_const : Array[Double]
+}
+pub fn SuperLieTable::antipode(Self, UEAElement) -> UEAElement
+pub fn SuperLieTable::coeff(Self, Int32, Int32, Int32) -> Double
+pub fn SuperLieTable::coproduct_tensor_rep(Self, Array[DenseMat], Array[Parity], Array[DenseMat]) -> Array[DenseMat]
+pub fn SuperLieTable::enumerate_pbw_basis(Self, Int32) -> Array[Array[Int32]]
+pub fn SuperLieTable::equal(Self, Self) -> Bool
+pub fn SuperLieTable::new(String, Array[Parity]) -> Self
+pub fn SuperLieTable::not_equal(Self, Self) -> Bool
+pub fn SuperLieTable::osp1_2() -> Self
+pub fn SuperLieTable::pbw_filtration_dim(Self, Int32) -> Int32
+pub fn SuperLieTable::rep_homomorphism_defect(Self, Array[DenseMat]) -> Double
+pub fn SuperLieTable::set_bracket(Self, Int32, Int32, Array[(Int32, Double)]) -> Unit
+pub fn SuperLieTable::sl2() -> Self
+pub fn SuperLieTable::super_jacobi_defect(Self) -> Double
+pub fn SuperLieTable::to_repr(Self) -> @debug.Repr
+pub fn SuperLieTable::uea_mul(Self, UEAElement, UEAElement) -> UEAElement
+pub fn SuperLieTable::uea_supercommutator(Self, UEAElement, UEAElement) -> UEAElement
+
+#derive(Eq, @debug.Debug)
+pub(all) struct SuperManifold {
+  m_bos : Int32
+  n_ferm : Int32
+  c : Double
+  n_gen : Int32
+}
+pub fn SuperManifold::effective_volume_density_at_radius(Self, Double) -> Double
+pub fn SuperManifold::equal(Self, Self) -> Bool
+pub fn SuperManifold::flat_osp_metric(Self) -> DenseMat
+pub fn SuperManifold::new(Int32, Int32, Double, n_gen? : Int32) -> Self
+pub fn SuperManifold::not_equal(Self, Self) -> Bool
+pub fn SuperManifold::super_dim(Self) -> Int32
+pub fn SuperManifold::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct SuperMassTensor {
+  m_bos : Int32
+  n_ferm : Int32
+  n_gen : Int32
+  mat : SuperMatrix
+}
+pub fn SuperMassTensor::bosonic_mass_spectrum(Self) -> Array[Double]
+pub fn SuperMassTensor::congruence_action(Self, SuperMatrix) -> Self
+pub fn SuperMassTensor::equal(Self, Self) -> Bool
+pub fn SuperMassTensor::from_real_and_yukawa(DenseMat, Array[Grassmann], Double, Int32, Int32) -> Self
+pub fn SuperMassTensor::graded_symmetry_defect(Self) -> Double
+pub fn SuperMassTensor::new(Array[Grassmann], Array[Grassmann], Array[Grassmann], Int32, Int32, Int32) -> Self
+pub fn SuperMassTensor::not_equal(Self, Self) -> Bool
+pub fn SuperMassTensor::orbit_stabilizer_dims(Self) -> (Int32, Int32, Int32)
+pub fn SuperMassTensor::osp_casimirs(Self, Int32) -> Array[Grassmann]
+pub fn SuperMassTensor::schur_canonical_form(Self) -> (Self, SuperMatrix, Array[Grassmann])
+pub fn SuperMassTensor::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct SuperMatrix {
+  m_bos : Int32
+  n_ferm : Int32
+  n_gen : Int32
+  parity : Parity
+  entries : Array[Grassmann]
+}
+pub fn SuperMatrix::add(Self, Self) -> Self
+pub fn SuperMatrix::add_elem(Self, Self) -> Self
+pub fn SuperMatrix::berezinian(Self) -> Grassmann
+pub fn SuperMatrix::blocks(Self) -> (Array[Grassmann], Array[Grassmann], Array[Grassmann], Array[Grassmann])
+pub fn SuperMatrix::equal(Self, Self) -> Bool
+pub fn[R] SuperMatrix::eval_bilinear(Self, Self, (Self) -> R) -> R
+pub fn SuperMatrix::frob_norm(Self) -> Double
+pub fn SuperMatrix::from_blocks(Int32, Int32, Int32, Parity, Array[Grassmann], Array[Grassmann], Array[Grassmann], Array[Grassmann]) -> Self
+pub fn SuperMatrix::from_real(Int32, Int32, Parity, DenseMat, n_gen? : Int32) -> Self
+pub fn SuperMatrix::get(Self, Int32, Int32) -> Grassmann
+pub fn SuperMatrix::identity(Int32, Int32, n_gen? : Int32) -> Self
+pub fn SuperMatrix::inverse(Self) -> Self
+pub fn SuperMatrix::mul(Self, Self) -> Self
+pub fn SuperMatrix::neg(Self) -> Self
+pub fn SuperMatrix::neg_elem(Self) -> Self
+pub fn SuperMatrix::norm_sq(Self) -> Double
+pub fn SuperMatrix::not_equal(Self, Self) -> Bool
+pub fn SuperMatrix::parity_of(Self) -> Parity
+pub fn SuperMatrix::sbracket(Self, Self) -> Self
+pub fn SuperMatrix::scale(Self, Double) -> Self
+pub fn SuperMatrix::schur_bosonic(Self) -> Array[Grassmann]
+pub fn SuperMatrix::sector_parity(Self, Int32) -> Parity
+pub fn SuperMatrix::set(Self, Int32, Int32, Grassmann) -> Unit
+pub fn SuperMatrix::smul(Self, Double) -> Self
+pub fn SuperMatrix::sub(Self, Self) -> Self
+pub fn SuperMatrix::sub_elem(Self, Self) -> Self
+pub fn SuperMatrix::super_exp(Self) -> Self
+pub fn SuperMatrix::supertrace(Self) -> Grassmann
+pub fn SuperMatrix::supertranspose(Self) -> Self
+pub fn SuperMatrix::to_repr(Self) -> @debug.Repr
+pub fn SuperMatrix::total_dim(Self) -> Int32
+pub fn SuperMatrix::zero_elem() -> Self
+pub fn SuperMatrix::zeros(Int32, Int32, Parity, n_gen? : Int32) -> Self
+pub impl AbelianGroup for SuperMatrix
+pub impl LieSuperAlgebra for SuperMatrix
+pub impl Module for SuperMatrix
+pub impl Add for SuperMatrix
+pub impl Mul for SuperMatrix
+pub impl Neg for SuperMatrix
+pub impl Sub for SuperMatrix
+
+#derive(Eq, @debug.Debug)
+pub(all) struct SuperPoint {
+  manifold : SuperManifold
+  bos : Array[Grassmann]
+  ferm : Array[Grassmann]
+}
+pub fn SuperPoint::equal(Self, Self) -> Bool
+pub fn SuperPoint::from_body_and_ferm(SuperManifold, Array[Double], Array[Grassmann]) -> Self
+pub fn SuperPoint::metric_berezinian(Self) -> Grassmann
+pub fn SuperPoint::neg_point(Self) -> Self
+pub fn SuperPoint::new(SuperManifold, Array[Grassmann], Array[Grassmann]) -> Self
+pub fn SuperPoint::not_equal(Self, Self) -> Bool
+pub fn SuperPoint::super_conformal_factor(Self) -> Grassmann
+pub fn SuperPoint::super_radius_sq(Self) -> Grassmann
+pub fn SuperPoint::to_repr(Self) -> @debug.Repr
+pub fn SuperPoint::volume_density(Self) -> Grassmann
+
+#derive(Eq, @debug.Debug)
+pub(all) enum SuperTropical {
+  TropZero
+  Tangible(Double)
+  Ghost(Double)
+}
+pub fn SuperTropical::equal(Self, Self) -> Bool
+pub fn SuperTropical::is_ghost(Self) -> Bool
+pub fn SuperTropical::not_equal(Self, Self) -> Bool
+pub fn SuperTropical::nu_val(Self) -> Double
+pub fn SuperTropical::st_add(Self, Self, tie_tol? : Double) -> Self
+pub fn SuperTropical::st_mul(Self, Self) -> Self
+pub fn SuperTropical::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, Hash, @debug.Debug)
+pub(all) enum SymTerm {
+  Var(String)
+  Const(String)
+  App(String, Array[SymTerm])
+}
+pub fn SymTerm::equal(Self, Self) -> Bool
+pub fn SymTerm::format_term(Self) -> String
+pub fn SymTerm::hash(Self) -> Int32
+pub fn SymTerm::hash_combine(Self, Hasher) -> Unit
+pub fn SymTerm::not_equal(Self, Self) -> Bool
+pub fn SymTerm::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct TheoremReport {
+  id : String
+  title : String
+  passed : Bool
+  max_residual : Double
+  key_invariant : Double
+  summary : String
+}
+pub fn TheoremReport::equal(Self, Self) -> Bool
+pub fn TheoremReport::not_equal(Self, Self) -> Bool
+pub fn TheoremReport::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct TropMatrix {
+  rows : Int32
+  cols : Int32
+  data : Array[Double]
+}
+pub fn TropMatrix::equal(Self, Self) -> Bool
+pub fn TropMatrix::from_fn(Int32, Int32, (Int32, Int32) -> Double) -> Self
+pub fn TropMatrix::from_projective_columns(Array[TropProjPoint]) -> Self
+pub fn TropMatrix::get(Self, Int32, Int32) -> Double
+pub fn TropMatrix::identity(Int32) -> Self
+pub fn TropMatrix::kleene_star(Self) -> Self
+pub fn TropMatrix::maslov_project_onto_polytope(Self, TropProjPoint, Double) -> TropProjPoint
+pub fn TropMatrix::maslov_spectral_radius(Self, Double, iters? : Int32) -> Double
+pub fn TropMatrix::not_equal(Self, Self) -> Bool
+pub fn TropMatrix::project_onto_polytope(Self, TropProjPoint) -> TropProjPoint
+pub fn TropMatrix::projective_apply(Self, TropProjPoint) -> TropProjPoint
+pub fn TropMatrix::residuate_vec(Self, Array[Double]) -> Array[Double]
+pub fn TropMatrix::tadd(Self, Self) -> Self
+pub fn TropMatrix::tmul(Self, Self) -> Self
+pub fn TropMatrix::tmul_vec(Self, Array[Double]) -> Array[Double]
+pub fn TropMatrix::to_repr(Self) -> @debug.Repr
+pub fn TropMatrix::tropical_eigenpair(Self) -> (Double, TropProjPoint)
+pub fn TropMatrix::zeros(Int32, Int32) -> Self
+
+#derive(Eq, @debug.Debug)
+pub(all) struct TropProjPoint {
+  coords : Array[Double]
+}
+pub fn TropProjPoint::equal(Self, Self) -> Bool
+pub fn TropProjPoint::from_fisher_natural_coords(Array[Double]) -> Self
+pub fn TropProjPoint::from_homogeneous(Array[Double]) -> Self
+pub fn TropProjPoint::from_simplex(Array[Double], Double) -> Self
+pub fn TropProjPoint::is_on_ghost_boundary(Self, tie_tol? : Double) -> Bool
+pub fn TropProjPoint::not_equal(Self, Self) -> Bool
+pub fn TropProjPoint::to_fisher_natural_coords(Self) -> Array[Double]
+pub fn TropProjPoint::to_repr(Self) -> @debug.Repr
+pub fn TropProjPoint::to_simplex(Self, Double) -> Array[Double]
+
+#derive(Eq, @debug.Debug)
+pub(all) struct Tropical {
+  val : Double
+}
+pub fn Tropical::equal(Self, Self) -> Bool
+pub fn Tropical::finite(Double) -> Self
+pub fn Tropical::is_zero(Self) -> Bool
+pub fn Tropical::not_equal(Self, Self) -> Bool
+pub fn Tropical::one() -> Self
+pub fn Tropical::tadd(Self, Self) -> Self
+pub fn Tropical::tmul(Self, Self) -> Self
+pub fn Tropical::to_repr(Self) -> @debug.Repr
+pub fn Tropical::tone() -> Self
+pub fn Tropical::tzero() -> Self
+pub fn Tropical::zero() -> Self
+pub impl IdempotentSemiring for Tropical
+
+#derive(Eq, @debug.Debug)
+pub(all) struct TropicalKanMacroAgent {
+  initial_ghost_agents : Int32
+  final_ghost_agents : Int32
+  role_assignment : Array[Int32]
+  lan_capability : Array[Double]
+  ran_safety_floor : Array[Double]
+  karp_cycle_eigenvalue : Double
+  projective_schedule : TropProjPoint
+  pushout_ontology_size : Int32
+  poincare_plucker_defect : Double
+  gromov_sharp_bound : Double
+  ultrametric_plucker_defect : Double
+  polytope_proj_contraction : Double
+}
+pub fn TropicalKanMacroAgent::equal(Self, Self) -> Bool
+pub fn TropicalKanMacroAgent::not_equal(Self, Self) -> Bool
+pub fn TropicalKanMacroAgent::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct UEAElement {
+  dim : Int32
+  terms : Array[(Array[Int32], Double)]
+}
+pub fn UEAElement::add(Self, Self) -> Self
+pub fn UEAElement::counit(Self) -> Double
+pub fn UEAElement::equal(Self, Self) -> Bool
+pub fn UEAElement::generator(Int32, Int32, c? : Double) -> Self
+pub fn UEAElement::not_equal(Self, Self) -> Bool
+pub fn UEAElement::pbw_norm(Self) -> Double
+pub fn UEAElement::scale(Self, Double) -> Self
+pub fn UEAElement::sub(Self, Self) -> Self
+pub fn UEAElement::to_repr(Self) -> @debug.Repr
+pub fn UEAElement::unit(Int32, c? : Double) -> Self
+pub fn UEAElement::universal_lift_rep(Self, Array[DenseMat]) -> DenseMat
+pub fn UEAElement::zero(Int32) -> Self
+
+#derive(Eq, @debug.Debug)
+pub(all) enum UnifyResult {
+  Unified(Substitution, SymTerm, PoincarePoint, Grassmann, Double, Double)
+  Contradiction(String)
+}
+pub fn UnifyResult::equal(Self, Self) -> Bool
+pub fn UnifyResult::not_equal(Self, Self) -> Bool
+pub fn UnifyResult::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct UniversalUnfolding {
+  base : MapGerm
+  codim : Int32
+  directions : Array[MapGerm]
+}
+pub fn UniversalUnfolding::equal(Self, Self) -> Bool
+pub fn UniversalUnfolding::fiber_at(Self, Array[Double]) -> MapGerm
+pub fn UniversalUnfolding::induce_perturbation_params(Self, MapGerm) -> Array[Double]
+pub fn UniversalUnfolding::not_equal(Self, Self) -> Bool
+pub fn UniversalUnfolding::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct WittenSUSYSystem {
+  n_v : Int32
+  n_e : Int32
+  n_f : Int32
+  m_bos : Int32
+  n_ferm : Int32
+  q_op : DenseMat
+  q_dag : DenseMat
+  hamiltonian : DenseMat
+  grading : DenseMat
+}
+pub fn WittenSUSYSystem::equal(Self, Self) -> Bool
+pub fn WittenSUSYSystem::excited_pairing_error(Self, zero_tol? : Double) -> Double
+pub fn WittenSUSYSystem::from_simplicial_complex(Int32, Array[(Int32, Int32)], Array[(Int32, Int32, Int32)], w0? : Array[Double], w1? : Array[Double], w2? : Array[Double]) -> Self
+pub fn WittenSUSYSystem::frustration_energy(Self, Array[Double]) -> Double
+pub fn WittenSUSYSystem::not_equal(Self, Self) -> Bool
+pub fn WittenSUSYSystem::project_to_bps(Self, Array[Double], zero_tol? : Double) -> Array[Double]
+pub fn WittenSUSYSystem::susy_algebra_residuals(Self) -> (Double, Double, Double)
+pub fn WittenSUSYSystem::susy_transform(Self, Double) -> DenseMat
+pub fn WittenSUSYSystem::to_repr(Self) -> @debug.Repr
+pub fn WittenSUSYSystem::witten_index(Self, Double) -> Double
+
+// Type aliases
+
+// Traits
+pub(open) trait AbelianGroup {
+  fn zero_elem() -> Self
+  fn add_elem(Self, Self) -> Self
+  fn neg_elem(Self) -> Self
+  fn sub_elem(Self, Self) -> Self = _
+  fn norm_sq(Self) -> Double
+}
+
+pub(open) trait AffineTorsor {
+  fn translate(Self, Array[Double]) -> Self
+  fn diff_vec(Self, Self) -> Array[Double]
+  fn affine_interp(Self, Self, Double) -> Self
+}
+
+pub(open) trait IdempotentSemiring : Eq {
+  fn tzero() -> Self
+  fn tone() -> Self
+  fn tadd(Self, Self) -> Self
+  fn tmul(Self, Self) -> Self
+}
+
+pub(open) trait LieSuperAlgebra : Module {
+  fn sbracket(Self, Self) -> Self
+  fn parity_of(Self) -> Parity
+  fn[R] eval_bilinear(Self, Self, (Self) -> R) -> R = _
+}
+
+pub(open) trait Module : AbelianGroup {
+  fn scale(Self, Double) -> Self
+}
+
+pub(open) trait RiemannianGeometry {
+  fn metric_inner(Self, Array[Double], Array[Double]) -> Double
+  fn exp_map(Self, Array[Double]) -> Self
+  fn log_map(Self, Self) -> Array[Double]
+  fn geodesic_dist(Self, Self) -> Double
+  fn parallel_transport(Self, Self, Array[Double]) -> Array[Double]
+}
+
+pub(open) trait Ring : AbelianGroup {
+  fn one_elem() -> Self
+  fn mul_elem(Self, Self) -> Self
+}
+
+pub(open) trait SuperAlgebra : Module + Ring {
+  fn even_part(Self) -> Self
+  fn odd_part(Self) -> Self
+  fn grade_involution(Self) -> Self = _
+  fn body(Self) -> Double
+  fn soul(Self) -> Self
+}
+
+pub(open) trait UniversalFreeObject {
+  fn unit_gen(Int32, Int32) -> Self
+  fn[A : Module] lift_linear(Self, (Int32) -> A) -> A
+}

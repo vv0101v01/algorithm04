@@ -1,0 +1,65 @@
+name: MoonBit CI
+
+on:
+  push:
+    branches:
+      - main
+      - "**"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Format, Strict Typecheck, 3-Backend Tests & 14-Theorem Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js (for JS backend verification)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install latest stable MoonBit toolchain
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+
+      - name: Report MoonBit toolchain versions
+        run: moon version --all
+
+      - name: Gate 1 — Enforce zero formatting drift (moon fmt --check)
+        run: moon fmt --check
+
+      - name: Gate 2 — Enforce zero warnings & zero errors (moon check --deny-warn)
+        run: moon check --deny-warn
+
+      - name: Gate 3 — Enforce zero public API (.mbti) drift (moon info)
+        run: |
+          moon info
+          git diff --exit-code pkg.generated.mbti
+
+      - name: Gate 4 — Run unit, regression, theorem & doctests (wasm-gc)
+        run: moon test --target wasm-gc
+
+      - name: Gate 5 — Run cross-backend verification (wasm)
+        run: moon test --target wasm
+
+      - name: Gate 6 — Run cross-backend verification (js)
+        run: moon test --target js
+
+      - name: Gate 7 — Run full 14-theorem & tri-layer emergence CLI audit
+        run: |
+          OUT="$(moon run cmd/main)"
+          printf '%s\n' "$OUT"
+          printf '%s\n' "$OUT" | grep -Fq "14 / 14 theorems verified."
