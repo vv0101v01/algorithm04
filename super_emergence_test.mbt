@@ -1641,3 +1641,688 @@ test "Roadmap M1.4: Hurst-conditioned memory retention and absorption increase m
     integrated.role_absorption_times[2] > integrated.role_absorption_times[3],
   )
 }
+
+///|
+test "Roadmap M2.1: Gentzen cut, substitution, and MP are sound across the 4^16 truth-table quotient" {
+  let audit = @super_emergence.audit_b4_reasoning_soundness()
+  assert_true(audit.sound)
+  assert_true(audit.coverage_exact)
+  assert_eq(audit.atom_count, 16)
+  assert_eq(audit.total_assignments, 4_294_967_296)
+
+  // The active value tuple is exhaustively checked; each tuple accounts for every
+  // assignment to the remaining atom slots without enumerating 4.3 billion rows.
+  assert_eq(audit.modus_ponens_value_classes, 16)
+  assert_eq(audit.modus_ponens_extensions_per_class, 268_435_456)
+  assert_eq(audit.modus_ponens_covered_assignments, audit.total_assignments)
+  assert_eq(audit.cut_value_classes, 64)
+  assert_eq(audit.cut_extensions_per_class, 67_108_864)
+  assert_eq(audit.cut_covered_assignments, audit.total_assignments)
+  assert_eq(audit.substitution_value_classes, 64)
+  assert_eq(audit.substitution_extensions_per_class, 67_108_864)
+  assert_eq(audit.substitution_covered_assignments, audit.total_assignments)
+  assert_eq(audit.modus_ponens_cases, 16)
+  assert_eq(audit.cut_cases, 64)
+  assert_eq(audit.substitution_cases, 448)
+  assert_eq(audit.substitution_sequent_cases, 128)
+  assert_true(audit.modus_ponens_sound)
+  assert_true(audit.cut_sound)
+  assert_true(audit.substitution_sound)
+  assert_eq(@super_emergence.b4_evaluate(@super_emergence.Atom(-1), []), None)
+  assert_eq(@super_emergence.b4_evaluate(@super_emergence.Not([]), []), None)
+
+  // The FDE material formula neg(A) lor B does not validate MP on a glut. The
+  // kernel's explicitly documented truth-preserving conditional does.
+  let material = @super_emergence.FourVal::lor(
+    @super_emergence.FourVal::neg(@super_emergence.Bv),
+    @super_emergence.Fv,
+  )
+  assert_true(material.is_designated())
+  assert_true(!@super_emergence.Fv.is_designated())
+  assert_eq(
+    @super_emergence.FourVal::implies(@super_emergence.Bv, @super_emergence.Fv),
+    @super_emergence.Fv,
+  )
+
+  // Substitution is simultaneous and its semantic law holds for formula-valued
+  // replacements that refer to one another.
+  let substitution = @super_emergence.B4FormulaSubstitution::new([
+    (
+      0,
+      @super_emergence.And([
+        @super_emergence.Atom(2),
+        @super_emergence.Value(@super_emergence.Fv),
+      ]),
+    ),
+    (1, @super_emergence.Value(@super_emergence.Bv)),
+    (2, @super_emergence.Atom(0)),
+  ])
+  assert_eq(
+    substitution.apply(@super_emergence.Atom(0)),
+    @super_emergence.And([
+      @super_emergence.Atom(2),
+      @super_emergence.Value(@super_emergence.Fv),
+    ]),
+  )
+  let formula = @super_emergence.Imp([
+    @super_emergence.Atom(0),
+    @super_emergence.Or([
+      @super_emergence.Atom(1),
+      @super_emergence.Not([@super_emergence.Atom(2)]),
+    ]),
+  ])
+  assert_true(
+    @super_emergence.b4_substitution_law_holds(formula, substitution, [
+      @super_emergence.Tv,
+      @super_emergence.Fv,
+      @super_emergence.Bv,
+    ]),
+  )
+}
+
+///|
+test "Roadmap M2.2: quarantined assumptions are inspected but never used by cut or MP" {
+  let p = @super_emergence.Value(@super_emergence.Tv)
+  let q = @super_emergence.Value(@super_emergence.Fv)
+  let active_first : @super_emergence.B4Sequent = {
+    assumptions: [{ formula: p, quarantined: false, }],
+    conclusion: { formula: p, quarantined: false, },
+  }
+  let active_second : @super_emergence.B4Sequent = {
+    assumptions: [{ formula: p, quarantined: false, }],
+    conclusion: { formula: p, quarantined: false, },
+  }
+  let active_cut = @super_emergence.b4_apply_cut(active_first, active_second)
+  assert_true(active_cut.input_valid && active_cut.applied)
+  assert_true(!active_cut.blocked_by_quarantine)
+  match active_cut.result {
+    Some(result) => assert_eq(result.assumptions.length(), 1)
+    None => assert_true(false)
+  }
+  let missing_cut_context : @super_emergence.B4Sequent = {
+    assumptions: [{ formula: q, quarantined: false, }],
+    conclusion: { formula: q, quarantined: false, },
+  }
+  let missing_cut = @super_emergence.b4_apply_cut(
+    active_first, missing_cut_context,
+  )
+  assert_true(!missing_cut.input_valid)
+  assert_true(!missing_cut.blocked_by_quarantine)
+
+  let quarantined_conclusion : @super_emergence.B4Sequent = {
+    assumptions: [{ formula: p, quarantined: false, }],
+    conclusion: { formula: p, quarantined: true, },
+  }
+  let blocked_by_conclusion = @super_emergence.b4_apply_cut(
+    quarantined_conclusion, active_second,
+  )
+  assert_true(blocked_by_conclusion.input_valid)
+  assert_true(!blocked_by_conclusion.applied)
+  assert_true(blocked_by_conclusion.blocked_by_quarantine)
+
+  let quarantined_occurrence : @super_emergence.B4Sequent = {
+    assumptions: [{ formula: p, quarantined: true, }],
+    conclusion: { formula: p, quarantined: false, },
+  }
+  let blocked_by_premise = @super_emergence.b4_apply_cut(
+    active_first, quarantined_occurrence,
+  )
+  assert_true(blocked_by_premise.input_valid)
+  assert_true(!blocked_by_premise.applied)
+  assert_true(blocked_by_premise.blocked_by_quarantine)
+
+  // Even if a clean duplicate also exists, a quarantined occurrence of the same
+  // proposition prevents that proposition being selected as the cut formula.
+  let mixed_occurrences : @super_emergence.B4Sequent = {
+    assumptions: [
+      { formula: p, quarantined: false, },
+      { formula: p, quarantined: true, },
+    ],
+    conclusion: { formula: p, quarantined: false, },
+  }
+  let blocked_duplicate = @super_emergence.b4_apply_cut(
+    active_first, mixed_occurrences,
+  )
+  assert_true(blocked_duplicate.blocked_by_quarantine)
+  assert_true(!blocked_duplicate.applied)
+
+  let blocked_mp = @super_emergence.b4_apply_modus_ponens(
+    { formula: p, quarantined: true, },
+    { formula: @super_emergence.Imp([p, q]), quarantined: false, },
+  )
+  assert_true(blocked_mp.input_valid)
+  assert_true(blocked_mp.blocked_by_quarantine)
+  assert_true(!blocked_mp.applied)
+  let malformed_mp = @super_emergence.b4_apply_modus_ponens(
+    { formula: p, quarantined: true, },
+    { formula: q, quarantined: false, },
+  )
+  assert_true(!malformed_mp.input_valid)
+  assert_true(!malformed_mp.blocked_by_quarantine)
+
+  let sequent = @super_emergence.B4Sequent::substitute(
+    {
+      assumptions: [{ formula: @super_emergence.Atom(0), quarantined: true, }],
+      conclusion: {
+        formula: @super_emergence.Imp([
+          @super_emergence.Atom(0),
+          @super_emergence.Atom(1),
+        ]),
+        quarantined: false,
+      },
+    },
+    @super_emergence.B4FormulaSubstitution::new([
+      (0, @super_emergence.Value(@super_emergence.Bv)),
+      (1, @super_emergence.Value(@super_emergence.Tv)),
+    ]),
+  )
+  assert_true(sequent.assumptions[0].quarantined)
+  assert_true(!sequent.conclusion.quarantined)
+}
+
+///|
+test "Roadmap M2.2: quarantine repair is auditable, rate-defined, and non-explosive" {
+  let records : Array[@super_emergence.B4QuarantineRecord] = [
+    {
+      proposition_id: 0,
+      name: "resolved proposition",
+      value: @super_emergence.Bv,
+      quarantined: true,
+      reason: "conflicting sources",
+    },
+    {
+      proposition_id: 1,
+      name: "unresolved proposition",
+      value: @super_emergence.Bv,
+      quarantined: true,
+      reason: "conflicting sources",
+    },
+    {
+      proposition_id: 2,
+      name: "already clean proposition",
+      value: @super_emergence.Tv,
+      quarantined: false,
+      reason: "verified",
+    },
+  ]
+  let decisions : Array[@super_emergence.B4RepairDecision] = [
+    {
+      proposition_id: 0,
+      repaired_value: @super_emergence.Tv,
+      evidence: "review:source-A",
+    },
+    {
+      proposition_id: 1,
+      repaired_value: @super_emergence.Bv,
+      evidence: "review:conflict-remains",
+    },
+  ]
+  let report = @super_emergence.inspect_and_repair_quarantine(
+    records, decisions,
+  )
+  assert_true(report.input_valid)
+  assert_true(report.inspection_complete)
+  assert_eq(report.inspected, 2)
+  assert_eq(report.repaired, 1)
+  assert_eq(report.unresolved, 1)
+  assert_eq(report.repair_rate, 0.5)
+  assert_true(report.non_explosion_preserved)
+  assert_eq(report.records[0].value, @super_emergence.Tv)
+  assert_true(!report.records[0].quarantined)
+  assert_true(report.records[0].reason.contains("review:source-A"))
+  assert_eq(report.records[1].value, @super_emergence.Bv)
+  assert_true(report.records[1].quarantined)
+  assert_true(report.records[1].reason.contains("conflict-remains"))
+  assert_true(records[0].quarantined) // the input snapshot is unchanged
+
+  let unresolved_premise = report.records[1].as_premise()
+  assert_true(unresolved_premise.quarantined)
+  let cut_with_unresolved : @super_emergence.B4Sequent = {
+    assumptions: [],
+    conclusion: { formula: @super_emergence.Atom(1), quarantined: false, },
+  }
+  let consumer : @super_emergence.B4Sequent = {
+    assumptions: [unresolved_premise],
+    conclusion: {
+      formula: @super_emergence.Value(@super_emergence.Tv),
+      quarantined: false,
+    },
+  }
+  let unresolved_cut = @super_emergence.b4_apply_cut(
+    cut_with_unresolved, consumer,
+  )
+  assert_true(unresolved_cut.blocked_by_quarantine)
+  assert_true(!unresolved_cut.applied)
+
+  assert_true(@super_emergence.b4_non_explosion_counterexample_exists())
+  let empty = @super_emergence.inspect_and_repair_quarantine([], [])
+  assert_true(empty.input_valid && empty.inspection_complete)
+  assert_eq(empty.inspected, 0)
+  assert_eq(empty.repair_rate, 0.0)
+  assert_true(empty.non_explosion_preserved)
+  let not_reviewed = @super_emergence.inspect_and_repair_quarantine(
+    [records[0]],
+    [],
+  )
+  assert_true(not_reviewed.input_valid && not_reviewed.inspection_complete)
+  assert_eq(not_reviewed.inspected, 1)
+  assert_eq(not_reviewed.repaired, 0)
+  assert_eq(not_reviewed.unresolved, 1)
+  assert_eq(not_reviewed.repair_rate, 0.0)
+  assert_true(not_reviewed.records[0].quarantined)
+
+  // A decision for a non-quarantined proposition is rejected rather than counted.
+  let invalid = @super_emergence.inspect_and_repair_quarantine(records, [
+    {
+      proposition_id: 2,
+      repaired_value: @super_emergence.Fv,
+      evidence: "not-quarantined",
+    },
+  ])
+  assert_true(!invalid.input_valid)
+  assert_eq(invalid.inspected, 0)
+  assert_eq(invalid.repaired, 0)
+}
+
+///|
+test "Roadmap M2.3: named epistemic aggregation is a B4 information-join semilattice" {
+  let laws = @super_emergence.audit_epistemic_aggregation_laws()
+  assert_true(laws.certified)
+  assert_eq(laws.associativity_cases, 64)
+  assert_eq(laws.commutativity_cases, 16)
+  assert_eq(laws.idempotence_cases, 4)
+  assert_eq(laws.least_upper_bound_cases, 64)
+  assert_true(laws.associative)
+  assert_true(laws.commutative)
+  assert_true(laws.idempotent)
+  assert_true(laws.least_upper_bound)
+  assert_true(laws.named_union_laws)
+  assert_true(laws.malformed_inputs_rejected)
+
+  let left = @super_emergence.ParaUniverse::new(["zeta", "alpha"], [
+    @super_emergence.Tv,
+    @super_emergence.Nv,
+  ])
+  let middle = @super_emergence.ParaUniverse::new(["beta", "alpha"], [
+    @super_emergence.Bv,
+    @super_emergence.Fv,
+  ])
+  let right = @super_emergence.ParaUniverse::new(["zeta", "gamma"], [
+    @super_emergence.Fv,
+    @super_emergence.Tv,
+  ])
+  let aggregate = @super_emergence.MultiWorld::aggregate({
+    worlds: [left, middle, right],
+  })
+  match aggregate {
+    Ok(state) => {
+      assert_eq(state.props, ["alpha", "beta", "gamma", "zeta"])
+      assert_eq(state.vals, [
+        @super_emergence.Fv,
+        @super_emergence.Bv,
+        @super_emergence.Tv,
+        @super_emergence.Bv,
+      ])
+      assert_true(state.is_well_formed())
+    }
+    Err(_) => assert_true(false)
+  }
+  let (heterogeneous_no_explosion, heterogeneous_fusion) = @super_emergence.paraconsistent_no_explosion([
+      left, middle, right,
+    ],
+  )
+  assert_true(heterogeneous_no_explosion)
+  assert_eq(heterogeneous_fusion, [
+    @super_emergence.Fv,
+    @super_emergence.Bv,
+    @super_emergence.Tv,
+    @super_emergence.Bv,
+  ])
+
+  // The compatibility vector API retains the first world's original ordering.
+  let legacy = @super_emergence.MultiWorld::merge_pointwise({
+    worlds: [left, middle, right],
+  })
+  assert_eq(legacy, [@super_emergence.Bv, @super_emergence.Fv])
+
+  match left.information_join(middle) {
+    Ok(lm) =>
+      match middle.information_join(left) {
+        Ok(ml) => assert_eq(lm, ml)
+        Err(_) => assert_true(false)
+      }
+    Err(_) => assert_true(false)
+  }
+  match left.information_join(left) {
+    Ok(ll) => {
+      assert_eq(ll.props, ["alpha", "zeta"])
+      assert_eq(ll.vals, [@super_emergence.Nv, @super_emergence.Tv])
+    }
+    Err(_) => assert_true(false)
+  }
+  let empty = @super_emergence.ParaUniverse::new([], [])
+  match left.information_join(empty) {
+    Ok(identity) =>
+      assert_eq(identity.vals, [@super_emergence.Nv, @super_emergence.Tv])
+    Err(_) => assert_true(false)
+  }
+
+  let malformed = @super_emergence.ParaUniverse::new(["p", "p"], [
+    @super_emergence.Tv,
+    @super_emergence.Fv,
+  ])
+  assert_true(!malformed.is_well_formed())
+  assert_true(
+    @super_emergence.MultiWorld::aggregate({ worlds: [malformed], })
+    is Err(@super_emergence.DuplicateProposition(0, "p")),
+  )
+  let (malformed_no_explosion, malformed_fusion) = @super_emergence.paraconsistent_no_explosion([
+      malformed,
+    ],
+  )
+  assert_true(!malformed_no_explosion)
+  assert_eq(malformed_fusion, [])
+  let misaligned = @super_emergence.ParaUniverse::new(["p"], [])
+  assert_true(@super_emergence.ParaUniverse::lookup(misaligned, "p") is None)
+  assert_true(
+    @super_emergence.MultiWorld::aggregate({ worlds: [misaligned], })
+    is Err(@super_emergence.MisalignedWorld(0)),
+  )
+  match @super_emergence.MultiWorld::aggregate({ worlds: [], }) {
+    Ok(empty_state) => assert_eq(empty_state.props.length(), 0)
+    Err(_) => assert_true(false)
+  }
+}
+
+///|
+test "Roadmap M2.4: encoded finite belief sets round-trip and obey set algebra" {
+  let report = @super_emergence.audit_godel_set_algebra()
+  assert_true(report.certified)
+  assert_eq(report.sample_sets_checked, 9)
+  assert_eq(report.universe_subsets_checked, 32_768)
+  assert_true(report.round_trip)
+  assert_true(report.canonical_encoding)
+  assert_true(report.injective_on_domain)
+  assert_true(report.union_commutative && report.union_associative)
+  assert_true(report.union_idempotent)
+  assert_true(report.intersection_commutative)
+  assert_true(report.intersection_associative)
+  assert_true(report.intersection_idempotent)
+  assert_true(report.union_identity && report.intersection_zero)
+  assert_true(report.absorption_laws)
+  assert_true(report.symmetric_difference_laws && report.subset_laws)
+  assert_true(report.distributive && report.difference_laws)
+  assert_true(report.invalid_inputs_rejected)
+
+  let a_code = match
+    @super_emergence.godel_encode_finite_set_checked([0, 2, 5, 2]) {
+    Ok(code) => code
+    Err(_) => -1
+  }
+  let b_code = match
+    @super_emergence.godel_encode_finite_set_checked([2, 3, 14]) {
+    Ok(code) => code
+    Err(_) => -1
+  }
+  assert_true(a_code >= 0 && b_code >= 0)
+  assert_eq(a_code, @super_emergence.godel_encode_finite_set([5, 0, 2]))
+  assert_eq(
+    @super_emergence.godel_decode_finite_set_checked(a_code),
+    Ok([0, 2, 5]),
+  )
+  assert_eq(@super_emergence.godel_decode_finite_set(0), [])
+
+  let a = match @super_emergence.GodelFiniteSet::from_code(a_code) {
+    Ok(set) => set
+    Err(_) => @super_emergence.GodelFiniteSet::empty()
+  }
+  let b = match @super_emergence.GodelFiniteSet::from_code(b_code) {
+    Ok(set) => set
+    Err(_) => @super_emergence.GodelFiniteSet::empty()
+  }
+  let union = a.union(b)
+  assert_eq(union.to_array(), [0, 2, 3, 5, 14])
+  assert_eq(a.intersection(b).to_array(), [2])
+  assert_eq(a.difference(b).to_array(), [0, 5])
+  assert_eq(a.symmetric_difference(b).to_array(), [0, 3, 5, 14])
+  assert_true(a.is_subset_of(union))
+  assert_true(!a.is_subset_of(b))
+  assert_true(a.contains(2) is Ok(true))
+  assert_true(a.contains(14) is Ok(false))
+
+  assert_eq(@super_emergence.godel_set_union(a_code, b_code), Ok(union.code()))
+  assert_eq(
+    @super_emergence.godel_set_intersection(a_code, b_code),
+    Ok(a.intersection(b).code()),
+  )
+  assert_eq(
+    @super_emergence.godel_set_difference(a_code, b_code),
+    Ok(a.difference(b).code()),
+  )
+  assert_eq(
+    @super_emergence.godel_set_symmetric_difference(a_code, b_code),
+    Ok(a.symmetric_difference(b).code()),
+  )
+  assert_true(
+    @super_emergence.godel_set_is_subset(a_code, union.code()) is Ok(true),
+  )
+  assert_true(
+    @super_emergence.godel_set_union(a_code, -1)
+    is Err(@super_emergence.InvalidCode(-1)),
+  )
+  assert_true(
+    @super_emergence.godel_encode_finite_set_checked([15])
+    is Err(@super_emergence.ElementOutOfRange(15)),
+  )
+  assert_true(
+    @super_emergence.godel_decode_finite_set_checked(-1)
+    is Err(@super_emergence.InvalidCode(-1)),
+  )
+  assert_true(
+    @super_emergence.godel_decode_finite_set_checked(2_147_483_647)
+    is Err(@super_emergence.InvalidCode(2_147_483_647)),
+  )
+  assert_true(
+    @super_emergence.GodelFiniteSet::empty().contains(15)
+    is Err(@super_emergence.ElementOutOfRange(15)),
+  )
+  assert_eq(@super_emergence.godel_encode_finite_set([15]), -1)
+  assert_eq(@super_emergence.godel_decode_finite_set(-1), [])
+
+  let full_universe = @super_emergence.GodelFiniteSet::from_elements([
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
+  ])
+  match full_universe {
+    Ok(set) => {
+      assert_eq(set.code(), 537_378_920)
+      assert_eq(set.to_array().length(), 15)
+    }
+    Err(_) => assert_true(false)
+  }
+  let (finite_sets_certified, _, _) = @super_emergence.finite_bicompleteness_certificate()
+  assert_true(finite_sets_certified)
+}
+
+///|
+test "M3.1 arbitrary-patch Cech nerves satisfy cocycle and global-section gluing for n=2..6" {
+  for n in 2..<=6 {
+    let bundle = @super_emergence.build_super_operator_bundle(n)
+    assert_eq(bundle.n_sets, n)
+    assert_true(bundle.is_well_formed())
+    assert_true(bundle.cocycle_defect() < 1.0e-12)
+    assert_true(bundle.patch_defect() < 1.0e-12)
+    let path = Array::makei(n, i => i)
+    assert_true(bundle.holonomy_defect(path) < 1.0e-12)
+    match bundle.glue_section(0, tol=1.0e-12) {
+      Some(global_op) =>
+        assert_true((global_op - bundle.local_ops[0]).frob_norm() < 1.0e-14)
+      None => assert_true(false)
+    }
+  }
+  // The generated transitions have a nonzero Grassmann soul (not an identity-only fixture).
+  let two_patch = @super_emergence.build_super_operator_bundle(2)
+  let id = @super_emergence.SuperMatrix::identity(2, 2)
+  assert_true((two_patch.transitions[0][1] - id).frob_norm() > 1.0e-3)
+  let invalid = @super_emergence.build_super_operator_bundle(0)
+  assert_true(!invalid.is_well_formed())
+  assert_true(!invalid.cocycle_defect().is_finite())
+}
+
+///|
+test "M3.2 Cech holonomy is natural under composition with an invertible superoperator" {
+  let ident = @super_emergence.SuperMatrix::identity(2, 2)
+  let qedge = @super_emergence.super_orthogonal_gauge()
+  let qedge_inv = qedge.inverse()
+  let overlaps : Array[Array[Bool]] = Array::makei(4, i => {
+    Array::makei(4, j => i == j)
+  })
+  // A four-cycle has nonempty double overlaps but no distinct triple overlaps, so its
+  // holonomy need not be trivial; this tests the composition law on a nontrivial product.
+  overlaps[0][1] = true
+  overlaps[1][0] = true
+  overlaps[1][2] = true
+  overlaps[2][1] = true
+  overlaps[2][3] = true
+  overlaps[3][2] = true
+  overlaps[3][0] = true
+  overlaps[0][3] = true
+  let triple_overlaps : Array[Array[Array[Bool]]] = Array::makei(4, _ => {
+    Array::makei(4, _ => Array::make(4, false))
+  })
+  for i in 0..<4 {
+    for j in 0..<4 {
+      for k in 0..<4 {
+        if i == j && j == k {
+          triple_overlaps[i][j][k] = true
+        } else if i == j {
+          triple_overlaps[i][j][k] = overlaps[i][k]
+        } else if i == k {
+          triple_overlaps[i][j][k] = overlaps[i][j]
+        } else if j == k {
+          triple_overlaps[i][j][k] = overlaps[i][j]
+        }
+      }
+    }
+  }
+  let transitions : Array[Array[@super_emergence.SuperMatrix]] = Array::makei(
+    4,
+    _ => Array::makei(4, _ => ident),
+  )
+  transitions[0][1] = qedge
+  transitions[1][0] = qedge_inv
+  transitions[1][2] = qedge
+  transitions[2][1] = qedge_inv
+  transitions[2][3] = qedge
+  transitions[3][2] = qedge_inv
+  transitions[3][0] = qedge
+  transitions[0][3] = qedge_inv
+  let locals = Array::make(4, ident)
+  let bundle : @super_emergence.SuperOperatorBundle = {
+    n_sets: 4,
+    overlaps,
+    triple_overlaps,
+    local_ops: locals,
+    transitions,
+  }
+  assert_true(bundle.is_well_formed())
+  assert_true(bundle.cocycle_defect() < 1.0e-12)
+  assert_true(bundle.patch_defect() < 1.0e-12)
+  let path = [0, 1, 2, 3]
+  assert_true(bundle.holonomy_defect(path) > 0.1)
+  let b = @super_emergence.even_super_matrix(
+    [2.0, 0.0, 0.0, 0.5],
+    [0.0, 0.0, 0.0, 0.0],
+    [0.0, 0.0, 0.0, 0.0],
+    [1.0, 0.0, 0.0, 1.0],
+  )
+  assert_true(bundle.superoperator_holonomy_defect(path, b) < 1.0e-12)
+  let q3 = @super_emergence.even_super_matrix(
+    [1.0, 0.2, 0.0, 1.0],
+    [0.0, 0.0, 0.0, 0.0],
+    [0.0, 0.0, 0.0, 0.0],
+    [1.0, 0.0, 0.0, 1.0],
+  )
+  let q4 = @super_emergence.even_super_matrix(
+    [0.8, 0.0, 0.0, 1.25],
+    [0.0, 0.0, 0.0, 0.0],
+    [0.0, 0.0, 0.0, 0.0],
+    [1.0, 0.0, 0.0, 1.0],
+  )
+  let gauges = [b, qedge, q3, q4]
+  assert_true(bundle.coboundary_holonomy_defect(path, gauges) < 1.0e-12)
+  match bundle.coboundary(gauges) {
+    Some(gauged) => {
+      assert_true(gauged.cocycle_defect() < 1.0e-12)
+      assert_true(gauged.patch_defect() < 1.0e-12)
+    }
+    None => assert_true(false)
+  }
+  assert_true(!bundle.holonomy_defect([0, 9]).is_finite())
+
+  // Pairwise overlaps alone do not imply a genuine triple intersection in the stored nerve.
+  let pairwise_only = @super_emergence.build_super_operator_bundle(3)
+  pairwise_only.transitions[0][2] = ident
+  pairwise_only.transitions[2][0] = ident
+  assert_true(pairwise_only.cocycle_defect() > 1.0e-3)
+  for i in 0..<3 {
+    for j in 0..<3 {
+      for k in 0..<3 {
+        if i != j && j != k && i != k {
+          pairwise_only.triple_overlaps[i][j][k] = false
+        }
+      }
+    }
+  }
+  assert_true(pairwise_only.is_well_formed())
+  assert_true(pairwise_only.cocycle_defect() < 1.0e-12)
+  assert_true(@super_emergence.CechCategory::from_bundle(pairwise_only) is None)
+}
+
+///|
+test "M3.3 Cech bundle transitions form a category with associative composition and units" {
+  let bundle = @super_emergence.build_super_operator_bundle(4)
+  match @super_emergence.CechCategory::from_bundle(bundle, tolerance=1.0e-10) {
+    Some(category) => {
+      assert_true(category.is_well_formed())
+      assert_true(category.associativity_defect() < 1.0e-12)
+      assert_true(category.unit_defect() < 1.0e-12)
+      assert_true(category.axioms_hold(tol=1.0e-12))
+      match (category.morphism(0, 1), category.morphism(1, 2)) {
+        (Some(first), Some(second)) =>
+          match category.compose(first, second) {
+            Some(composite) => {
+              assert_eq(composite.src, 0)
+              assert_eq(composite.dst, 2)
+              assert_true(
+                (composite.transport - bundle.transitions[0][2]).frob_norm() <
+                1.0e-12,
+              )
+            }
+            None => assert_true(false)
+          }
+        _ => assert_true(false)
+      }
+    }
+    None => assert_true(false)
+  }
+  // A non-transitive overlap relation is a valid Čech descent datum but not this patch-pair
+  // category model: composition has no arrow on the missing endpoint overlap.
+  let nontransitive = @super_emergence.build_super_operator_bundle(3)
+  nontransitive.overlaps[0][2] = false
+  nontransitive.overlaps[2][0] = false
+  for i in 0..<3 {
+    for j in 0..<3 {
+      for k in 0..<3 {
+        let has_zero = i == 0 || j == 0 || k == 0
+        let has_two = i == 2 || j == 2 || k == 2
+        if has_zero && has_two {
+          nontransitive.triple_overlaps[i][j][k] = false
+        }
+      }
+    }
+  }
+  assert_true(nontransitive.is_well_formed())
+  assert_true(nontransitive.cocycle_defect() < 1.0e-12)
+  assert_true(nontransitive.patch_defect() < 1.0e-12)
+  assert_true(@super_emergence.CechCategory::from_bundle(nontransitive) is None)
+}

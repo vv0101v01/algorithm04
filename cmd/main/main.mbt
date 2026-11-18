@@ -1,8 +1,7 @@
 ///|
 /// Unified CLI demo for `arena/super_emergence` (v2.0.0): verifies all 18 composite
-/// theorems (Layers I-IV) and replays the four-layer quasi-agentic emergence engine
-/// `SGNE-Flow` + `SGNE-Trop-Kan` + `SGNE-Germ-Micro` + `SGNE-Syn-Mem-Para`, followed by
-/// the eight merged mathematical-structure demos and the M1.1/M1.2 acceptance report.
+/// theorems (Layers I-IV), replays the four-layer quasi-agentic emergence engine, and
+/// reports the M1.1–M1.4, M2.1–M2.4 and M3.1–M3.3 roadmap acceptance audits.
 /// Run with `moon run cmd/main`.
 
 ///|
@@ -103,6 +102,8 @@ fn main {
   report_part_8()
   report_part_9()
   report_part_10()
+  report_part_11()
+  report_part_12()
 }
 
 ///|
@@ -626,6 +627,145 @@ fn report_part_10() -> Unit {
   )
   println(
     "         distilled SGNE retention at H=0.90 = \{fmt_double_array(distilled_memory.role_retention, 4)} | mean-increasing = \{memory_trend.mean_absorption_strictly_increasing} | each-role-increasing = \{memory_trend.each_role_absorption_strictly_increasing} | role order = \{memory_trend.within_sample_role_order_preserved} | PASS = \{memory_ok}",
+  )
+  println(
+    "--------------------------------------------------------------------------------",
+  )
+}
+
+///|
+/// Report roadmap M2.1–M2.4: B_4 reasoning, repair, epistemic aggregation, and Gödel sets.
+fn report_part_11() -> Unit {
+  println("[Part 11] M2.1–M2.4 Belief Reasoning & Algebraic Aggregation:")
+  println(
+    "--------------------------------------------------------------------------------",
+  )
+  let reasoning = @se.audit_b4_reasoning_soundness()
+  let reasoning_ok = reasoning.sound &&
+    reasoning.coverage_exact &&
+    reasoning.total_assignments == 4_294_967_296 &&
+    reasoning.modus_ponens_covered_assignments == reasoning.total_assignments &&
+    reasoning.cut_covered_assignments == reasoning.total_assignments &&
+    reasoning.substitution_covered_assignments == reasoning.total_assignments
+  println(
+    "  [M2.1] MP/cut/substitution coverage = \{reasoning.modus_ponens_covered_assignments}/\{reasoning.cut_covered_assignments}/\{reasoning.substitution_covered_assignments} of \{reasoning.total_assignments} | local cases = \{reasoning.modus_ponens_cases}/\{reasoning.cut_cases}/\{reasoning.substitution_cases} formulas + \{reasoning.substitution_sequent_cases} sequents | sound = \{reasoning.sound} | PASS = \{reasoning_ok}",
+  )
+
+  let repair_inputs : Array[@se.B4QuarantineRecord] = [
+    {
+      proposition_id: 0,
+      name: "reviewed proposition",
+      value: @se.Bv,
+      quarantined: true,
+      reason: "conflicting reports",
+    },
+    {
+      proposition_id: 1,
+      name: "unresolved proposition",
+      value: @se.Bv,
+      quarantined: true,
+      reason: "conflicting reports",
+    },
+  ]
+  let repair_decisions : Array[@se.B4RepairDecision] = [
+    { proposition_id: 0, repaired_value: @se.Tv, evidence: "review:verified", },
+    {
+      proposition_id: 1,
+      repaired_value: @se.Bv,
+      evidence: "review:conflict-remains",
+    },
+  ]
+  let repair = @se.inspect_and_repair_quarantine(
+    repair_inputs, repair_decisions,
+  )
+  let unresolved = repair.records[1].as_premise()
+  let cut_source : @se.B4Sequent = {
+    assumptions: [],
+    conclusion: { formula: @se.Atom(1), quarantined: false, },
+  }
+  let cut_consumer : @se.B4Sequent = {
+    assumptions: [unresolved],
+    conclusion: { formula: @se.Value(@se.Tv), quarantined: false, },
+  }
+  let blocked_cut = @se.b4_apply_cut(cut_source, cut_consumer)
+  let repair_ok = repair.input_valid &&
+    repair.inspection_complete &&
+    repair.inspected == 2 &&
+    repair.repaired == 1 &&
+    repair.unresolved == 1 &&
+    repair.repair_rate == 0.5 &&
+    repair.non_explosion_preserved &&
+    blocked_cut.blocked_by_quarantine &&
+    !blocked_cut.applied
+  println(
+    "  [M2.2] inspected/repaired/unresolved = \{repair.inspected}/\{repair.repaired}/\{repair.unresolved} | repair rate = \{fmt_fixed(repair.repair_rate, 2)} | cut blocked = \{blocked_cut.blocked_by_quarantine} | non-explosion = \{repair.non_explosion_preserved} | PASS = \{repair_ok}",
+  )
+
+  let aggregation = @se.audit_epistemic_aggregation_laws()
+  let aggregation_ok = aggregation.certified &&
+    aggregation.associativity_cases == 64 &&
+    aggregation.commutativity_cases == 16 &&
+    aggregation.idempotence_cases == 4 &&
+    aggregation.least_upper_bound_cases == 64
+  println(
+    "  [M2.3] B_4 product information join | A/C/I = \{aggregation.associative}/\{aggregation.commutative}/\{aggregation.idempotent} | LUB = \{aggregation.least_upper_bound} | named supports = \{aggregation.named_union_laws} | PASS = \{aggregation_ok}",
+  )
+
+  let godel = @se.audit_godel_set_algebra()
+  let godel_ok = godel.certified &&
+    godel.sample_sets_checked == 9 &&
+    godel.universe_subsets_checked == 32_768
+  println(
+    "  [M2.4] Gödel finite belief sets | samples = \{godel.sample_sets_checked} | subsets = \{godel.universe_subsets_checked} | round-trip/injective = \{godel.round_trip}/\{godel.injective_on_domain} | union/intersection ACI = \{godel.union_associative && godel.union_commutative && godel.union_idempotent}/\{godel.intersection_associative && godel.intersection_commutative && godel.intersection_idempotent} | identity/zero/absorption = \{godel.union_identity}/\{godel.intersection_zero}/\{godel.absorption_laws} | distributive = \{godel.distributive} | difference/symmetric-difference/subset = \{godel.difference_laws}/\{godel.symmetric_difference_laws}/\{godel.subset_laws} | PASS = \{godel_ok}",
+  )
+  println(
+    "--------------------------------------------------------------------------------",
+  )
+}
+
+///|
+/// Report roadmap M3.1–M3.3: arbitrary patch counts, holonomy naturality, and Čech laws.
+fn report_part_12() -> Unit {
+  println("[Part 12] M3.1–M3.3 Composable Čech Super-Operator Bundles:")
+  println(
+    "--------------------------------------------------------------------------------",
+  )
+  let mut family_defect = 0.0
+  let mut all_glue = true
+  for n in 2..<=6 {
+    let bundle = @se.build_super_operator_bundle(n)
+    let path = Array::makei(n, i => i)
+    let defect = bundle
+      .cocycle_defect()
+      .max(bundle.patch_defect())
+      .max(bundle.holonomy_defect(path))
+    family_defect = family_defect.max(defect)
+    match bundle.glue_section(0, tol=1.0e-12) {
+      Some(_) => ()
+      None => all_glue = false
+    }
+  }
+  let m31_ok = family_defect < 1.0e-12 && all_glue
+  println(
+    "  [M3.1] patches = 2..6 | cocycle/descent/holonomy max = \{fmt_sci(family_defect)} | all sections glue = \{all_glue} | PASS = \{m31_ok}",
+  )
+
+  let bundle = @se.build_super_operator_bundle(4)
+  let q = @se.super_orthogonal_gauge()
+  let naturality = bundle.superoperator_holonomy_defect([0, 1, 2, 3], q)
+  let m32_ok = naturality < 1.0e-12
+  println(
+    "  [M3.2] holonomy/superoperator composition defect = \{fmt_sci(naturality)} | PASS = \{m32_ok}",
+  )
+
+  let category_defect = match
+    @se.CechCategory::from_bundle(bundle, tolerance=1.0e-10) {
+    Some(category) => category.axiom_defect()
+    None => 1.0 / 0.0
+  }
+  let m33_ok = category_defect < 1.0e-12
+  println(
+    "  [M3.3] Čech category associativity/unit max defect = \{fmt_sci(category_defect)} | PASS = \{m33_ok}",
   )
   println(
     "--------------------------------------------------------------------------------",

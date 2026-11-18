@@ -27,7 +27,7 @@
 | 基礎定理 | 31 條，黑盒測試覆蓋 |
 | 湧現層 | 4 層：`SGNE-Flow` / `SGNE-Trop-Kan` / `SGNE-Germ-Micro` / `SGNE-Syn-Mem-Para` |
 | 角色 | 8 個原型單元 → 2 Coordinator / 2 Sensor / 2 Planner / 2 Executor |
-| 測試 | 62/62，三後端一致 |
+| 測試 | 70/70，三後端一致（含 M2.1–M2.4、M3.1–M3.3；本地） |
 | 未解問題 | 見第三節 |
 
 ---
@@ -60,8 +60,17 @@
 | :--- | :--- | :--- |
 | M2.1 | **$B_4$ 上的 Gentzen 式推理**：實作三值／四值邏輯之 cut、substitution、modus ponens | 於 $4^{16}$ 組合上窮舉驗證健全性 |
 | M2.2 | **隔離區語意**：被 `quarantined = true` 之命題不得參與 cut，但須可被「修復程序」檢視 | 爆炸仍不可能；修復率可度量 |
-| M2.3 | **Epistemic 合併算子**：多世界融合由單一 join 擴充為 Belnap–Gärdenfors–Malitz 偏序上的資訊聚合 | 聚合具反幺半性與幂等性 |
-| M2.4 | **Gödel 編碼之推論用法**：以 `godel_encode_finite_set` 為命題集合之指稱，使 agent 可對自身信念做集合運算 | 編解碼往返一致（已達成）＋ 集合代數恆等式 |
+| M2.3 | **Epistemic 合併算子**：多世界融合擴充為 Belnap–Gärdenfors–Malitz 資訊偏序上的命名命題聚合 | 結合、交換、冪等；空世界為單位；逐點 join 是最小上界 |
+| M2.4 | **Gödel 編碼之推論用法**：以 `godel_encode_finite_set` 表示有限命題集合，使 agent 可對信念做集合運算 | 編解碼往返一致、典範／單射編碼及集合代數恆等式 |
+
+**實作狀態（2026-11-18）**：M2.1–M2.4 已落地；本地格式、零警告型別檢查、三後端測試與 CLI Gate 均通過，最終差異審查亦已完成。提交、推送及 GitHub Hosted CI 因此工作區未配置 GitHub 認證／提交者身分而待處理；本地通過不代表 Hosted CI 已通過。
+
+- **M2.1**：新增型別化 B₄ 命題樹、指定值語意 `{Tv, Bv}`、單後件 sequent、cut、同步公式替換與 MP。`Imp` 使用明確的 MP-健全四值條件式；它在 `{Fv,Tv}` 上等同經典蘊涵，但刻意不等同 FDE 材料式 `¬A ∨ B`（後者在 `Bv → Fv` 上會使 MP 失效）。替換依結構遞迴，並保持 sequent 之隔離標記。
+- **窮舉策略**：不執行 4,294,967,296 次 CI 迴圈；對 MP 完整列舉 16 個 `(A,B)` 真值類，對 cut 列舉 64 個 `(A,B,C)` 類，並對替換影像的三個 B₄ 值列舉 64 類。其餘自由原子槽以 `16×4^14` 或 `64×4^13` 精確計數，三條路徑各涵蓋 `4^16 = 4,294,967,296` 個 schema-local 組合。複合公式的有效性由其 B₄ 評值歸約至這些類；替換另以公式語意律與 sequent 語意不變性檢查。報表明確標示這是完整的真值類商集，不是假稱實際跑過 43 億次迴圈。
+- **M2.2**：`quarantined = true` 的 cut 中介結論、cut 公式出現及 MP 輸入均被拒絕；非相關隔離前提不會被啟用。修復器可逐筆檢視記錄；只有附非空外部證據且提出非 `Bv` 值才解除隔離，仍為 `Bv` 或未提交決定者會保持隔離。修復率定義為「成功解除隔離數／已檢視隔離記錄數」，分母為零時回報 `0.0`；此外保留可執行的 FDE 爆炸反模型。外部證據由呼叫者提供，核心只記錄、不驗真。
+- **M2.3**：`MultiWorld::aggregate` 驗證每個 world 的命題和值對齊、名稱唯一；於各命題的 `B₄` 資訊序上逐點取最小上界，未出現命題補 `Nv`，並以字典序典範排序命題名稱。`ParaUniverse::information_join` 與 `paraconsistent_no_explosion` 共用該實作；舊 `merge_pointwise` 保持首個 world 的欄位順序以維持相容。有限稽核窮舉 `B₄` join 的 64 個結合、16 個交換、4 個冪等及 64 個最小上界檢查，另檢查命名聯集的交換、空單位、冪等、結合與錯誤輸入拒絕。名稱比較明確採字典序（而非 MoonBit `String` 預設的短字典序），避免 canonical order 被誤判。
+- **M2.4**：`GodelFiniteSet` 將 `{0,…,14}` 子集存為 15-bit mask，再以 `π(|S|, mask)` Cantor 配對作典範 Gödel code；此 API 是明確有界的有限命題全集，不宣稱表示任意有限整數集合。checked API 拒絕越界元素及無效／非典範碼；集合類別支援聯集、交集、差集、對稱差、子集及 array 轉換。稽核對 9 個輸入樣本檢查典範化，並窮舉有界全集的 32,768 個子集做 code→set 往返（因此亦檢查該域上的單射性）；另檢查聯集與交集半格律、單位／零元／吸收、分配律、差集分解、對稱差律、子集律及無效輸入。有限雙完備性證書重用同一稽核。
+- **驗證**：本地 `moon fmt`、`moon check --deny-warn`、`wasm-gc`／`wasm`／`js` 各 67/67 測試與 `moon run cmd/main` 通過；CI Gate 7 亦驗收 M2.3/M2.4 CLI 摘要。完整 Hosted CI 尚待推送後執行，詳情以實際 CI Gate 為準。
 
 ### M3 — 把「叢」變成可組合的（v2.3）
 
@@ -72,6 +81,13 @@
 | M3.1 | **任意 patch 數之 Čech 神經網** | $n=2..6$ 之餘擺與拼接皆滿足 |
 | M3.2 | **叢之 Čech 餘擺與超算子 $B$ 的合成** | $\operatorname{hol}(B\circ\text{holonomy}) = \operatorname{hol}(B)\circ\operatorname{holonomy}$ |
 | M3.3 | **Čech 叢上之 Čech 範疇** | 範疇公理（結合、單位）機器檢驗 |
+
+**實作狀態（2026-11-18）**：M3.1–M3.3 已落地，並接入 Theorem XVII、常駐測試、CLI Gate 7 與 CI 工作流程。Hosted CI 仍須推送後以實際 run 為準。
+
+- **M3.1**：`build_super_operator_bundle(n_sets)` 以逐步 frame $F_i$ 構造 $g_{ij}=F_i^{-1}F_j$ 及 $s_i=F_i^{st}s_0F_i$；驗證器分別儲存 pair 與 genuine triple intersections（不把 pairwise clique 誤當共同交集），並檢查 shape、偶性、對稱／重複頂點一致性、完整 1-cocycle（含 identity／逆轉移）與 patch descent。`glue_section` 在指定共同 trivialization 下回傳拼接截面。固定 canonical fixture 改為同一泛化 builder 的三 patch 呼叫。
+- **M3.2**：`coboundary` 實作非交換 Čech 0-cochain 作用 $g'_{ij}=h_i^{-1}g_{ij}h_j$，並同步變換局部截面；閉環 holonomy 按基點 gauge 共軛。常值情形即超算子 $B=\mathrm{Ad}_Q(X)=QXQ^{-1}$，機器檢查逐邊作用與整體 holonomy 作用相容。測試含非平凡四環 holonomy、非均勻且非交換的可逆 gauge，避免只檢查單位 holonomy。
+- **M3.3**：`CechCategory` 的物件為 patch、態射攜帶 transition operator；`compose` 按路徑順序作矩陣乘法，`from_bundle` 拒絕不滿足 cocycle、overlap 非傳遞或缺少可合成三重交集的輸入。以所有可合成 patch 四元組窮舉結合律，並對每個態射檢查左右單位律。此有限 patch-pair 類別模型要求 overlap 關係具傳遞性；任意非傳遞覆蓋仍可用 bundle 層的 Čech descent API，但不會被錯誤包裝成此類別。
+- **驗證**：`moon fmt --check`、`moon info`、`moon check --deny-warn` 通過；`wasm-gc`、`wasm`、`js` 各 70/70；CLI theorem 與 M3.1–M3.3 acceptance 輸出皆 PASS。CI Gate 7 已加入 M3.1–M3.3 摘要檢查；Hosted CI 尚待推送。
 
 ---
 

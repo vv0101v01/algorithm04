@@ -28,15 +28,39 @@ pub fn anticommutator_family_defect(Array[DenseMat]) -> Double
 
 pub fn approx(Double, Double, Double) -> Bool
 
+pub fn audit_b4_reasoning_soundness() -> B4ReasoningSoundnessReport
+
 pub fn audit_complete_intersection(MapGerm, koszul_check_deg? : Int32) -> CompleteIntersectionReport
+
+pub fn audit_epistemic_aggregation_laws() -> EpistemicAggregationLawReport
+
+pub fn audit_godel_set_algebra() -> GodelSetAlgebraReport
 
 pub fn audit_hurst_memory_monotonicity(Array[Double]) -> HurstMemoryTrendReport
 
 pub fn audit_serre_normality(MapGerm) -> SerreNormalityReport
 
+pub fn b4_apply_cut(B4Sequent, B4Sequent) -> B4RuleApplication
+
+pub fn b4_apply_modus_ponens(B4Premise, B4Premise) -> B4RuleApplication
+
+pub fn b4_evaluate(B4Formula, Array[FourVal]) -> FourVal?
+
+pub fn b4_identity(B4Formula) -> B4Sequent
+
+pub fn b4_non_explosion_counterexample_exists() -> Bool
+
+pub fn b4_sequent_preserves_designation(B4Sequent, Array[FourVal]) -> Bool
+
+pub fn b4_substitution_law_holds(B4Formula, B4FormulaSubstitution, Array[FourVal]) -> Bool
+
+pub fn b4_substitution_preserves_sequent_semantics(B4Sequent, B4FormulaSubstitution, Array[FourVal]) -> Bool
+
 pub fn build_canonical_super_bundle() -> SuperOperatorBundle
 
 pub fn build_global_section(Array[Array[Double]], Array[Array[Double]], Int32, Double) -> Bool
+
+pub fn build_super_operator_bundle(Int32) -> SuperOperatorBundle
 
 pub fn canonical_role_mass_orbits() -> Array[SuperMassTensor]
 
@@ -102,6 +126,8 @@ pub fn eval_supertropical_poly(Array[Double], Array[Array[Double]], Array[Double
 
 pub fn even_super_matrix(Array[Double], Array[Double], Array[Double], Array[Double]) -> SuperMatrix
 
+pub fn even_super_matrix_with_odd_blocks(Array[Double], Array[Grassmann], Array[Grassmann], Array[Double], Int32) -> SuperMatrix
+
 pub fn evolve_ricci_fisher_curvature(Double, Int32, Double, Double, Double, Double, Int32) -> (Array[Double], Double)
 
 pub fn evolve_susy_heat_flow(WittenSUSYSystem, Array[Double], Double) -> Array[Double]
@@ -152,7 +178,21 @@ pub fn gmat_mul(Array[Grassmann], Int32, Int32, Array[Grassmann], Int32, Int32) 
 
 pub fn godel_decode_finite_set(Int32) -> Array[Int32]
 
+pub fn godel_decode_finite_set_checked(Int32) -> Result[Array[Int32], GodelSetError]
+
 pub fn godel_encode_finite_set(Array[Int32]) -> Int32
+
+pub fn godel_encode_finite_set_checked(Array[Int32]) -> Result[Int32, GodelSetError]
+
+pub fn godel_set_difference(Int32, Int32) -> Result[Int32, GodelSetError]
+
+pub fn godel_set_intersection(Int32, Int32) -> Result[Int32, GodelSetError]
+
+pub fn godel_set_is_subset(Int32, Int32) -> Result[Bool, GodelSetError]
+
+pub fn godel_set_symmetric_difference(Int32, Int32) -> Result[Int32, GodelSetError]
+
+pub fn godel_set_union(Int32, Int32) -> Result[Int32, GodelSetError]
 
 pub fn[L : LieSuperAlgebra] graded_skew_defect(L, L) -> L
 
@@ -167,6 +207,8 @@ pub fn hermitian2_projector_plus(Hermitian2) -> (Double, Double, Quat)
 pub fn ideal_colength(JetBasis, Array[PolyGerm]) -> Int32
 
 pub fn init_disordered_colony(Int32, Double) -> Array[ProtoAgent]
+
+pub fn inspect_and_repair_quarantine(Array[B4QuarantineRecord], Array[B4RepairDecision]) -> B4RepairReport
 
 pub fn is_k_versal_unfolding(MapGerm, Array[MapGerm]) -> Bool
 
@@ -453,6 +495,97 @@ pub fn AffinePoint::translate(Self, Array[Double]) -> Self
 pub impl AffineTorsor for AffinePoint
 
 #derive(Eq, @debug.Debug)
+pub(all) enum B4Formula {
+  Atom(Int32)
+  Value(FourVal)
+  Not(Array[B4Formula])
+  And(Array[B4Formula])
+  Or(Array[B4Formula])
+  Imp(Array[B4Formula])
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct B4FormulaSubstitution {
+  bindings : Array[(Int32, B4Formula)]
+}
+pub fn B4FormulaSubstitution::apply(Self, B4Formula) -> B4Formula
+pub fn B4FormulaSubstitution::new(Array[(Int32, B4Formula)]) -> Self
+
+#derive(Eq, @debug.Debug)
+pub(all) struct B4Premise {
+  formula : B4Formula
+  quarantined : Bool
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct B4QuarantineRecord {
+  proposition_id : Int32
+  name : String
+  value : FourVal
+  quarantined : Bool
+  reason : String
+}
+pub fn B4QuarantineRecord::as_premise(Self) -> B4Premise
+
+#derive(Eq, @debug.Debug)
+pub(all) struct B4ReasoningSoundnessReport {
+  atom_count : Int32
+  total_assignments : Int64
+  modus_ponens_value_classes : Int32
+  modus_ponens_extensions_per_class : Int64
+  modus_ponens_covered_assignments : Int64
+  cut_value_classes : Int32
+  cut_extensions_per_class : Int64
+  cut_covered_assignments : Int64
+  substitution_value_classes : Int32
+  substitution_extensions_per_class : Int64
+  substitution_covered_assignments : Int64
+  modus_ponens_cases : Int32
+  cut_cases : Int32
+  substitution_cases : Int32
+  substitution_sequent_cases : Int32
+  modus_ponens_sound : Bool
+  cut_sound : Bool
+  substitution_sound : Bool
+  coverage_exact : Bool
+  sound : Bool
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct B4RepairDecision {
+  proposition_id : Int32
+  repaired_value : FourVal
+  evidence : String
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct B4RepairReport {
+  input_valid : Bool
+  inspection_complete : Bool
+  records : Array[B4QuarantineRecord]
+  inspected : Int32
+  repaired : Int32
+  unresolved : Int32
+  repair_rate : Double
+  non_explosion_preserved : Bool
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct B4RuleApplication {
+  input_valid : Bool
+  applied : Bool
+  blocked_by_quarantine : Bool
+  result : B4Sequent?
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct B4Sequent {
+  assumptions : Array[B4Premise]
+  conclusion : B4Premise
+}
+pub fn B4Sequent::substitute(Self, B4FormulaSubstitution) -> Self
+
+#derive(Eq, @debug.Debug)
 pub(all) struct BarrierEscapeReport {
   conservative_escapes : Int32
   metriplectic_escapes : Int32
@@ -464,6 +597,28 @@ pub(all) struct BarrierEscapeReport {
 pub fn BarrierEscapeReport::equal(Self, Self) -> Bool
 pub fn BarrierEscapeReport::not_equal(Self, Self) -> Bool
 pub fn BarrierEscapeReport::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct CechCategory {
+  bundle : SuperOperatorBundle
+  tolerance : Double
+}
+pub fn CechCategory::associativity_defect(Self) -> Double
+pub fn CechCategory::axiom_defect(Self) -> Double
+pub fn CechCategory::axioms_hold(Self, tol? : Double) -> Bool
+pub fn CechCategory::compose(Self, CechMorphism, CechMorphism) -> CechMorphism?
+pub fn CechCategory::from_bundle(SuperOperatorBundle, tolerance? : Double) -> Self?
+pub fn CechCategory::identity(Self, Int32) -> CechMorphism?
+pub fn CechCategory::is_well_formed(Self) -> Bool
+pub fn CechCategory::morphism(Self, Int32, Int32) -> CechMorphism?
+pub fn CechCategory::unit_defect(Self) -> Double
+
+#derive(Eq, @debug.Debug)
+pub(all) struct CechMorphism {
+  src : Int32
+  dst : Int32
+  transport : SuperMatrix
+}
 
 #derive(Eq, @debug.Debug)
 pub(all) struct CompleteIntersectionReport {
@@ -613,6 +768,27 @@ pub fn EmergenceSnapshot::not_equal(Self, Self) -> Bool
 pub fn EmergenceSnapshot::to_repr(Self) -> @debug.Repr
 
 #derive(Eq, @debug.Debug)
+pub(all) enum EpistemicAggregationError {
+  MisalignedWorld(Int32)
+  DuplicateProposition(Int32, String)
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct EpistemicAggregationLawReport {
+  associativity_cases : Int32
+  commutativity_cases : Int32
+  idempotence_cases : Int32
+  least_upper_bound_cases : Int32
+  associative : Bool
+  commutative : Bool
+  idempotent : Bool
+  least_upper_bound : Bool
+  named_union_laws : Bool
+  malformed_inputs_rejected : Bool
+  certified : Bool
+}
+
+#derive(Eq, @debug.Debug)
 pub(all) struct FinitePullback {
   n_apex : Int32
   proj_a : Hom
@@ -644,6 +820,7 @@ pub(all) enum FourVal {
 pub fn FourVal::equal(Self, Self) -> Bool
 pub fn FourVal::hash(Self) -> Int32
 pub fn FourVal::hash_combine(Self, Hasher) -> Unit
+pub fn FourVal::implies(Self, Self) -> Self
 pub fn FourVal::is_designated(Self) -> Bool
 pub fn FourVal::join(Self, Self) -> Self
 pub fn FourVal::land(Self, Self) -> Self
@@ -706,6 +883,52 @@ pub(all) struct GermMicrolocalReport {
 pub fn GermMicrolocalReport::equal(Self, Self) -> Bool
 pub fn GermMicrolocalReport::not_equal(Self, Self) -> Bool
 pub fn GermMicrolocalReport::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub struct GodelFiniteSet {
+  mask : Int32
+}
+pub fn GodelFiniteSet::code(Self) -> Int32
+pub fn GodelFiniteSet::contains(Self, Int32) -> Result[Bool, GodelSetError]
+pub fn GodelFiniteSet::difference(Self, Self) -> Self
+pub fn GodelFiniteSet::empty() -> Self
+pub fn GodelFiniteSet::from_code(Int32) -> Result[Self, GodelSetError]
+pub fn GodelFiniteSet::from_elements(Array[Int32]) -> Result[Self, GodelSetError]
+pub fn GodelFiniteSet::intersection(Self, Self) -> Self
+pub fn GodelFiniteSet::is_subset_of(Self, Self) -> Bool
+pub fn GodelFiniteSet::symmetric_difference(Self, Self) -> Self
+pub fn GodelFiniteSet::to_array(Self) -> Array[Int32]
+pub fn GodelFiniteSet::union(Self, Self) -> Self
+
+#derive(Eq, @debug.Debug)
+pub(all) struct GodelSetAlgebraReport {
+  sample_sets_checked : Int32
+  universe_subsets_checked : Int32
+  round_trip : Bool
+  canonical_encoding : Bool
+  injective_on_domain : Bool
+  union_commutative : Bool
+  union_associative : Bool
+  union_idempotent : Bool
+  intersection_commutative : Bool
+  intersection_associative : Bool
+  intersection_idempotent : Bool
+  union_identity : Bool
+  intersection_zero : Bool
+  absorption_laws : Bool
+  symmetric_difference_laws : Bool
+  subset_laws : Bool
+  distributive : Bool
+  difference_laws : Bool
+  invalid_inputs_rejected : Bool
+  certified : Bool
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) enum GodelSetError {
+  ElementOutOfRange(Int32)
+  InvalidCode(Int32)
+}
 
 #derive(Eq, @debug.Debug)
 pub(all) struct GradedTensor {
@@ -999,6 +1222,7 @@ pub fn MultiMeroGerm::to_repr(Self) -> @debug.Repr
 pub(all) struct MultiWorld {
   worlds : Array[ParaUniverse]
 }
+pub fn MultiWorld::aggregate(Self) -> Result[ParaUniverse, EpistemicAggregationError]
 pub fn MultiWorld::equal(Self, Self) -> Bool
 pub fn MultiWorld::merge_pointwise(Self) -> Array[FourVal]
 pub fn MultiWorld::not_equal(Self, Self) -> Bool
@@ -1084,6 +1308,8 @@ pub(all) struct ParaUniverse {
   vals : Array[FourVal]
 }
 pub fn ParaUniverse::equal(Self, Self) -> Bool
+pub fn ParaUniverse::information_join(Self, Self) -> Result[Self, EpistemicAggregationError]
+pub fn ParaUniverse::is_well_formed(Self) -> Bool
 pub fn ParaUniverse::lookup(Self, String) -> FourVal?
 pub fn ParaUniverse::new(Array[String], Array[FourVal]) -> Self
 pub fn ParaUniverse::not_equal(Self, Self) -> Bool
@@ -1466,15 +1692,23 @@ pub impl Sub for SuperMatrix
 #derive(Eq, @debug.Debug)
 pub(all) struct SuperOperatorBundle {
   n_sets : Int32
+  overlaps : Array[Array[Bool]]
+  triple_overlaps : Array[Array[Array[Bool]]]
   local_ops : Array[SuperMatrix]
   transitions : Array[Array[SuperMatrix]]
 }
+pub fn SuperOperatorBundle::coboundary(Self, Array[SuperMatrix]) -> Self?
+pub fn SuperOperatorBundle::coboundary_holonomy_defect(Self, Array[Int32], Array[SuperMatrix]) -> Double
 pub fn SuperOperatorBundle::cocycle_defect(Self) -> Double
 pub fn SuperOperatorBundle::equal(Self, Self) -> Bool
+pub fn SuperOperatorBundle::glue_section(Self, Int32, tol? : Double) -> SuperMatrix?
+pub fn SuperOperatorBundle::holonomy(Self, Array[Int32]) -> SuperMatrix?
 pub fn SuperOperatorBundle::holonomy_defect(Self, Array[Int32]) -> Double
+pub fn SuperOperatorBundle::is_well_formed(Self) -> Bool
 pub fn SuperOperatorBundle::not_equal(Self, Self) -> Bool
 pub fn SuperOperatorBundle::patch_defect(Self) -> Double
 pub fn SuperOperatorBundle::str_ber_gauge_defect(Self, SuperMatrix) -> Double
+pub fn SuperOperatorBundle::superoperator_holonomy_defect(Self, Array[Int32], SuperMatrix) -> Double
 pub fn SuperOperatorBundle::to_repr(Self) -> @debug.Repr
 
 #derive(Eq, @debug.Debug)

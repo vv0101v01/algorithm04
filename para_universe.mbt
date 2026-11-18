@@ -257,7 +257,30 @@ pub fn ParaUniverse::new(
 }
 
 ///|
+fn b4_duplicate_proposition(props : Array[String]) -> String? {
+  let sorted = props.copy()
+  sorted.sort_by(String::lexical_compare)
+  for i in 1..<sorted.length() {
+    if sorted[i - 1] == sorted[i] {
+      return Some(sorted[i])
+    }
+  }
+  None
+}
+
+///|
+pub fn ParaUniverse::is_well_formed(self : ParaUniverse) -> Bool {
+  self.props.length() == self.vals.length() &&
+  b4_duplicate_proposition(self.props) is None
+}
+
+///|
+/// Look up the first matching proposition. The checked aggregation API rejects duplicate
+/// names; this compatibility lookup returns `None` rather than indexing misaligned arrays.
 pub fn ParaUniverse::lookup(self : ParaUniverse, name : String) -> FourVal? {
+  if self.props.length() != self.vals.length() {
+    return None
+  }
   for i in 0..<self.props.length() {
     if self.props[i] == name {
       return Some(self.vals[i])
@@ -267,25 +290,265 @@ pub fn ParaUniverse::lookup(self : ParaUniverse, name : String) -> FourVal? {
 }
 
 ///|
-/// Multi-world epistemic product aggregating heterogeneous agent universes via information-join |_|_i.
+/// Invalid finite-world input: mismatched proposition/value arrays or duplicate names.
+#derive(Debug, Eq)
+pub(all) enum EpistemicAggregationError {
+  MisalignedWorld(Int32)
+  DuplicateProposition(Int32, String)
+}
+
+///|
+/// Multi-world epistemic product aggregating finite named belief states in the B_4
+/// information order. Missing propositions contribute `Nv`, the information bottom.
 #derive(Debug, Eq)
 pub(all) struct MultiWorld {
   worlds : Array[ParaUniverse]
 }
 
 ///|
-/// Pointwise information-join fusion across all worlds: conflicting agent beliefs (Tv vs Fv)
-/// elevate cleanly to `Bv` (quarantined contradiction) without corrupting orthogonal propositions!
+fn b4_propositions_are_sorted(props : Array[String]) -> Bool {
+  for i in 1..<props.length() {
+    if String::lexical_compare(props[i - 1], props[i]) > 0 {
+      return false
+    }
+  }
+  true
+}
+
+///|
+/// Pointwise join on the union of proposition names. Names use canonical lexicographic
+/// (UTF-16 code-unit) order; missing entries are Nv, and malformed worlds return an error.
+pub fn MultiWorld::aggregate(
+  self : MultiWorld,
+) -> Result[ParaUniverse, EpistemicAggregationError] {
+  for world_index in 0..<self.worlds.length() {
+    let world = self.worlds[world_index]
+    if world.props.length() != world.vals.length() {
+      return Err(MisalignedWorld(world_index))
+    }
+    match b4_duplicate_proposition(world.props) {
+      Some(name) => return Err(DuplicateProposition(world_index, name))
+      None => ()
+    }
+  }
+
+  let all_props : Array[String] = []
+  for world in self.worlds {
+    for name in world.props {
+      all_props.push(name)
+    }
+  }
+  all_props.sort_by(String::lexical_compare)
+  let props : Array[String] = []
+  for name in all_props {
+    if props.length() == 0 || props[props.length() - 1] != name {
+      props.push(name)
+    }
+  }
+  let values = Array::makei(props.length(), i => {
+    let mut aggregate = Nv
+    for world in self.worlds {
+      match world.lookup(props[i]) {
+        Some(value) => aggregate = FourVal::join(aggregate, value)
+        None => ()
+      }
+    }
+    aggregate
+  })
+  Ok(ParaUniverse::new(props, values))
+}
+
+///|
+/// Associative, commutative, idempotent information join over named B_4 worlds, with Nv
+/// as the identity and the B_4 information order as its induced product partial order.
+pub fn ParaUniverse::information_join(
+  self : ParaUniverse,
+  other : ParaUniverse,
+) -> Result[ParaUniverse, EpistemicAggregationError] {
+  MultiWorld::aggregate({ worlds: [self, other], })
+}
+
+///|
+/// Legacy array-view fusion. It keeps the first world's proposition ordering; use
+/// `MultiWorld::aggregate` when heterogeneous supports or validation details are needed.
 pub fn MultiWorld::merge_pointwise(self : MultiWorld) -> Array[FourVal] {
   if self.worlds.length() == 0 {
     return []
   }
-  let n = self.worlds[0].vals.length()
-  Array::makei(n, i => {
-    let mut acc = self.worlds[0].vals[i]
-    for wi in 1..<self.worlds.length() {
-      acc = FourVal::join(acc, self.worlds[wi].vals[i])
+  let first_props = self.worlds[0].props.copy()
+  match MultiWorld::aggregate(self) {
+    Ok(aggregate) =>
+      Array::makei(first_props.length(), i => {
+        match aggregate.lookup(first_props[i]) {
+          Some(value) => value
+          None => Nv
+        }
+      })
+    Err(_) => []
+  }
+}
+
+///|
+/// Finite certificate for the B_4 information-join algebra and its named-world lift.
+#derive(Debug, Eq)
+pub(all) struct EpistemicAggregationLawReport {
+  associativity_cases : Int32
+  commutativity_cases : Int32
+  idempotence_cases : Int32
+  least_upper_bound_cases : Int32
+  associative : Bool
+  commutative : Bool
+  idempotent : Bool
+  least_upper_bound : Bool
+  named_union_laws : Bool
+  malformed_inputs_rejected : Bool
+  certified : Bool
+}
+
+///|
+fn b4_try_information_join(
+  left : ParaUniverse,
+  right : ParaUniverse,
+) -> ParaUniverse? {
+  match left.information_join(right) {
+    Ok(aggregate) => Some(aggregate)
+    Err(_) => None
+  }
+}
+
+///|
+fn b4_para_universes_equivalent(
+  left : ParaUniverse,
+  right : ParaUniverse,
+) -> Bool {
+  if !left.is_well_formed() ||
+    !right.is_well_formed() ||
+    left.props.length() != right.props.length() {
+    return false
+  }
+  for i in 0..<left.props.length() {
+    match right.lookup(left.props[i]) {
+      Some(value) => if value != left.vals[i] { return false }
+      None => return false
     }
-    acc
-  })
+  }
+  true
+}
+
+///|
+fn b4_optional_universes_equivalent(
+  left : ParaUniverse?,
+  right : ParaUniverse?,
+) -> Bool {
+  match (left, right) {
+    (Some(a), Some(b)) => b4_para_universes_equivalent(a, b)
+    (None, None) => true
+    _ => false
+  }
+}
+
+///|
+pub fn audit_epistemic_aggregation_laws() -> EpistemicAggregationLawReport {
+  let values = four_all_values()
+  let mut associative = true
+  let mut commutative = true
+  let mut idempotent = true
+  let mut least_upper_bound = true
+  let mut associativity_cases = 0
+  let mut commutativity_cases = 0
+  let mut idempotence_cases = 0
+  let mut least_upper_bound_cases = 0
+
+  for a in values {
+    let aa = FourVal::join(a, a)
+    idempotence_cases = idempotence_cases + 1
+    if aa != a {
+      idempotent = false
+    }
+    for b in values {
+      commutativity_cases = commutativity_cases + 1
+      if FourVal::join(a, b) != FourVal::join(b, a) {
+        commutative = false
+      }
+      let joined = FourVal::join(a, b)
+      for upper in values {
+        least_upper_bound_cases = least_upper_bound_cases + 1
+        if !four_le(a, joined) ||
+          !four_le(b, joined) ||
+          (four_le(a, upper) && four_le(b, upper) && !four_le(joined, upper)) {
+          least_upper_bound = false
+        }
+      }
+      for c in values {
+        associativity_cases = associativity_cases + 1
+        if FourVal::join(FourVal::join(a, b), c) !=
+          FourVal::join(a, FourVal::join(b, c)) {
+          associative = false
+        }
+      }
+    }
+  }
+
+  let left : ParaUniverse = { props: ["zeta", "alpha"], vals: [Tv, Nv], }
+  let middle : ParaUniverse = { props: ["beta", "alpha"], vals: [Bv, Fv], }
+  let right : ParaUniverse = { props: ["zeta", "gamma"], vals: [Fv, Tv], }
+  let empty = ParaUniverse::new([], [])
+  let left_middle = b4_try_information_join(left, middle)
+  let middle_left = b4_try_information_join(middle, left)
+  let middle_right = b4_try_information_join(middle, right)
+  let left_empty = b4_try_information_join(left, empty)
+  let empty_left = b4_try_information_join(empty, left)
+  let left_left = b4_try_information_join(left, left)
+  let left_middle_right = match left_middle {
+    Some(aggregate) => b4_try_information_join(aggregate, right)
+    None => None
+  }
+  let left_middle_right_alt = match middle_right {
+    Some(aggregate) => b4_try_information_join(left, aggregate)
+    None => None
+  }
+  let canonical_names = match left_middle {
+    Some(aggregate) => b4_propositions_are_sorted(aggregate.props)
+    None => false
+  }
+  let named_union_laws = b4_optional_universes_equivalent(
+      left_middle, middle_left,
+    ) &&
+    b4_optional_universes_equivalent(left_empty, Some(left)) &&
+    b4_optional_universes_equivalent(empty_left, Some(left)) &&
+    b4_optional_universes_equivalent(left_left, Some(left)) &&
+    b4_optional_universes_equivalent(left_middle_right, left_middle_right_alt) &&
+    canonical_names
+
+  let duplicate_world : ParaUniverse = { props: ["p", "p"], vals: [Tv, Fv], }
+  let misaligned_world : ParaUniverse = { props: ["p"], vals: [], }
+  let duplicate_rejected = match
+    MultiWorld::aggregate({ worlds: [duplicate_world], }) {
+    Err(DuplicateProposition(0, _)) => true
+    _ => false
+  }
+  let misaligned_rejected = match
+    MultiWorld::aggregate({ worlds: [misaligned_world], }) {
+    Err(MisalignedWorld(0)) => true
+    _ => false
+  }
+  let malformed_inputs_rejected = duplicate_rejected && misaligned_rejected
+  {
+    associativity_cases,
+    commutativity_cases,
+    idempotence_cases,
+    least_upper_bound_cases,
+    associative,
+    commutative,
+    idempotent,
+    least_upper_bound,
+    named_union_laws,
+    malformed_inputs_rejected,
+    certified: associative &&
+    commutative &&
+    idempotent &&
+    least_upper_bound &&
+    named_union_laws &&
+    malformed_inputs_rejected,
+  }
 }

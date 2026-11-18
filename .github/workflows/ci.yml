@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   verify:
-    name: Format, Strict Typecheck, 3-Backend Tests, Theorem & M1 Audit
+    name: Format, Strict Typecheck, 3-Backend Tests, Theorem & M1–M3 Audit
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -58,7 +58,7 @@ jobs:
       - name: Gate 6 — Run cross-backend verification (js)
         run: moon test --target js
 
-      - name: Gate 7 — Run theorem, four-layer & M1.1–M1.4 CLI acceptance audit
+      - name: Gate 7 — Run theorem, four-layer & M1.1–M3.3 CLI acceptance audit
         run: |
           OUT="$(moon run cmd/main)"
           printf '%s\n' "$OUT"
@@ -79,6 +79,20 @@ jobs:
           printf '%s\n' "$OUT" | grep -Fq "mean-increasing = true"
           printf '%s\n' "$OUT" | grep -Fq "each-role-increasing = true"
           printf '%s\n' "$OUT" | grep -Fq "role order = true | PASS = true"
+          printf '%s\n' "$OUT" | grep -Fq "[M2.1] MP/cut/substitution coverage = 4294967296/4294967296/4294967296 of 4294967296"
+          printf '%s\n' "$OUT" | grep -Fq "| sound = true | PASS = true"
+          printf '%s\n' "$OUT" | grep -Fq "[M2.2] inspected/repaired/unresolved = 2/1/1"
+          printf '%s\n' "$OUT" | grep -Fq "cut blocked = true | non-explosion = true | PASS = true"
+          printf '%s\n' "$OUT" | grep -Fq "[M2.3] B_4 product information join"
+          printf '%s\n' "$OUT" | grep -Fq "A/C/I = true/true/true | LUB = true | named supports = true | PASS = true"
+          printf '%s\n' "$OUT" | grep -Fq "[M2.4] Gödel finite belief sets | samples = 9 | subsets = 32768"
+          printf '%s\n' "$OUT" | grep -Fq "round-trip/injective = true/true | union/intersection ACI = true/true | identity/zero/absorption = true/true/true | distributive = true"
+          printf '%s\n' "$OUT" | grep -Fq "difference/symmetric-difference/subset = true/true/true | PASS = true"
+
+          printf '%s\n' "$OUT" | grep -Fq "[M3.1] patches = 2..6"
+          printf '%s\n' "$OUT" | grep -Fq "all sections glue = true | PASS = true"
+          printf '%s\n' "$OUT" | grep -Eq '^[[:space:]]+\[M3\.2\].*\| PASS = true$'
+          printf '%s\n' "$OUT" | grep -Eq '^[[:space:]]+\[M3\.3\].*\| PASS = true$'
 
       - name: Gate 8 — Validate the machine-readable emergence problem set
         run: |
