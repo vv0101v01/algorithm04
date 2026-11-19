@@ -151,6 +151,8 @@ Tier 3  驗證與介面
 
 ## 七、合併後之驗證矩陣
 
+> 本表記錄雙親合併當時的基線驗收快照（含 58/58 測試），不是後續 M1–M6 的最新測試數或 Hosted CI 狀態；M4–M6 的現況與本地驗證以 `AGENT_EMERGENCE_PLAN.md` 第三節及最新提交之 CI run 為準。
+
 | 門檻 | 內容 | 狀態 |
 | :--- | :--- | :--- |
 | Gate 1 | `moon fmt --check` 零格式漂移 | ✓ |
@@ -161,6 +163,8 @@ Tier 3  驗證與介面
 | Gate 6 | `moon test --target js`（58/58） | ✓ |
 | Gate 7 | `moon run cmd/main` 輸出 `18 / 18 theorems verified.` 且含 `SGNE-Syn-Mem-Para` 與 `26 structures` | ✓ |
 | Gate 8 | `benchmarks/emergence_problem_set.json` 機器驗證（36 題、ID 唯一、kind/layer 合法） | ✓ |
+
+> 歷史基線當時把 problem-set 驗證列為 Gate 8；目前 `.github/workflows/ci.yml` 僅列七道 gates，並已將這項 JSON 驗證併入 Gate 7。上表保留作歷史紀錄，不代表目前 workflow 有八道門檻。
 
 ---
 

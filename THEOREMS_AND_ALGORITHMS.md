@@ -218,7 +218,7 @@ Parity (Z_2 = {Even, Odd}, Koszul 編織函子 kappa(p, q) = (-1)^{|p||q|})
 ### 16. 亞純函數胚（Meromorphic Function Germs：`meromorphic_microfunction.mbt`）
 
 - 實作單變元收斂 Laurent 亞純胚分式域 $\mathcal{M}_{1,0} = \mathrm{Frac}(\mathcal{O}_{1,0})$（`MeromorphicGerm`）：含共用 Cauchy 級數逆元、非阿基米德熱帶賦值 $\nu_0(fg)=\nu_0(f)+\nu_0(g)$（直接橋接模組 11 熱帶半環）、精確代數留數 $c_{-1}$ 與 Cauchy 圍道積分留數、對數導數輻角原理 $\mathrm{Res}_0(f'/f)=\nu_0(f)$ 及 Mittag–Leffler 主部/全純分解；
-- 實作全域 **Euler–Jacobi 留數消失定理** `euler_jacobi_residue_sum`（$\sum_{a:P(a)=0} a^m/P'(a) = \delta_{m,d-1}$）、**二維 Weierstrass 預備定理** `weierstrass_prepare_2d`（唯一分解 $f(x,y) = u(x,y)\cdot(y^d + \sum_{j<d} a_j(x) y^j)$，$u(0,0)\ne 0, a_j(0)=0$）與多變元亞純胚 `MultiMeroGerm`（交叉相乘芽等價與全純/極點除子/不定點軌跡三分判別）。
+- 實作全域 **Euler–Jacobi 留數消失定理** `euler_jacobi_residue_sum`（checked API；拒絕空／重複／非有限根、越界冪次與分母溢位／下溢；$\sum_{a:P(a)=0} a^m/P'(a) = \delta_{m,d-1}$）、**二維 Weierstrass 預備定理** `weierstrass_prepare_2d`（唯一分解 $f(x,y) = u(x,y)\cdot(y^d + \sum_{j<d} a_j(x) y^j)$，$u(0,0)\ne 0, a_j(0)=0$）與多變元亞純胚 `MultiMeroGerm`（交叉相乘芽等價與全純/極點除子/不定點軌跡三分判別）。
 
 ### 17. 微函數胚（Sato Microfunction Germs & SKK $\mathcal{E}$-Operators：`meromorphic_microfunction.mbt`）
 
@@ -793,6 +793,24 @@ Output: SynergeticMemoryParaReport (role absorption times, WTA Tangible/Ghost du
    - `BUG-15`（`unified_bridges.mbt`）：修復定理 XV 誤以 $\Delta M$ 之經典特徵值最小值作為「Schur 質量位移」證據——奇–奇 Schur 修正之偶體恆為零，故改以靈魂範數、零偶體跡與顯式 Grassmann 有效質量恆等式三者聯合認證；
    - `BUG-16`（`unified_bridges.mbt`）：修復有限範疇fixture 之餘錐／錐映射方向錯誤，以及定理 XVI 兩世界fixture 無法維持正交假命題穿越融合——現加入第三條正交假命題並以角色吸收時間按保留率重新排序。
 2. **去重（Deduplication）**：抽離共用列主元交換、數值穩定 `softmax_vec`（統一策略流形與注意力正規化）、中心差分 `numerical_grad`/`numerical_jacobian`、`is_trop_finite`/`row_trop_dot`、張量槽位變換 `GradedTensor::transform_slot`、Cauchy 冪級數逆元 `cauchy_series_inv`（共用 `MeromorphicGerm::inv` 與 `MicroDiffOp::elliptic_inverse`）、超函數極點半平面建構子 `pure_pole_half_germ`、`concat_words`、軟合一符號對處理 `unify_symbol_pair`，以及統一 18 定理驗證器 `verify_all_theorems()`（消除重複 `SGNE-Flow` 模擬；其內部已依定理拆分為 VIII–XIV 與 Layer 4 之 XV–XVIII 各自獨立之認證函式）。
-3. **減債與清死碼（Debt & Dead-Code Elimination）**：全面遷移至 `moonc v0.10.21`（`Double::from_int` $\to$ `Int::to_double`、完整顯式 `pub extend`、消除未使用接收者 `self`），移除全部零引用公開函式/方法（含重載名稱遮蔽之 `TropProjPoint::dim`）並收斂內部輔助函式可見性；以 GitHub Actions CI 八道門檻永久鎖定 `0 errors, 0 warnings, 0 drift, 0 dead symbols`。
+3. **減債與清死碼（Debt & Dead-Code Elimination）**：本輪已完成 MoonBit API 遷移（`Double::from_int` → `Int::to_double`、顯式 `pub extend`、移除不需要的接收者 `self`）及部分可由呼叫／介面分析確認的清理。既有私有符號掃描並不足以證明全專案沒有死碼；任何後續移除仍須先核對呼叫點、介面與覆蓋情形，再以常駐測試保護。正式自動驗收由 `.github/workflows/ci.yml` 的七個 gates 執行格式、型別、介面、跨後端測試、CLI 與 problem-set 檢查；這些 gates 不等同於全域死碼證明。
+
+### 6.1 M4–M6 引擎增量（2026-11-18）
+
+- **M4 開折選擇**（`catastrophe_unfolding.mbt`）：以 A3 scalar cusp 與 D4 scalar umbilic 的有限目錄，按目標實臨界分支數選擇 miniversal K-unfolding；以 infinitesimal K-versality、商空間重建殘差及尺度正規化駐點殘差驗證，並拒絕使分支座標合併的不可分辨振幅。支援範圍明確限定於 A3／D4，不代表完整 ADE 或任意 ICIS 分類。Checked fiber 入口拒絕控制參數維度錯誤與非有限值。
+- **M5 微局部注意**（`meromorphic_microfunction.mbt`）：只在兩個有限微函數共享基點且奇異譜含反對徑方向時觸發 `Bv` 隔離。微函數乘積會拒絕不同 stalk 與尚未建模的 log 項；checked microlocal anti-derivative 亦拒絕必須引入 $z\log z$ 才能表示的輸入 log；測試覆蓋 malformed germs、非碰撞、反對徑碰撞與積分邊界。
+- **M6 閉環回饋**（`role_weights.mbt`、`four_layer_feedback.mbt`、`emergence.mbt`）：設 $x_k=(w_k^{\mathrm{Flow}},w_k^{\mathrm{Trop}})$，以 $x_{k+1}=(1-\lambda)x_k+\lambda T(x_k)$ 將 Syn-Mem 的 Hurst-conditioned 角色吸收時間回饋到兩組正規化角色權重；$r_k=\|T(x_k)-x_k\|_\infty$，經驗收縮只由本次執行中的相鄰正殘差比值計算。達到迭代上限時，回報權重固定在最後實際評估的迭代，避免殘差／能量與權重狀態錯位。固定點認證是有界確定性測例的數值證據，不是整個模擬器之全域定理。共用 log-space softmax 與 max-scaled 正規化避免重複邏輯及極端權重下的乘積下溢。
+- **測試與介面**：M4、M5、M6 各有功能命名的測試檔（`catastrophe_unfolding_test.mbt`、`microlocal_attention_test.mbt`、`four_layer_feedback_test.mbt`）；CLI 與 CI Gate 7 執行 M1–M6 acceptance。全套測試的最新跨後端數量見 `AGENT_EMERGENCE_PLAN.md`，Hosted CI 狀態亦以該文件的最新執行記錄為準。
 
 
+### 6.2 後續邊界除錯與常駐回歸（2026-11-18）
+
+- **複數倒數尺度**（`algebra.mbt`）：舊 `Complex::inv` 以 `|z|^2 <= 10^-300` 判零，會把非零 $|z|<10^{-150}$ 的有限數誤當零，並因平方溢位使大型有限複數倒數變成零。改以最大分量縮放後再平方；`Complex::abs` 亦改用縮放 hypot。`math_structures_test.mbt` 的 R12 驗證 $10^{-200}$ 及 $10^{308}$ 量級之倒數往返。
+- **Poincare 投影與 Flow 入口**（`supermanifold.mbt`、`emergence.mbt`）：Poincare 建構器原以直接平方求範數，對有限但極大的座標會形成 `Inf`，再乘零而產生 `NaN`；加入縮放投影與 `new_checked`。SGNE 原始公開入口缺少與 M6 checked 入口一致的參數防護，零殖民地可在後續 `depths[0]` 索引崩潰；新增 checked API，舊 tuple API 對無效輸入回傳空結果。`super_emergence_test.mbt` 常駐測試大型有限座標、無效 curvature／coordinates 及無效 Flow 維度／步數。
+- **M4 分支可分辨性**（`catastrophe_unfolding.mbt`）：正但次正規的 A3 振幅可使 `amplitude / 2` 下溢為零，報告仍把合併的臨界點計成三支；改以尺度正規化殘差並拒絕無法表示之分支。`catastrophe_unfolding_test.mbt` 鎖定最小正 `Double` 邊界。
+- **M5 波前與對數項**（`meromorphic_microfunction.mbt`）：非典範全零 pole 陣列曾因長度非零而製造假奇異譜；負 tolerance 也可將零 log 誤判為奇異。現在 pole 支撐依係數精確非零判定、log 模長作穩定尺度比較，無效 tolerance 回傳空譜；所有非零 log 乘積均拒絕，既有 log 的 anti-derivative 因會產生未表示的 $z\log z$ 而回傳 `Err`。`microlocal_attention_test.mbt` 覆蓋零 pole、負 tolerance、微小 log、同／反向波前及一階／高階原始函數。
+- **Euler–Jacobi 根集與分母**（`meromorphic_microfunction.mbt`）：重複根會使導數分母為零，而 `Complex` 的零除回傳零，舊函式因而可能產生看似有效的錯誤留數；現改回傳 `Result`，驗證根、冪次與每次有限乘積。`euler_jacobi_residue_test.mbt` 覆蓋重複根、非有限根、越界冪次與分母下溢。
+- **M6 迭代上限**（`four_layer_feedback.mbt`）：未收斂耗盡迭代時曾在最後觀測後額外回報一次未評估的 blended 權重，造成回報權重與殘差／能量不配對；停止於最後已評估狀態。`four_layer_feedback_test.mbt` 以回放最後回報的 Flow 權重核對自由能。
+- **CLI 語義**：移除將四個任意 Euler–Jacobi residue fixture roots 稱作 A3「四個 attractors」的說法；M4 報告明確區分臨界分支與穩定極小值。此更正不改變定理命題或 M1–M3 功能。
+
+本節所列程式缺陷均有對應常駐回歸測試；格式、strict check、四個本地 targets 與 Gate 7 腳本在本輪修改後通過。以上皆為本地結果，並非 Hosted CI 結果。

@@ -34,6 +34,8 @@ pub fn audit_complete_intersection(MapGerm, koszul_check_deg? : Int32) -> Comple
 
 pub fn audit_epistemic_aggregation_laws() -> EpistemicAggregationLawReport
 
+pub fn audit_four_layer_closed_loop(flow_steps? : Int32, max_iterations? : Int32, relaxation? : Double, tolerance? : Double) -> M6ClosedLoopReport
+
 pub fn audit_godel_set_algebra() -> GodelSetAlgebraReport
 
 pub fn audit_hurst_memory_monotonicity(Array[Double]) -> HurstMemoryTrendReport
@@ -106,6 +108,8 @@ pub fn distill_synergetic_memory_para_agent(Array[ProtoAgent], Double, hurst? : 
 
 pub fn distill_tropical_kan_macro_agent(Array[ProtoAgent], Array[ProtoAgent]) -> TropicalKanMacroAgent
 
+pub fn distill_tropical_kan_macro_agent_with_weights(Array[ProtoAgent], Array[ProtoAgent], Array[Double]) -> Result[TropicalKanMacroAgent, String]
+
 pub fn double_well_barrier_escape(SuperHamiltonian, Int32, Int32, Double, Double) -> BarrierEscapeReport
 
 pub fn double_well_instance() -> SuperHamiltonian
@@ -120,7 +124,7 @@ pub fn epistemic_least_fixed_point((FourVal) -> FourVal) -> FourVal
 
 pub fn epistemic_quarantine_map(FourVal) -> FourVal
 
-pub fn euler_jacobi_residue_sum(Array[Complex], Int32) -> Complex
+pub fn euler_jacobi_residue_sum(Array[Complex], Int32) -> Result[Complex, String]
 
 pub fn eval_supertropical_poly(Array[Double], Array[Array[Double]], Array[Double], tie_tol? : Double) -> SuperTropical
 
@@ -228,6 +232,8 @@ pub fn kramers_multiplicity_profile(Array[Double], eps? : Double) -> (Bool, Arra
 
 pub fn laplace_beltrami_berezin_1d(SuperManifold, (Double) -> Double, Double, eps? : Double) -> Double
 
+pub fn learn_catastrophe_for_role_branches(Int32, Double) -> M4LearningReport
+
 pub fn make_osp_even_generator(Int32, Int32, Int32, DenseMat, DenseMat, Array[Grassmann]) -> SuperMatrix
 
 pub fn make_osp_odd_generator(Int32, Int32, Int32, DenseMat) -> SuperMatrix
@@ -247,6 +253,8 @@ pub fn memory_ergodic_matrix() -> Array[Array[Double]]
 pub fn mgu_universal_mediating_subst(Substitution, Substitution) -> Result[Substitution, String]
 
 pub fn micro_product(MicrofunctionGerm, MicrofunctionGerm) -> Result[MicrofunctionGerm, String]
+
+pub fn microlocal_attention_event(MicrofunctionGerm, MicrofunctionGerm, FourVal, base_tol? : Double, spectrum_tol? : Double) -> MicrolocalAttentionReport
 
 pub fn mobius_add(Double, Array[Double], Array[Double]) -> Array[Double]
 
@@ -329,6 +337,10 @@ pub fn role_transition_matrix(Double) -> Array[Array[Double]]
 pub fn rope_attention_score(Array[Double], Double, Array[Double], Double, base? : Double) -> Double
 
 pub fn run_sgne_emergence_simulation(n_agents? : Int32, n_steps? : Int32, dt? : Double) -> (Array[EmergenceSnapshot], Array[ProtoAgent])
+
+pub fn run_sgne_emergence_simulation_checked(Int32, Int32, Double) -> Result[(Array[EmergenceSnapshot], Array[ProtoAgent]), String]
+
+pub fn run_sgne_emergence_simulation_with_mass_feedback(Int32, Int32, Double, Array[Double]) -> Result[(Array[EmergenceSnapshot], Array[ProtoAgent]), String]
 
 pub fn same_map_germ_stalk((Array[Double]) -> Array[Double], (Array[Double]) -> Array[Double], Array[Double], tol? : Double) -> Bool
 
@@ -597,6 +609,12 @@ pub(all) struct BarrierEscapeReport {
 pub fn BarrierEscapeReport::equal(Self, Self) -> Bool
 pub fn BarrierEscapeReport::not_equal(Self, Self) -> Bool
 pub fn BarrierEscapeReport::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) enum CatastropheKind {
+  A3Cusp
+  D4Umbilic
+}
 
 #derive(Eq, @debug.Debug)
 pub(all) struct CechCategory {
@@ -1117,6 +1135,48 @@ pub fn Layer::not_equal(Self, Self) -> Bool
 pub fn Layer::to_repr(Self) -> @debug.Repr
 
 #derive(Eq, @debug.Debug)
+pub(all) struct M4LearningReport {
+  input_valid : Bool
+  certified : Bool
+  target_role_branches : Int32
+  candidate_classes_tested : Int32
+  selected_class : CatastropheKind
+  selected_label : String
+  milnor_number : Int32
+  unfolding_codimension : Int32
+  parameters : Array[Double]
+  parameter_norm : Double
+  base_critical_points : Int32
+  unfolded_critical_points : Int32
+  stable_minima : Int32
+  versal : Bool
+  target_matched : Bool
+  reconstruction_residual : Double
+  stationary_residual : Double
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct M6ClosedLoopReport {
+  input_valid : Bool
+  converged : Bool
+  empirical_fixed_point_certified : Bool
+  iterations : Int32
+  hurst_exponent : Double
+  catastrophe_class : String
+  role_coverage_count : Int32
+  microlocal_quarantined : Bool
+  microlocal_value : FourVal
+  flow_mass_weights : Array[Double]
+  trop_kan_weights : Array[Double]
+  role_absorption_times : Array[Double]
+  fixed_point_residual : Double
+  empirical_contraction_factor : Double
+  weight_normalization_defect : Double
+  flow_free_energy : Double
+  non_explosion_preserved : Bool
+}
+
+#derive(Eq, @debug.Debug)
 pub(all) struct MapGerm {
   basis : JetBasis
   comps : Array[PolyGerm]
@@ -1198,12 +1258,29 @@ pub(all) struct MicrofunctionGerm {
   minus_poles : Array[Complex]
   minus_log : Complex
 }
+pub fn MicrofunctionGerm::antipodal_collision(Self, Self, base_tol? : Double, spectrum_tol? : Double) -> Bool
 pub fn MicrofunctionGerm::dist(Self, Self) -> Double
 pub fn MicrofunctionGerm::equal(Self, Self) -> Bool
-pub fn MicrofunctionGerm::integrate_microlocal(Self) -> Self
+pub fn MicrofunctionGerm::integrate_microlocal(Self) -> Result[Self, String]
+pub fn MicrofunctionGerm::is_well_formed(Self) -> Bool
 pub fn MicrofunctionGerm::not_equal(Self, Self) -> Bool
 pub fn MicrofunctionGerm::singular_spectrum(Self, tol? : Double) -> (Bool, Bool)
 pub fn MicrofunctionGerm::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct MicrolocalAttentionReport {
+  input_valid : Bool
+  same_base_point : Bool
+  signal_plus : Bool
+  signal_minus : Bool
+  belief_plus : Bool
+  belief_minus : Bool
+  antipodal_collision : Bool
+  quarantined : Bool
+  value_before : FourVal
+  value_after : FourVal
+  non_explosion_preserved : Bool
+}
 
 #derive(Eq, @debug.Debug)
 pub(all) struct MultiMeroGerm {
@@ -1375,6 +1452,7 @@ pub fn PoincarePoint::log_map(Self, Self) -> Array[Double]
 pub fn PoincarePoint::metric_inner(Self, Array[Double], Array[Double]) -> Double
 pub fn PoincarePoint::metric_matrix(Self) -> DenseMat
 pub fn PoincarePoint::new(Double, Array[Double]) -> Self
+pub fn PoincarePoint::new_checked(Double, Array[Double]) -> Result[Self, String]
 pub fn PoincarePoint::not_equal(Self, Self) -> Bool
 pub fn PoincarePoint::origin(Double, Int32) -> Self
 pub fn PoincarePoint::parallel_transport(Self, Self, Array[Double]) -> Array[Double]
@@ -1911,6 +1989,7 @@ pub(all) struct UniversalUnfolding {
 }
 pub fn UniversalUnfolding::equal(Self, Self) -> Bool
 pub fn UniversalUnfolding::fiber_at(Self, Array[Double]) -> MapGerm
+pub fn UniversalUnfolding::fiber_at_checked(Self, Array[Double]) -> Result[MapGerm, String]
 pub fn UniversalUnfolding::induce_perturbation_params(Self, MapGerm) -> Array[Double]
 pub fn UniversalUnfolding::not_equal(Self, Self) -> Bool
 pub fn UniversalUnfolding::to_repr(Self) -> @debug.Repr

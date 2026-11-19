@@ -1,7 +1,7 @@
 ///|
 /// Unified CLI demo for `arena/super_emergence` (v2.0.0): verifies all 18 composite
 /// theorems (Layers I-IV), replays the four-layer quasi-agentic emergence engine, and
-/// reports the M1.1–M1.4, M2.1–M2.4 and M3.1–M3.3 roadmap acceptance audits.
+/// reports the M1.1–M1.4, M2.1–M2.4 and M3.1–M6 roadmap acceptance audits.
 /// Run with `moon run cmd/main`.
 
 ///|
@@ -104,6 +104,7 @@ fn main {
   report_part_10()
   report_part_11()
   report_part_12()
+  report_part_13()
 }
 
 ///|
@@ -282,7 +283,7 @@ fn report_part_6() -> Unit {
     "  Super-PBW U_{<=3}(osp(1|2)) & C_2    : dim = \{gm.pbw_dim_deg3} | Schur Casimir lambda(C_2) = \{fmt_fixed(gm.osp_casimir_eigenvalue, 4)}",
   )
   println(
-    "  Catastrophe K-Class & Unfolding      : \{gm.catastrophe_class} | Universal K-codim tau = \{gm.unfolding_codim} (4 role attractors)",
+    "  Catastrophe K-Class & Unfolding      : \{gm.catastrophe_class} | Universal K-codim tau = \{gm.unfolding_codim} (finite A3/D4 scalar prototypes)",
   )
   println(
     "  ICIS Le-Greuel & Normal Ring Germ    : ICIS mu = \{gm.icis_milnor} | Normalization delta = \{gm.normalization_delta}, conductor c = \{gm.normalization_conductor} (= 2*delta Gorenstein)",
@@ -766,6 +767,66 @@ fn report_part_12() -> Unit {
   let m33_ok = category_defect < 1.0e-12
   println(
     "  [M3.3] Čech category associativity/unit max defect = \{fmt_sci(category_defect)} | PASS = \{m33_ok}",
+  )
+  println(
+    "--------------------------------------------------------------------------------",
+  )
+}
+
+///|
+/// Report M4-M6 feature acceptance: versal catastrophe selection, antipodal attention quarantine,
+/// and damped fixed-point coupling across all four SGNE layers.
+fn report_part_13() -> Unit {
+  println(
+    "[Part 13] M4–M6 Active Unfolding, Microlocal Attention & Four-Layer Feedback:",
+  )
+  println(
+    "--------------------------------------------------------------------------------",
+  )
+  let a3 = @se.learn_catastrophe_for_role_branches(3, 0.05)
+  let d4 = @se.learn_catastrophe_for_role_branches(4, 0.05)
+  let m4_ok = a3.certified &&
+    a3.selected_class == @se.A3Cusp &&
+    a3.unfolded_critical_points == 3 &&
+    d4.certified &&
+    d4.selected_class == @se.D4Umbilic &&
+    d4.unfolded_critical_points == 4
+  println(
+    "  [M4] target=4 | selected=\{d4.selected_label} | codim=\{d4.unfolding_codimension} | critical branches=\{d4.unfolded_critical_points} | stable minima=\{d4.stable_minima} | versal=\{d4.versal} | PASS = \{m4_ok}",
+  )
+
+  let signal = @se.HyperfunctionGerm::cauchy_plus(0.0).sp()
+  let belief_spectrum = @se.HyperfunctionGerm::cauchy_minus(0.0).sp()
+  let attention = @se.microlocal_attention_event(
+    signal,
+    belief_spectrum,
+    @se.Tv,
+  )
+  let m5_ok = attention.input_valid &&
+    attention.same_base_point &&
+    attention.antipodal_collision &&
+    attention.quarantined &&
+    attention.value_after == @se.Bv &&
+    attention.non_explosion_preserved
+  println(
+    "  [M5] same-point antipodal collision=\{attention.antipodal_collision} | quarantined=\{attention.quarantined} | belief=\{@se.FourVal::to_string(attention.value_after)} | PASS = \{m5_ok}",
+  )
+
+  let feedback = @se.audit_four_layer_closed_loop(
+    flow_steps=3,
+    max_iterations=32,
+    relaxation=0.35,
+    tolerance=1.0e-3,
+  )
+  let m6_ok = feedback.input_valid &&
+    feedback.converged &&
+    feedback.empirical_fixed_point_certified &&
+    feedback.fixed_point_residual <= 1.0e-3 &&
+    feedback.empirical_contraction_factor < 1.0 &&
+    feedback.weight_normalization_defect < 1.0e-12 &&
+    feedback.non_explosion_preserved
+  println(
+    "  [M6] iterations=\{feedback.iterations} | H=\{fmt_fixed(feedback.hurst_exponent, 4)} | residual=\{fmt_sci(feedback.fixed_point_residual)} | empirical contraction=\{fmt_fixed(feedback.empirical_contraction_factor, 4)} | flow weights=\{fmt_double_array(feedback.flow_mass_weights, 3)} | Trop-Kan weights=\{fmt_double_array(feedback.trop_kan_weights, 3)} | PASS = \{m6_ok}",
   )
   println(
     "--------------------------------------------------------------------------------",

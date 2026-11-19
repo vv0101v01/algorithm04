@@ -64,7 +64,7 @@ pub fn init_disordered_colony(
   let n_ferm = 4
   let n_gen = 4
   let task_names = ["sense", "plan", "verify", "act"]
-  Array::makei(n_agents, idx => {
+  Array::makei(n_agents.max(0), idx => {
     let phase = 2.0 * @math.PI * idx.to_double() / n_agents.to_double()
     // Tiny initial belief perturbations near the Poincare origin (disordered state)
     let r0 = 0.06 + 0.015 * (idx % 3).to_double()
@@ -293,20 +293,83 @@ pub fn reassign_roles_by_orbit_distance(
 }
 
 ///|
+fn sgne_flow_inputs_valid(
+  n_agents : Int32,
+  n_steps : Int32,
+  dt : Double,
+) -> Bool {
+  n_agents >= 4 &&
+  n_agents % 2 == 0 &&
+  n_steps >= 0 &&
+  dt.is_finite() &&
+  dt > 0.0
+}
+
+///|
+/// Checked SGNE-Flow entry point with equal role-mass weights.
+pub fn run_sgne_emergence_simulation_checked(
+  n_agents : Int32,
+  n_steps : Int32,
+  dt : Double,
+) -> Result[(Array[EmergenceSnapshot], Array[ProtoAgent]), String] {
+  if !sgne_flow_inputs_valid(n_agents, n_steps, dt) {
+    return Err(
+      "SGNE flow requires even n_agents >= 4, n_steps >= 0, and finite dt > 0",
+    )
+  }
+  Ok(
+    run_sgne_emergence_simulation_internal(n_agents, n_steps, dt, [
+      0.25, 0.25, 0.25, 0.25,
+    ]),
+  )
+}
+
+///|
 /// Master Algorithm: SGNE-Flow (Super-Geometric Neuro-Symbolic Emergence Flow).
-/// Evolves a colony of `n_agents` proto-agents over `n_steps` epochs by coupling:
-///   1. Super-PoPE decoupled content-position attention with Pauli role complementarity,
-///   2. Ricci-Fisher curvature adaptation c(t) -> c* driven by collective Fisher trace,
-///   3. Fisher-Poincare Super-Natural Gradient geodesic policy & belief updates,
-///   4. Schur-Berezin super-mass orbit repulsion producing specialized inertia classes
-///      (heavy memory coordinators vs light agile executors),
-///   5. Witten-Hodge SUSY heat flow d_t Psi = -H Psi collapsing neuro-symbolic frustration
-///      onto topologically protected BPS ground states (with constant Witten index Delta_W),
-///   6. Connes spectral triple communication geometry & graded neuro-symbolic rule unification.
+/// Evolves a valid colony over `n_steps` epochs. Invalid parameters return empty arrays;
+/// use `run_sgne_emergence_simulation_checked` when an explicit error is required.
 pub fn run_sgne_emergence_simulation(
   n_agents~ : Int32 = 8,
   n_steps~ : Int32 = 24,
   dt~ : Double = 0.18,
+) -> (Array[EmergenceSnapshot], Array[ProtoAgent]) {
+  match run_sgne_emergence_simulation_checked(n_agents, n_steps, dt) {
+    Ok(result) => result
+    Err(_) => ([], [])
+  }
+}
+
+///|
+/// Checked SGNE-Flow entry point with normalized role-mass feedback from M6.
+pub fn run_sgne_emergence_simulation_with_mass_feedback(
+  n_agents : Int32,
+  n_steps : Int32,
+  dt : Double,
+  role_mass_weights : Array[Double],
+) -> Result[(Array[EmergenceSnapshot], Array[ProtoAgent]), String] {
+  if !sgne_flow_inputs_valid(n_agents, n_steps, dt) {
+    return Err(
+      "SGNE flow requires even n_agents >= 4, n_steps >= 0, and finite dt > 0",
+    )
+  }
+  let normalized_weights = match
+    normalize_four_role_weights(role_mass_weights) {
+    Ok(weights) => weights
+    Err(message) => return Err(message)
+  }
+  Ok(
+    run_sgne_emergence_simulation_internal(
+      n_agents, n_steps, dt, normalized_weights,
+    ),
+  )
+}
+
+///|
+fn run_sgne_emergence_simulation_internal(
+  n_agents : Int32,
+  n_steps : Int32,
+  dt : Double,
+  role_mass_weights : Array[Double],
 ) -> (Array[EmergenceSnapshot], Array[ProtoAgent]) {
   let m_bos = 4
   let n_ferm = 4
@@ -640,9 +703,22 @@ pub fn run_sgne_emergence_simulation(
         }
       })
       let ferm_stiff = 0.8 + 1.4 * p_next[2] + 0.6 * p_next[1]
-      let next_mass = SuperMassTensor::from_real_and_yukawa(
+      let raw_mass = SuperMassTensor::from_real_and_yukawa(
         m_cur_next, next_xi, ferm_stiff, n_ferm, n_gen,
       )
+      let role_mass_scale = {
+        let mut scale = 0.0
+        for role in 0..<4 {
+          scale = scale + 4.0 * p_next[role] * role_mass_weights[role]
+        }
+        scale.clamp(min=0.5, max=1.5)
+      }
+      let next_mass : SuperMassTensor = {
+        m_bos: raw_mass.m_bos,
+        n_ferm: raw_mass.n_ferm,
+        n_gen: raw_mass.n_gen,
+        mat: raw_mass.mat.smul(role_mass_scale),
+      }
       next_agents.push({
         id: ag.id,
         pos_index: ag.pos_index,
@@ -1078,6 +1154,55 @@ pub fn distill_tropical_kan_macro_agent(
   init_agents : Array[ProtoAgent],
   final_agents : Array[ProtoAgent],
 ) -> TropicalKanMacroAgent {
+  distill_tropical_kan_macro_agent_internal(init_agents, final_agents, [
+    1.0, 1.0, 1.0, 1.0,
+  ])
+}
+
+///|
+/// Checked Trop-Kan entry point: positive role weights bias assignment and the
+/// microscopic capability potential before Lan/Ran distillation.
+pub fn distill_tropical_kan_macro_agent_with_weights(
+  init_agents : Array[ProtoAgent],
+  final_agents : Array[ProtoAgent],
+  role_weights : Array[Double],
+) -> Result[TropicalKanMacroAgent, String] {
+  let normalized = match normalize_four_role_weights(role_weights) {
+    Ok(weights) => weights
+    Err(message) => return Err(message)
+  }
+  Ok(
+    distill_tropical_kan_macro_agent_internal(
+      init_agents, final_agents, normalized,
+    ),
+  )
+}
+
+///|
+fn weighted_categorical_probs(
+  policy_eta : Array[Double],
+  role_weights : Array[Double],
+) -> Array[Double] {
+  // Multiplying tiny softmax probabilities by tiny (but valid) role weights can
+  // underflow the whole vector to zero. Add log-weights to logits, then use the
+  // shared stable softmax implementation instead.
+  let weighted_logits = Array::makei(4, role => {
+    let policy_logit = if role < policy_eta.length() {
+      policy_eta[role]
+    } else {
+      0.0
+    }
+    policy_logit + @math.ln(role_weights[role])
+  })
+  softmax_vec(weighted_logits)
+}
+
+///|
+fn distill_tropical_kan_macro_agent_internal(
+  init_agents : Array[ProtoAgent],
+  final_agents : Array[ProtoAgent],
+  role_weights : Array[Double],
+) -> TropicalKanMacroAgent {
   let n = final_agents.length()
   let ghost_tol = 0.08
   let mut init_ghosts = 0
@@ -1098,7 +1223,10 @@ pub fn distill_tropical_kan_macro_agent(
     if tp.is_on_ghost_boundary(tie_tol=ghost_tol) {
       final_ghosts = final_ghosts + 1
     }
-    let probs = categorical_probs(final_agents[i].policy_eta)
+    let probs = weighted_categorical_probs(
+      final_agents[i].policy_eta,
+      role_weights,
+    )
     let mut best_r = 0
     for r in 1..<4 {
       if probs[r] > probs[best_r] {
@@ -1152,7 +1280,7 @@ pub fn distill_tropical_kan_macro_agent(
   let c_curv = final_agents[0].belief.c
   let orig = PoincarePoint::origin(c_curv, 4)
   let f_micro = Array::makei(n, i => {
-    let p = categorical_probs(final_agents[i].policy_eta)
+    let p = weighted_categorical_probs(final_agents[i].policy_eta, role_weights)
     let r = role_assignment[i]
     let conf = 1.0 + @math.ln(p[r].max(1.0e-9))
     let depth_sig = 0.35 * orig.geodesic_dist(final_agents[i].belief)
@@ -1756,17 +1884,22 @@ fn verify_theorem_xiii() -> TheoremReport {
     }
     Err(_) => (false, 1.0)
   }
-  // (d) Euler-Jacobi global residue conservation across 4 unfolded Morse roots of A_3
-  let roots4 = [
+  // (d) Euler-Jacobi identity on a generic four-distinct-root residue fixture.
+  let residue_roots = [
     Complex::new(-1.2, 0.0),
     Complex::new(-0.3, 0.4),
     Complex::new(0.5, -0.3),
     Complex::new(1.1, 0.2),
   ]
-  let ej_err = euler_jacobi_residue_sum(roots4, 0)
-    .abs()
-    .max(euler_jacobi_residue_sum(roots4, 2).abs())
-    .max((euler_jacobi_residue_sum(roots4, 3) - Complex::one()).abs())
+  let residue_defect = (power : Int32, expected : Complex) => {
+    match euler_jacobi_residue_sum(residue_roots, power) {
+      Ok(value) => (value - expected).abs()
+      Err(_) => 1.0
+    }
+  }
+  let ej_err = residue_defect(0, Complex::zero())
+    .max(residue_defect(2, Complex::zero()))
+    .max(residue_defect(3, Complex::one()))
   let res_t13 = arg_err
     .max(contour_err)
     .max(ml_err)
@@ -1820,8 +1953,12 @@ fn verify_theorem_xiv() -> TheoremReport {
   // (c) d_x sp(Y) == sp(delta), D_x^{-1} sp(delta) == sp(Y), x * sp(delta) == 0,
   //     x * sp(delta') == -sp(delta), and Kothe pairing <delta'', phi> == phi''(0) = 2 * phi_2!
   let heav = HyperfunctionGerm::heaviside(0.0)
+  let primitive_error = match delta.sp().integrate_microlocal() {
+    Ok(primitive) => MicrofunctionGerm::dist(primitive, heav.sp())
+    Err(_) => 1.0
+  }
   let calc_err = MicrofunctionGerm::dist(heav.deriv().sp(), delta.sp())
-    .max(MicrofunctionGerm::dist(delta.sp().integrate_microlocal(), heav.sp()))
+    .max(primitive_error)
     .max(MicrofunctionGerm::dist(delta.mul_by_x_shift().sp(), zero_mf))
     .max(
       MicrofunctionGerm::dist(
@@ -2317,7 +2454,8 @@ pub fn distill_germ_microlocal_phase() -> GermMicrolocalReport {
   let cas_eig = osp1_2_quadratic_casimir()
     .universal_lift_rep(osp1_2_fundamental_rep())
     .get(0, 0)
-  // 2. 4-role catastrophe equilibrium germ f_0(x) = x^4 (A_3) & Universal K-Unfolding (tau = 4)
+  // 2. A_3 normal form f_0(x) = x^4 has K-codimension tau = 3; the M4 controller
+  // separately tests its three-branch slice against the four-branch D_4 candidate.
   let jb1 = JetBasis::new(1, 6)
   let a3_germ = MapGerm::new([PolyGerm::monomial(jb1, [4], 1.0)])
   let eq_cls = classify_contact_equiv_class(a3_germ)
@@ -2326,14 +2464,17 @@ pub fn distill_germ_microlocal_phase() -> GermMicrolocalReport {
   let ci = audit_complete_intersection(icis_coupled_curve_germ())
   // 4. Cuspidal concept-branch normalization O = C{t^3, t^5} -> C{t}
   let norm = normalize_semigroup_curve_germ([3, 5])
-  // 5. Euler-Jacobi global topological residue charge across 4 unfolded role attractors
-  let role_roots = [
+  // 5. Euler-Jacobi residue charge on a generic four-distinct-root fixture.
+  let residue_roots = [
     Complex::new(-1.5, 0.0),
     Complex::new(-0.5, 0.0),
     Complex::new(0.5, 0.0),
     Complex::new(1.5, 0.0),
   ]
-  let res_charge = euler_jacobi_residue_sum(role_roots, 3).re
+  let res_charge = match euler_jacobi_residue_sum(residue_roots, 3) {
+    Ok(value) => value.re
+    Err(_) => 1.0e300
+  }
   // 6. SKK elliptic Fokker-Planck-Schrodinger microdifferential parametrix P o P^{-1} == 1
   let x_t = 9
   let fp_op : MicroDiffOp = {

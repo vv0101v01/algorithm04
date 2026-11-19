@@ -14,21 +14,60 @@ pub(all) struct PoincarePoint {
 }
 
 ///|
-/// Project a raw vector safely inside the open Poincare ball B_c^m.
-pub fn PoincarePoint::new(c : Double, coords : Array[Double]) -> PoincarePoint {
+/// Checked Poincare-ball projection. Uses a scaled norm so finite coordinates near the
+/// largest representable Double can still be projected without forming an overflowing
+/// sum of squares.
+pub fn PoincarePoint::new_checked(
+  c : Double,
+  coords : Array[Double],
+) -> Result[PoincarePoint, String] {
+  if !c.is_finite() || c <= 0.0 {
+    return Err("Poincare curvature parameter must be finite and positive")
+  }
+  let mut scale = 0.0
+  for coordinate in coords {
+    if !coordinate.is_finite() {
+      return Err("Poincare coordinates must be finite")
+    }
+    scale = scale.max(coordinate.abs())
+  }
+  if scale == 0.0 {
+    return Ok({ c, coords: coords.copy(), })
+  }
+  let mut scaled_norm_sq = 0.0
+  for coordinate in coords {
+    let scaled = coordinate / scale
+    scaled_norm_sq = scaled_norm_sq + scaled * scaled
+  }
+  let scaled_norm = scaled_norm_sq.sqrt()
   let max_norm = (1.0 - 1.0e-7) / c.sqrt()
-  let nrm = vec_norm(coords)
-  let safe = if nrm >= max_norm {
-    vec_scale(coords, max_norm / nrm)
+  let max_scale = max_norm / scaled_norm
+  let safe = if scale >= max_scale {
+    coords.map(coordinate => coordinate / scale * max_scale)
   } else {
     coords.copy()
   }
-  { c, coords: safe, }
+  Ok({ c, coords: safe, })
+}
+
+///|
+/// Project a raw vector safely inside the open Poincare ball B_c^m.
+/// For compatibility this infallible convenience maps invalid input to the origin (and
+/// uses c=1 for an invalid curvature); callers needing error details should use `new_checked`.
+pub fn PoincarePoint::new(c : Double, coords : Array[Double]) -> PoincarePoint {
+  match PoincarePoint::new_checked(c, coords) {
+    Ok(point) => point
+    Err(_) => {
+      let safe_c = if c.is_finite() && c > 0.0 { c } else { 1.0 }
+      { c: safe_c, coords: Array::make(coords.length(), 0.0), }
+    }
+  }
 }
 
 ///|
 pub fn PoincarePoint::origin(c : Double, dim : Int32) -> PoincarePoint {
-  { c, coords: Array::make(dim, 0.0), }
+  let safe_c = if c.is_finite() && c > 0.0 { c } else { 1.0 }
+  { c: safe_c, coords: Array::make(dim.max(0), 0.0), }
 }
 
 ///|

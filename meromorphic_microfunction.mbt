@@ -22,8 +22,8 @@
 ///        - Chiral boundary microfunctions 1/(x +- i0), Dirac delta^{(m)}(x - x_0),
 ///          Heaviside step Y(x - x_0), principal value pv(1/x), Sokhotski-Plemelj formula,
 ///          exact annihilation x * sp(delta) == 0 & d_x sp(Y) == sp(delta), Kothe pairing,
-///        - Singular Spectrum (analytic wavefront set) SS(u) subset i S^* R and Sato's
-///          Antipodal Product Theorem (blocking (+i dx) <-> (-i dx) causality collisions!),
+///        - Singular Spectrum (analytic wavefront set) SS(u) subset i S^* R, same-stalk
+///          antipodal product checks, and M5 attention events that quarantine collisions as Bv;
 ///        - Noncommutative Ring of Microdifferential Operators E_{(x_0, i xi dx)} with exact
 ///          Leibniz symbol product (P o Q)(x, xi) = sum_{k>=0} (1/k!) d_xi^k P * d_x^k Q,
 ///          associativity, and Sato's Fundamental Elliptic Invertibility Theorem P o P^{-1} == 1
@@ -298,16 +298,35 @@ pub fn MeromorphicGerm::mittag_leffler_split(
 }
 
 ///|
-/// Global Euler-Jacobi-Grothendieck Residue Sum across a Morsified A_k unfolding
+fn micro_complex_is_finite(z : Complex) -> Bool {
+  z.re.is_finite() && z.im.is_finite()
+}
+
+///|
+/// Global Euler-Jacobi-Grothendieck residue sum for the supplied distinct roots
 /// P(z) = prod_{s=0}^{k} (z - roots[s]):
-///   sum_{s=0}^{k} Res_{z = roots[s]} ( z^m / P(z) dz ) == delta_{m, k}   for all 0 <= m <= k!
-/// Proves topological residue conservation when a degenerate multiplicity-(k+1) agent
-/// singularity z^{-(k+1)} unfolds into (k+1) distinct simple Morse equilibria!
+///   sum_{s=0}^{k} Res_{z = roots[s]} ( z^m / P(z) dz ) == delta_{m, k} for 0 <= m <= k.
+/// This algebraic identity does not by itself certify a catastrophe unfolding or stability.
 pub fn euler_jacobi_residue_sum(
   roots : Array[Complex],
   monom_power : Int32,
-) -> Complex {
+) -> Result[Complex, String] {
   let n = roots.length()
+  if n == 0 || monom_power < 0 || monom_power >= n {
+    return Err(
+      "residue sum requires nonempty roots and 0 <= power < root count",
+    )
+  }
+  for i in 0..<n {
+    if !micro_complex_is_finite(roots[i]) {
+      return Err("residue roots must be finite")
+    }
+    for j in (i + 1)..<n {
+      if roots[i].re == roots[j].re && roots[i].im == roots[j].im {
+        return Err("residue roots must be pairwise distinct")
+      }
+    }
+  }
   let mut total = Complex::zero()
   for s in 0..<n {
     let zs = roots[s]
@@ -315,16 +334,30 @@ pub fn euler_jacobi_residue_sum(
     for _ in 0..<monom_power {
       num = num * zs
     }
+    if !micro_complex_is_finite(num) {
+      return Err("residue numerator overflowed the finite complex range")
+    }
     // P'(z_s) = prod_{t != s} (z_s - z_t)
     let mut denom = Complex::one()
     for t in 0..<n {
       if t != s {
         denom = denom * (zs - roots[t])
+        if !micro_complex_is_finite(denom) ||
+          (denom.re == 0.0 && denom.im == 0.0) {
+          return Err("residue denominator overflowed or underflowed to zero")
+        }
       }
     }
-    total = total + num / denom
+    let residue = num / denom
+    if !micro_complex_is_finite(residue) {
+      return Err("residue is outside the finite complex range")
+    }
+    total = total + residue
+    if !micro_complex_is_finite(total) {
+      return Err("residue sum is outside the finite complex range")
+    }
   }
-  total
+  Ok(total)
 }
 
 ///|
@@ -789,65 +822,236 @@ pub fn HyperfunctionGerm::pair_analytic(
 }
 
 ///|
+fn micro_complex_abs_gt_tol(z : Complex, tol : Double) -> Bool {
+  if !micro_complex_is_finite(z) || !tol.is_finite() || tol < 0.0 {
+    return false
+  }
+  let scale = z.re.abs().max(z.im.abs())
+  if scale == 0.0 {
+    return false
+  }
+  let real = z.re / scale
+  let imag = z.im / scale
+  let scaled_norm = (real * real + imag * imag).sqrt()
+  scale > tol / scaled_norm
+}
+
+///|
+fn microfunction_has_log(germ : MicrofunctionGerm) -> Bool {
+  germ.plus_log.re != 0.0 ||
+  germ.plus_log.im != 0.0 ||
+  germ.minus_log.re != 0.0 ||
+  germ.minus_log.im != 0.0
+}
+
+///|
+/// Reject malformed public-field fixtures before using them as microlocal evidence.
+pub fn MicrofunctionGerm::is_well_formed(self : MicrofunctionGerm) -> Bool {
+  if !self.x0.is_finite() ||
+    !micro_complex_is_finite(self.plus_log) ||
+    !micro_complex_is_finite(self.minus_log) {
+    return false
+  }
+  for coefficient in self.plus_poles {
+    if !micro_complex_is_finite(coefficient) {
+      return false
+    }
+  }
+  for coefficient in self.minus_poles {
+    if !micro_complex_is_finite(coefficient) {
+      return false
+    }
+  }
+  true
+}
+
+///|
 /// Singular Spectrum (Analytic Wavefront Set) SS(u) subset {(x_0, +i dx), (x_0, -i dx)}:
-/// returns `(has_plus_codir, has_minus_codir)`. Microfunction is 0 iff `(false, false)`!
+/// returns `(has_plus_codir, has_minus_codir)`. Pole coefficients are tested for exact
+/// nonzero support; `tol` only suppresses small logarithmic coefficients. Invalid tolerances
+/// produce the empty spectrum, and callers needing an error should validate them first.
 pub fn MicrofunctionGerm::singular_spectrum(
   self : MicrofunctionGerm,
   tol~ : Double = 1.0e-12,
 ) -> (Bool, Bool) {
-  let has_p = self.plus_poles.length() > 0 || self.plus_log.abs() > tol
-  let has_m = self.minus_poles.length() > 0 || self.minus_log.abs() > tol
+  if !self.is_well_formed() || !tol.is_finite() || tol < 0.0 {
+    return (false, false)
+  }
+  let mut has_pole_p = false
+  for coefficient in self.plus_poles {
+    if coefficient.re != 0.0 || coefficient.im != 0.0 {
+      has_pole_p = true
+    }
+  }
+  let mut has_pole_m = false
+  for coefficient in self.minus_poles {
+    if coefficient.re != 0.0 || coefficient.im != 0.0 {
+      has_pole_m = true
+    }
+  }
+  let has_p = has_pole_p || micro_complex_abs_gt_tol(self.plus_log, tol)
+  let has_m = has_pole_m || micro_complex_abs_gt_tol(self.minus_log, tol)
   (has_p, has_m)
 }
 
 ///|
-/// L2 distance between two microfunction germs in C_{(x_0, +idx)} (+) C_{(x_0, -idx)}.
+fn micro_spectra_are_antipodal(
+  signal_plus : Bool,
+  signal_minus : Bool,
+  belief_plus : Bool,
+  belief_minus : Bool,
+) -> Bool {
+  (signal_plus && belief_minus) || (signal_minus && belief_plus)
+}
+
+///|
+/// Antipodal conormal collision at the same base point. Opposite covectors at different
+/// points do not collide; tolerance arguments are explicit to avoid fuzzy hidden policy.
+pub fn MicrofunctionGerm::antipodal_collision(
+  signal : MicrofunctionGerm,
+  belief : MicrofunctionGerm,
+  base_tol~ : Double = 1.0e-12,
+  spectrum_tol~ : Double = 1.0e-12,
+) -> Bool {
+  if !signal.is_well_formed() ||
+    !belief.is_well_formed() ||
+    !base_tol.is_finite() ||
+    base_tol < 0.0 ||
+    !spectrum_tol.is_finite() ||
+    spectrum_tol < 0.0 ||
+    (signal.x0 - belief.x0).abs() > base_tol {
+    return false
+  }
+  let (signal_plus, signal_minus) = signal.singular_spectrum(tol=spectrum_tol)
+  let (belief_plus, belief_minus) = belief.singular_spectrum(tol=spectrum_tol)
+  micro_spectra_are_antipodal(
+    signal_plus, signal_minus, belief_plus, belief_minus,
+  )
+}
+
+///|
+/// M5 event result: an antipodal wavefront collision at a shared base point promotes the
+/// current B_4 belief to Bv and marks it quarantined instead of silently discarding it.
+#derive(Debug, Eq)
+pub(all) struct MicrolocalAttentionReport {
+  input_valid : Bool
+  same_base_point : Bool
+  signal_plus : Bool
+  signal_minus : Bool
+  belief_plus : Bool
+  belief_minus : Bool
+  antipodal_collision : Bool
+  quarantined : Bool
+  value_before : FourVal
+  value_after : FourVal
+  non_explosion_preserved : Bool
+}
+
+///|
+pub fn microlocal_attention_event(
+  signal : MicrofunctionGerm,
+  belief_spectrum : MicrofunctionGerm,
+  current_value : FourVal,
+  base_tol~ : Double = 1.0e-12,
+  spectrum_tol~ : Double = 1.0e-12,
+) -> MicrolocalAttentionReport {
+  let input_valid = signal.is_well_formed() &&
+    belief_spectrum.is_well_formed() &&
+    base_tol.is_finite() &&
+    base_tol >= 0.0 &&
+    spectrum_tol.is_finite() &&
+    spectrum_tol >= 0.0
+  if !input_valid {
+    return {
+      input_valid: false,
+      same_base_point: false,
+      signal_plus: false,
+      signal_minus: false,
+      belief_plus: false,
+      belief_minus: false,
+      antipodal_collision: false,
+      quarantined: false,
+      value_before: current_value,
+      value_after: current_value,
+      non_explosion_preserved: b4_non_explosion_counterexample_exists(),
+    }
+  }
+  let same_base_point = (signal.x0 - belief_spectrum.x0).abs() <= base_tol
+  let (signal_plus, signal_minus) = signal.singular_spectrum(tol=spectrum_tol)
+  let (belief_plus, belief_minus) = belief_spectrum.singular_spectrum(
+    tol=spectrum_tol,
+  )
+  let collision = same_base_point &&
+    micro_spectra_are_antipodal(
+      signal_plus, signal_minus, belief_plus, belief_minus,
+    )
+  {
+    input_valid: true,
+    same_base_point,
+    signal_plus,
+    signal_minus,
+    belief_plus,
+    belief_minus,
+    antipodal_collision: collision,
+    quarantined: collision,
+    value_before: current_value,
+    value_after: if collision {
+      FourVal::join(current_value, Bv)
+    } else {
+      current_value
+    },
+    non_explosion_preserved: b4_non_explosion_counterexample_exists(),
+  }
+}
+
+///|
+fn micro_complex_array_distance_sq(
+  a : Array[Complex],
+  b : Array[Complex],
+) -> Double {
+  let n = a.length().max(b.length())
+  let mut sum = 0.0
+  for i in 0..<n {
+    let ca = if i < a.length() { a[i] } else { Complex::zero() }
+    let cb = if i < b.length() { b[i] } else { Complex::zero() }
+    sum = sum + (ca - cb).norm_sq()
+  }
+  sum
+}
+
+///|
+/// Product-coordinate L2 distance between microfunction coefficient lists, including
+/// their real base-point coordinate. Plus/minus pole-vector accumulation is shared.
 pub fn MicrofunctionGerm::dist(
   a : MicrofunctionGerm,
   b : MicrofunctionGerm,
 ) -> Double {
-  let mut s = (a.plus_log - b.plus_log).norm_sq() +
-    (a.minus_log - b.minus_log).norm_sq()
-  let np = a.plus_poles.length().max(b.plus_poles.length())
-  for i in 0..<np {
-    let ca = if i < a.plus_poles.length() {
-      a.plus_poles[i]
-    } else {
-      Complex::zero()
-    }
-    let cb = if i < b.plus_poles.length() {
-      b.plus_poles[i]
-    } else {
-      Complex::zero()
-    }
-    s = s + (ca - cb).norm_sq()
-  }
-  let nm = a.minus_poles.length().max(b.minus_poles.length())
-  for i in 0..<nm {
-    let ca = if i < a.minus_poles.length() {
-      a.minus_poles[i]
-    } else {
-      Complex::zero()
-    }
-    let cb = if i < b.minus_poles.length() {
-      b.minus_poles[i]
-    } else {
-      Complex::zero()
-    }
-    s = s + (ca - cb).norm_sq()
-  }
-  s.sqrt()
+  let base_distance = a.x0 - b.x0
+  let sum = base_distance * base_distance +
+    (a.plus_log - b.plus_log).norm_sq() +
+    (a.minus_log - b.minus_log).norm_sq() +
+    micro_complex_array_distance_sq(a.plus_poles, b.plus_poles) +
+    micro_complex_array_distance_sq(a.minus_poles, b.minus_poles)
+  sum.sqrt()
 }
 
 ///|
-/// Exact microlocal anti-derivative D_x^{-1} : C_{(x_0, +-idx)} -> C_{(x_0, +-idx)}
-/// (since D_x has principal symbol i xi != 0 on ALL of i S^* R, D_x is microlocally
-/// invertible EVERYWHERE on microfunctions, even though it is NOT invertible on functions!):
-///   D_x^{-1}([z^{-1}]) = [ln(-z)]   (so D_x^{-1}(sp(delta)) == sp(Y)!),
-///   D_x^{-1}([z^{-k}]) = [-1/(k-1) z^{-(k-1)}]  for k >= 2.
+/// Microlocal anti-derivative for the pole-only subspace represented by this truncated model:
+///   D_x^{-1}([z^{-1}]) = [ln(-z)] (hence D_x^{-1}(sp(delta)) == sp(Y)),
+///   D_x^{-1}([z^{-k}]) = [-1/(k-1) z^{-(k-1)}] for k >= 2.
+/// An existing logarithm would integrate to a z*log(z) term, which this germ representation
+/// cannot express; reject it rather than silently dropping that singular term.
 pub fn MicrofunctionGerm::integrate_microlocal(
   self : MicrofunctionGerm,
-) -> MicrofunctionGerm {
+) -> Result[MicrofunctionGerm, String] {
+  if !self.is_well_formed() {
+    return Err("microfunction coefficients and base point must be finite")
+  }
+  if microfunction_has_log(self) {
+    return Err(
+      "logarithmic microfunction antiderivatives are outside the truncated model",
+    )
+  }
   let anti = (poles : Array[Complex]) => {
     let lg = if poles.length() > 0 { poles[0] } else { Complex::zero() }
     let np = (poles.length() - 1).max(0)
@@ -858,7 +1062,13 @@ pub fn MicrofunctionGerm::integrate_microlocal(
   }
   let (pp, pl) = anti(self.plus_poles)
   let (mp, ml) = anti(self.minus_poles)
-  { x0: self.x0, plus_poles: pp, plus_log: pl, minus_poles: mp, minus_log: ml, }
+  Ok({
+    x0: self.x0,
+    plus_poles: pp,
+    plus_log: pl,
+    minus_poles: mp,
+    minus_log: ml,
+  })
 }
 
 ///|
@@ -872,9 +1082,20 @@ pub fn micro_product(
   u : MicrofunctionGerm,
   v : MicrofunctionGerm,
 ) -> Result[MicrofunctionGerm, String] {
+  if !u.is_well_formed() || !v.is_well_formed() {
+    return Err("microfunction coefficients and base points must be finite")
+  }
+  if (u.x0 - v.x0).abs() > 1.0e-12 {
+    return Err("microfunction germs must share a base point")
+  }
+  // Pole-only multiplication is implemented exactly. Do not silently drop logarithmic
+  // singularities until their product rule is represented in this truncated model.
+  if microfunction_has_log(u) || microfunction_has_log(v) {
+    return Err("logarithmic microfunction products are not implemented")
+  }
   let (up, um) = u.singular_spectrum()
   let (vp, vm) = v.singular_spectrum()
-  if (up && vm) || (um && vp) {
+  if micro_spectra_are_antipodal(up, um, vp, vm) {
     return Err(
       "Sato antipodal wavefront collision: (+i dx) + (-i dx) = 0 forbids product",
     )

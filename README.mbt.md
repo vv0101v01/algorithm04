@@ -2,7 +2,7 @@
 
 [![MoonBit CI](https://github.com/vv0101v01/algorithm04/actions/workflows/ci.yml/badge.svg)](https://github.com/vv0101v01/algorithm04/actions/workflows/ci.yml)
 
-以最新穩定版 **MoonBit**（`moonc v0.10.21` / `moon 0.1.20261117`）之嚴格型別系統、多型代數 Trait 與顯式 `pub extend` 方法擴充機制，將 **`algorithm04`（十八大現代數學結構 + 14 條定理）** 與 **`algo8`（八大數學結構 + 31 條定理）** 融合為單一零外部依賴、零編譯警告（`--deny-warn`）、零死碼且跨三後端（`wasm-gc` / `wasm` / `js`）機器精度驗證之 **26 大數學結構 + 18 條複合定理 + 31 條基礎定理** 計算框架，並驅動 **四層類智能體湧現引擎 `SGNE-Flow` + `SGNE-Trop-Kan` + `SGNE-Germ-Micro` + `SGNE-Syn-Mem-Para`**。
+以最新穩定版 **MoonBit**（`moonc v0.10.21` / `moon 0.1.20261117`）之嚴格型別系統、多型代數 Trait 與顯式 `pub extend` 方法擴充機制，將 **`algorithm04`（十八大現代數學結構 + 14 條定理）** 與 **`algo8`（八大數學結構 + 31 條定理）** 融合為單一僅依賴 MoonBit core 的套件、以 `--deny-warn` 嚴格檢查並由跨三後端（`wasm-gc` / `wasm` / `js`）機器精度測試驗收之 **26 大數學結構 + 18 條複合定理 + 31 條基礎定理** 計算框架，並驅動 **四層類智能體湧現引擎 `SGNE-Flow` + `SGNE-Trop-Kan` + `SGNE-Germ-Micro` + `SGNE-Syn-Mem-Para`**。M4–M6 另提供有限 A3/D4 開折選擇、同基點微局部反對徑隔離，以及可量測殘差收縮的阻尼閉環回饋；CI 測試及編譯檢查不宣稱已證明全專案無死碼。
 
 > **本倉庫為 `vv0101v01/algorithm04`（`d85a35f`）與 `vv0101v01/algo8`（`99bdadf`）之雙親統一合併（dual-parent merge）成果**，
 > 版本 `2.0.0`，套件名稱 `arena/super_emergence`。合併策略為「分層正交核心 + 單向橋接層」
@@ -12,7 +12,7 @@
 
 | 檔案 | 對應數學結構與核心演算法 |
 | :--- | :--- |
-| `moon.mod` / `moon.pkg` | MoonBit v0.10 新式模組與套件宣告（零外部依賴，支援 `wasm-gc` / `wasm` / `js`） |
+| `moon.mod` / `moon.pkg` | MoonBit v0.10 新式模組與套件宣告（僅依賴 MoonBit core，支援 `wasm-gc` / `wasm` / `js`） |
 | `algebra.mbt` | 範疇與代數 Trait 塔（`Parity`, `AbelianGroup`, `Module`, `Ring`, `SuperAlgebra`, `LieSuperAlgebra`, `AffineTorsor`, `RiemannianGeometry`）、精確 Grassmann 外超代數 $\Lambda_N$、複數域 $\mathbb{C}$、列最簡階梯形 `rref_with_pivots`、零主元安全線性求解與 Jacobi 對稱特徵分解 |
 | `supermanifold.mbt` | **(1) 龐加萊-黎曼超流形 $\mathcal{M}^{m\mid n}_c$**：Möbius 陀螺向量加法、$\exp_x^c/\log_x^c$、Levi-Civita 平行移動、$\mathrm{OSp}(m\mid 2k)$ 不變超度量 $G_{AB}(z)$ 與 Berezinian 體積元 $\sqrt{\mathrm{Ber}\,G}=\lambda_c^{m-2k}$ |
 | `affine_tensor.mbt` | **(2) 仿射張量空間**：仿射 Torsor 與 Fréchet 雙曲質心、混合變異 $\mathbb{Z}_2$-分次張量 $T^{(r,s)}(V_{m\mid n})$、Yang–Baxter 編織、音樂同構、仿射聯絡（含撓率 contorsion）、Riemann/Ricci 曲率與 Bianchi 恆等式 |
@@ -26,8 +26,8 @@
 | `universal_functor.mbt` | **(10) 泛性質函子**：Yoneda 引理雙射、$O(1)$ 融合 `Coyoneda`、自由-遺忘伴隨 `UniversalFreeObject`、Grassmann 外代數泛同態提升、張量積泛雙線性分解、MGU 泛餘等化子、有限本體推出 `FinitePushout` 與熱帶/Maslov 左右 Kan 擴張 $\mathrm{Lan}_K\dashv K^*\dashv\mathrm{Ran}_K$ |
 | `semitropical_projective.mbt` | **(11) 半熱帶環射影**：熱帶半環 $\mathbb{T}$、Litvinov–Maslov 半環 $\mathbb{S}_\hbar$、Izhakian–Rowen 超熱帶半環 $\mathbb{ST}=\mathcal{T}\cup\mathcal{G}$、熱帶射影空間 $\mathbb{TP}^{n-1}$、Galois 殘差多胞形收縮投影 $\Pi_{\mathcal{V}}$、稀疏圖安全 Karp 熱帶射影特徵對、Maslov 譜夾擠與熱帶 Grassmann 流形 $\mathrm{Trop}\,\mathrm{Gr}(2,N)$ |
 | `universal_enveloping.mbt` | **(12a) 萬有展開 I — 李超代數萬有包絡超代數 $U(\mathfrak{g})$**：$\mathfrak{sl}(2)$ 與 $\mathfrak{osp}(1\mid 2)$ 精確結構表、Super-PBW 濾過基拉直演算法（含奇元平方 $F_\alpha^2=\frac{1}{2}\{F_\alpha,F_\alpha\}$）、泛表示提升 $U(\mathfrak{g})\to\mathrm{End}(V)$、超 Hopf 餘積/餘單位/分次對極 $S$ 與二次 Casimir 中心元 $C_2$ |
-| `singularity_germs.mbt` | **(12b, 13, 14, 15, 18) 萬有展開 II 與奇點映射胚**：截斷局部環 $\mathcal{O}_{n,0}/\mathfrak{m}^{k+1}$、**Mather 接觸群 $\mathcal{K}=A\ltimes\mathcal{D}$ 等價性**（$T\mathcal{K}_e f$、Tjurina 數 $\tau$、Milnor 數 $\mu$、非擬齊次 $\tau<\mu$ 分離）、**Thom–Mather 萬有 $\mathcal{K}$-開折**與泛參數誘導、**孤立完備相交奇點胚（ICIS）**（Koszul $H_1=0$、Lê–Greuel 遞推與零維 Gorenstein 一維 Socle 對偶）、**正規環胚**（Serre $R_1+S_2$ 判準與半群曲線胚正規化 $c=2\delta$）及**等價類映射胚**（芽等價、商胚泛分解 $h=\bar{h}\circ\pi$ 與 ADE 接觸等價分類） |
-| `meromorphic_microfunction.mbt` | **(16, 17) 亞純函數胚與佐藤微函數胚**：Laurent 亞純函數胚域 $\mathcal{M}_{1,0}$（熱帶賦值、Cauchy 留數、輻角原則、Mittag–Leffler 分解）、全域 Euler–Jacobi 留數消失定理、二維 Weierstrass 預備定理 $f=u\cdot W$、多變元亞純胚 $\mathcal{M}_{n,0}$、**Sato 超函數與微函數胚** $0\to\mathcal{A}_0\to\mathcal{B}_0\xrightarrow{\mathrm{sp}}\mathcal{C}_0\to 0$（Sokhotski–Plemelj、奇異譜 $SS(u)$、Köthe 對偶、反對徑波前積）與 **SKK 微微分算子環 $\mathcal{E}_{X,(0,+idx)}$**（Leibniz 符號合成與雙邊橢圓擬逆 $P\circ P^{-1}=P^{-1}\circ P=1$） |
+| `singularity_germs.mbt` | **(12b, 13, 14, 15, 18) 萬有展開 II 與奇點映射胚**：截斷局部環 $\mathcal{O}_{n,0}/\mathfrak{m}^{k+1}$、**Mather 接觸群 $\mathcal{K}=A\ltimes\mathcal{D}$ 等價性**（$T\mathcal{K}_e f$、Tjurina 數 $\tau$、Milnor 數 $\mu$、非擬齊次 $\tau<\mu$ 分離）、**Thom–Mather 萬有 $\mathcal{K}$-開折**（含維度／有限參數 checked fiber API）與泛參數誘導、**孤立完備相交奇點胚（ICIS）**（Koszul $H_1=0$、Lê–Greuel 遞推與零維 Gorenstein 一維 Socle 對偶）、**正規環胚**（Serre $R_1+S_2$ 判準與半群曲線胚正規化 $c=2\delta$）及**等價類映射胚**（芽等價、商胚泛分解 $h=\bar{h}\circ\pi$ 與 ADE 接觸等價分類；scalar function germ 以 Hessian corank 判別 ADE） |
+| `meromorphic_microfunction.mbt` | **(16, 17) 亞純函數胚與佐藤微函數胚**：Laurent 亞純函數胚域 $\mathcal{M}_{1,0}$（熱帶賦值、Cauchy 留數、輻角原則、Mittag–Leffler 分解）、全域 Euler–Jacobi 留數消失定理、二維 Weierstrass 預備定理 $f=u\cdot W$、多變元亞純胚 $\mathcal{M}_{n,0}$、**Sato 超函數與微函數胚** $0\to\mathcal{A}_0\to\mathcal{B}_0\xrightarrow{\mathrm{sp}}\mathcal{C}_0\to 0$（Sokhotski–Plemelj、奇異譜 $SS(u)$、Köthe 對偶、同基點反對徑碰撞隔離及具 stalk/log 檢查的微函數乘積）與 **SKK 微微分算子環 $\mathcal{E}_{X,(0,+idx)}$**（Leibniz 符號合成與雙邊橢圓擬逆 $P\circ P^{-1}=P^{-1}\circ P=1$） |
 | `memory.mbt` | **(19) 長期記憶細胞狀態轉移與馬可夫吸收半群**：$f^t$ 記憶轉移半群閉式解（$O(\log t)$ 二冪快取）、平穩分佈冪迭代、吸收時間 Neumann 基本矩陣線性求解（零主元防護、純函式） |
 | `universal.mbt` | **(20) 有限範疇極限**：終物件唯一性、乘積泛性質窮舉見證、笛卡爾函子律、**有限拉回（fiber product limit）`FinitePullback`** 與唯一中介映射 |
 | `complex_field.mbt` | **(21) 複數域強基數**：Hamel 強基座標 $\varphi:\mathbb{C}\to\mathbb{R}^2$、複數域公理計算驗證器、Cantor 配對 $O(1)$ 反演、Gaussian 整數範數篩 |
@@ -37,16 +37,23 @@
 | `quaternion_ktheory.mbt` | **(25) 希爾伯特四元數與非交換圖 $K_0$ 譜對象**：Hamilton 四元數除環、$K_0$ 譜投影恆等式（退化譜 $0/0$ 已修）、Cayley–Hamilton、任意 $n$ 四元數非交換圖、**實四維嵌入 $\iota:\mathbb{H}\hookrightarrow\mathrm{Mat}_4(\mathbb{R})$** 與整數 $K_0$ 直接和指標 |
 | `para_universe.mbt` | **(26) 仿宇宙與 Belnap 四值雙格 $B_4$**：$\mathrm{Nv}/\mathrm{Fv}/\mathrm{Tv}/\mathrm{Bv}$ 資訊序與真值序、副相容不爆炸、Knaster–Tarski 最小不動點、跨世界逐點融合 |
 | `unified_bridges.mbt` | **統一橋接層（第 4 層）**：Schur-質量 Metriplectic 保守-耗散流、Belnap–Grassmann–Poincaré 副相容統一、Čech 超算子叢餘擺與 Kramers 四重實嵌入、角色閘控記憶半群（保留率依環境 Hurst 指數調整）與 Haken–超熱帶對偶、有限雙完全性與 Cantor Gödel 引擎 |
-| `emergence.mbt` | **四層類智能體湧現與驗證主引擎**：微觀 **`SGNE-Flow`**（A1–A4）、半熱帶泛函宏觀蒸餾 **`SGNE-Trop-Kan`**（A5–A6）、奇點胚-微局部相變認證 **`SGNE-Germ-Micro`**（A7–A8）、**跨層蒸餾 `SGNE-Syn-Mem-Para`（A9–A10）**，以及統一 **18 大定理**數值證明器 `verify_all_theorems()` |
+| `emergence.mbt` | **四層類智能體湧現與驗證主引擎**：微觀 **`SGNE-Flow`**（A1–A4；等權相容入口與 M6 角色超質量回饋入口）、半熱帶泛函宏觀蒸餾 **`SGNE-Trop-Kan`**（A5–A6；可選角色加權蒸餾）、奇點胚-微局部相變認證 **`SGNE-Germ-Micro`**（A7–A8）、**跨層蒸餾 `SGNE-Syn-Mem-Para`（A9–A10）**，以及統一 **18 大定理**數值證明器 `verify_all_theorems()` |
+| `catastrophe_unfolding.mbt` | **M4 開折選擇器**：有限 A3 cusp／D4 umbilic miniversal 原型、角色分支目標配對、infinitesimal K-versality 與重建／駐點殘差證據 |
+| `role_weights.mbt` | 四角色權重的穩定正規化，共用於 Flow 與 Trop-Kan 回饋入口 |
+| `four_layer_feedback.mbt` | **M6 四層閉環**：阻尼 Flow–Trop-Kan–Germ-Micro–Syn-Mem 固定點迭代、吸收時間雙權重回饋及經驗殘差收縮報告 |
 | `extends.mbt` | MoonBit v0.10.21 顯式 `pub extend Type with Trait::{...}` 方法掛載宣告 |
 | `super_emergence_test.mbt` | 涵蓋 18 大模組、18 條複合定理、邊界迴歸及 M1.1–M1.4 長時穩定、Hurst 單調記憶與可逆四叢驗收之黑盒測試套件 |
-| `math_structures_test.mbt` | 涵蓋 8 大基礎模組、31 條基礎定理與 6 項缺陷回歸測試之黑盒測試套件 |
-| `cmd/main/main.mbt` | 可執行 18 大定理、四層湧現及 M1.1–M1.4 穩定性與 Hurst 記憶證據 CLI |
+| `catastrophe_unfolding_test.mbt` | M4 正常形選擇、開折 versality、checked fiber 與 ADE 分類回歸 |
+| `microlocal_attention_test.mbt` | M5 同基點反對徑隔離、stalk、pole 支撐與未支援 log-product／anti-derivative 邊界測試 |
+| `euler_jacobi_residue_test.mbt` | Euler–Jacobi 簡根留數、冪次範圍與有限乘積邊界測試 |
+| `four_layer_feedback_test.mbt` | M6 Flow／Trop-Kan 權重、相容性、極端浮點輸入與固定點驗收 |
+| `math_structures_test.mbt` | 涵蓋 8 大基礎模組、31 條基礎定理與 12 項編號缺陷回歸測試之黑盒測試套件 |
+| `cmd/main/main.mbt` | 可執行 18 大定理、四層湧現及 M1.1–M6 路線圖驗收 CLI |
 | `THEOREMS_AND_ALGORITHMS.md` | 完整數學形式化、18 條複合定理嚴格證明、四層演算法偽代碼、31 條基礎定理附錄與工程重構審計專論 |
 | `MERGE_ANALYSIS.md` | 合併前利弊分析、僅合併可得之數學紅利、合併方案選擇與損害最小化對策 |
 | `AGENT_EMERGENCE_PLAN.md` | 數理類智能體（**非 LLM**）湧現之後續路線圖與前端 NL2Math 小模型規格 |
 | `EMERGENCE_PROBLEM_SET.md` / `benchmarks/emergence_problem_set.json` | 迫出類智能體之問題集（可機器讀取） |
-| `.github/workflows/ci.yml` | GitHub Actions 嚴格八道門檻 CI（格式、`--deny-warn`、`.mbti` 介面一致性、三後端測試、18 定理與 M1.1–M1.4 CLI 驗收、問題集 JSON 機器驗證） |
+| `.github/workflows/ci.yml` | GitHub Actions 七道正式驗收門檻（格式、`--deny-warn`、`.mbti` 介面一致性、三後端測試、18 定理與 M1–M6 CLI，以及併入 Gate 7 的問題集 JSON 驗證） |
 
 ## 快速執行與持續整合門檻
 
@@ -57,7 +64,7 @@ moon info && git diff --exit-code       # 公開介面 pkg.generated.mbti 一致
 moon test --target wasm-gc              # Wasm-GC 後端執行全部測試與文件測試
 moon test --target wasm                 # Wasm 線性記憶體後端交叉驗證
 moon test --target js                   # JavaScript (V8) 後端交叉驗證
-moon run cmd/main                       # 執行 18 大定理、四層湧現與 M1.1–M1.4 報告
+moon run cmd/main                       # 執行 18 大定理、四層湧現與 M1.1–M6 驗收報告
 ```
 
 ## M1.1–M1.4：自持動力學與 Hurst 調節記憶
@@ -69,6 +76,12 @@ moon run cmd/main                       # 執行 18 大定理、四層湧現與 
 - **M1.3 長時穩定性**：`SuperBeltramiPDE::audit_long_time_stability(dt, steps)` 以能量回溯、質量回縮及串流帳本執行長時程審核；小於自由能的離散步才接受，近固定點時只有在候選密度位移 `< 1e-8` 且能量差處於 roundoff 界內才作 stationary hold。32 格、`dt = 0.0005` 連續 100,000 步的 CLI 證據包含軌跡最大 `ΔF = 0`、質量誤差及 Gibbs 平衡距離。
 - **M1.4 Hurst 記憶**：`role_memory_profiles_for_hurst(H)` 用 `f(H)=f(1/2)+2(H-1/2)(1-f(1/2))` 同步調整 forget gate 與 retention（`0 < H < 1`；`H=0.5` 精確還原原始四角色）。`distill_synergetic_memory_para_agent(..., hurst=...)` 可將環境 H 直接帶入記憶蒸餾；四階段鏈吸收時間使用精確值 `4/(1-f)`，避免 retention 趨近 1 時截斷尾和造成偏差。`audit_hurst_memory_monotonicity` 檢查每角色吸收時間隨 H 嚴格上升及角色內排序不變。
 - **本地 CLI 見證**：M1.1 的 32 格 mass error 為 `2.22e-16`；M1.2 的八個置換軌道形成 `[2, 2, 2, 2]` 四叢、分離間隙 `1.53`，dominant band `0 → 1 → 0` 可逆。M1.3/M1.4 的長時穩定與 Hurst 單調性亦由 CI Gate 7 驗收。
+
+## M4–M6：開折選擇、微局部隔離與四層閉環
+
+- **M4**：`learn_catastrophe_for_role_branches` 在明確限定的 A3 cusp 與 D4 umbilic scalar normal forms 中，依需求 3／4 個實臨界分支選型；以 miniversal K-unfolding、infinitesimal K-versality 及商空間重建／駐點殘差作有限原型證據。報告另區分臨界分支數與穩定局部極小值數；不宣稱完整 ADE 或任意 ICIS 自動分類。
+- **M5**：`microlocal_attention_event` 僅當兩微函數皆有限、位於同一基點且具有反對徑奇異方向時，才把現值與 `Bv` 做 Belnap 資訊 join 並標記隔離。`micro_product` 檢查 stalk 基點及輸入有限性；未支援的對數乘積回報錯誤，不靜默忽略項。
+- **M6**：`audit_four_layer_closed_loop` 從固定殖民地重跑加權 SGNE-Flow、Trop-Kan、M4/M5 與 Hurst-conditioned Syn-Mem，以吸收時間阻尼更新兩組角色權重。`empirical_fixed_point_certified` 僅表示該有限確定性迭代在所報告容差內有殘差收縮、正規化及 no-explosion 證據，不是完整非線性引擎的全域收斂定理。三項 acceptance 納入 `moon run cmd/main` 與 CI Gate 7。
 
 ```mbt check
 ///|

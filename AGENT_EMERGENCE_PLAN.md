@@ -27,8 +27,8 @@
 | 基礎定理 | 31 條，黑盒測試覆蓋 |
 | 湧現層 | 4 層：`SGNE-Flow` / `SGNE-Trop-Kan` / `SGNE-Germ-Micro` / `SGNE-Syn-Mem-Para` |
 | 角色 | 8 個原型單元 → 2 Coordinator / 2 Sensor / 2 Planner / 2 Executor |
-| 測試 | 70/70，三後端一致（含 M2.1–M2.4、M3.1–M3.3；本地） |
-| 未解問題 | 見第三節 |
+| 測試 | 82/82，四個本地 targets 一致（native／wasm-gc／wasm／js；含 M2.1–M2.4、M3.1–M3.3、M4–M6） |
+| 後續路線圖 | 見第四節（M7+） |
 
 ---
 
@@ -45,7 +45,7 @@
 | M1.3 | **長時程穩定性**：$10^5$ 步連續積分之自由能單調性 | $\dot{\mathfrak{F}}\le 0$ 全程成立 |
 | M1.4 | **閘控記憶持久化**：將 `role_memory_profiles` 之保留率與環境 Hurst 指數掛鉤 | 吸收時間序隨 Hurst 單調變動 |
 
-**實作狀態（2026-11-18）**：M1.1–M1.4 全部落地並加入常駐測試、CLI 與 CI Gate 7 驗收；這不代表後續 M2–M10 完成。
+**實作狀態（2026-11-18）**：M1.1–M1.4 全部落地並加入常駐測試、CLI 與 CI Gate 7 驗收；各後續里程碑的完成狀態分別以本文件對應章節為準。
 
 - **M1.1**：`SuperBeltramiPDE::step_with_exogenous_perturbation` 對有限體積密度加入可控的 `sigma * Xi(t)` 加性擾動；先投影到 Berezinian 加權零質量切空間，再以加權機率單純形回縮保正。`WFRFlowStepLedger` 分欄記錄質量、確定性耗散、擾動作功及總自由能變化。輸入格數不符或 forcing 非有限值會標記無效並退回確定性步。32 格、`sigma = 0.2` 的 CLI 質量誤差為 `2.22e-16`；自由能分帳為確定性耗散 `9.71e-4`、擾動作功 `1.37e-4`、總變化 `-8.34e-4`。
 - **M1.2**：`reassign_roles_by_orbit_distance` 先依非負擾動功率譜最大頻帶（模 4）循環平移軌道—角色對應，再以 `orbit_space_distance`（`d_O`）最近距離匹配。此純函式在頻譜回復時精確恢復原指派；八個置換質量樣本的四叢大小為 `[2, 2, 2, 2]`，叢間最小距離減叢內最大距離為 `1.53`，頻帶 `0 → 1 → 0` 可逆。
@@ -63,14 +63,14 @@
 | M2.3 | **Epistemic 合併算子**：多世界融合擴充為 Belnap–Gärdenfors–Malitz 資訊偏序上的命名命題聚合 | 結合、交換、冪等；空世界為單位；逐點 join 是最小上界 |
 | M2.4 | **Gödel 編碼之推論用法**：以 `godel_encode_finite_set` 表示有限命題集合，使 agent 可對信念做集合運算 | 編解碼往返一致、典範／單射編碼及集合代數恆等式 |
 
-**實作狀態（2026-11-18）**：M2.1–M2.4 已落地；本地格式、零警告型別檢查、三後端測試與 CLI Gate 均通過，最終差異審查亦已完成。提交、推送及 GitHub Hosted CI 因此工作區未配置 GitHub 認證／提交者身分而待處理；本地通過不代表 Hosted CI 已通過。
+**實作狀態（2026-11-18）**：M2.1–M2.4 已落地，與 M3 一同收錄於 `7693b43` 並推送至 `main`；GitHub Hosted CI run `44394929260` 已對該提交通過。初始 M2 驗收為三後端各 67/67；後續里程碑擴充後的測試數量以最新 CI 為準。
 
 - **M2.1**：新增型別化 B₄ 命題樹、指定值語意 `{Tv, Bv}`、單後件 sequent、cut、同步公式替換與 MP。`Imp` 使用明確的 MP-健全四值條件式；它在 `{Fv,Tv}` 上等同經典蘊涵，但刻意不等同 FDE 材料式 `¬A ∨ B`（後者在 `Bv → Fv` 上會使 MP 失效）。替換依結構遞迴，並保持 sequent 之隔離標記。
 - **窮舉策略**：不執行 4,294,967,296 次 CI 迴圈；對 MP 完整列舉 16 個 `(A,B)` 真值類，對 cut 列舉 64 個 `(A,B,C)` 類，並對替換影像的三個 B₄ 值列舉 64 類。其餘自由原子槽以 `16×4^14` 或 `64×4^13` 精確計數，三條路徑各涵蓋 `4^16 = 4,294,967,296` 個 schema-local 組合。複合公式的有效性由其 B₄ 評值歸約至這些類；替換另以公式語意律與 sequent 語意不變性檢查。報表明確標示這是完整的真值類商集，不是假稱實際跑過 43 億次迴圈。
 - **M2.2**：`quarantined = true` 的 cut 中介結論、cut 公式出現及 MP 輸入均被拒絕；非相關隔離前提不會被啟用。修復器可逐筆檢視記錄；只有附非空外部證據且提出非 `Bv` 值才解除隔離，仍為 `Bv` 或未提交決定者會保持隔離。修復率定義為「成功解除隔離數／已檢視隔離記錄數」，分母為零時回報 `0.0`；此外保留可執行的 FDE 爆炸反模型。外部證據由呼叫者提供，核心只記錄、不驗真。
 - **M2.3**：`MultiWorld::aggregate` 驗證每個 world 的命題和值對齊、名稱唯一；於各命題的 `B₄` 資訊序上逐點取最小上界，未出現命題補 `Nv`，並以字典序典範排序命題名稱。`ParaUniverse::information_join` 與 `paraconsistent_no_explosion` 共用該實作；舊 `merge_pointwise` 保持首個 world 的欄位順序以維持相容。有限稽核窮舉 `B₄` join 的 64 個結合、16 個交換、4 個冪等及 64 個最小上界檢查，另檢查命名聯集的交換、空單位、冪等、結合與錯誤輸入拒絕。名稱比較明確採字典序（而非 MoonBit `String` 預設的短字典序），避免 canonical order 被誤判。
 - **M2.4**：`GodelFiniteSet` 將 `{0,…,14}` 子集存為 15-bit mask，再以 `π(|S|, mask)` Cantor 配對作典範 Gödel code；此 API 是明確有界的有限命題全集，不宣稱表示任意有限整數集合。checked API 拒絕越界元素及無效／非典範碼；集合類別支援聯集、交集、差集、對稱差、子集及 array 轉換。稽核對 9 個輸入樣本檢查典範化，並窮舉有界全集的 32,768 個子集做 code→set 往返（因此亦檢查該域上的單射性）；另檢查聯集與交集半格律、單位／零元／吸收、分配律、差集分解、對稱差律、子集律及無效輸入。有限雙完備性證書重用同一稽核。
-- **驗證**：本地 `moon fmt`、`moon check --deny-warn`、`wasm-gc`／`wasm`／`js` 各 67/67 測試與 `moon run cmd/main` 通過；CI Gate 7 亦驗收 M2.3/M2.4 CLI 摘要。完整 Hosted CI 尚待推送後執行，詳情以實際 CI Gate 為準。
+- **驗證**：M2 初始交付時 `moon fmt`、`moon check --deny-warn`、`wasm-gc`／`wasm`／`js` 各 67/67 與 CLI acceptance 通過；其後 Hosted CI run `44394929260` 對合併 M2/M3 commit `7693b43` 成功。
 
 ### M3 — 把「叢」變成可組合的（v2.3）
 
@@ -82,12 +82,12 @@
 | M3.2 | **叢之 Čech 餘擺與超算子 $B$ 的合成** | $\operatorname{hol}(B\circ\text{holonomy}) = \operatorname{hol}(B)\circ\operatorname{holonomy}$ |
 | M3.3 | **Čech 叢上之 Čech 範疇** | 範疇公理（結合、單位）機器檢驗 |
 
-**實作狀態（2026-11-18）**：M3.1–M3.3 已落地，並接入 Theorem XVII、常駐測試、CLI Gate 7 與 CI 工作流程。Hosted CI 仍須推送後以實際 run 為準。
+**實作狀態（2026-11-18）**：M3.1–M3.3 已落地，接入 Theorem XVII、常駐測試、CLI Gate 7 與 CI 工作流程；與 M2 一同收錄於 `7693b43`，Hosted CI run `44394929260` 已通過。
 
 - **M3.1**：`build_super_operator_bundle(n_sets)` 以逐步 frame $F_i$ 構造 $g_{ij}=F_i^{-1}F_j$ 及 $s_i=F_i^{st}s_0F_i$；驗證器分別儲存 pair 與 genuine triple intersections（不把 pairwise clique 誤當共同交集），並檢查 shape、偶性、對稱／重複頂點一致性、完整 1-cocycle（含 identity／逆轉移）與 patch descent。`glue_section` 在指定共同 trivialization 下回傳拼接截面。固定 canonical fixture 改為同一泛化 builder 的三 patch 呼叫。
 - **M3.2**：`coboundary` 實作非交換 Čech 0-cochain 作用 $g'_{ij}=h_i^{-1}g_{ij}h_j$，並同步變換局部截面；閉環 holonomy 按基點 gauge 共軛。常值情形即超算子 $B=\mathrm{Ad}_Q(X)=QXQ^{-1}$，機器檢查逐邊作用與整體 holonomy 作用相容。測試含非平凡四環 holonomy、非均勻且非交換的可逆 gauge，避免只檢查單位 holonomy。
 - **M3.3**：`CechCategory` 的物件為 patch、態射攜帶 transition operator；`compose` 按路徑順序作矩陣乘法，`from_bundle` 拒絕不滿足 cocycle、overlap 非傳遞或缺少可合成三重交集的輸入。以所有可合成 patch 四元組窮舉結合律，並對每個態射檢查左右單位律。此有限 patch-pair 類別模型要求 overlap 關係具傳遞性；任意非傳遞覆蓋仍可用 bundle 層的 Čech descent API，但不會被錯誤包裝成此類別。
-- **驗證**：`moon fmt --check`、`moon info`、`moon check --deny-warn` 通過；`wasm-gc`、`wasm`、`js` 各 70/70；CLI theorem 與 M3.1–M3.3 acceptance 輸出皆 PASS。CI Gate 7 已加入 M3.1–M3.3 摘要檢查；Hosted CI 尚待推送。
+- **驗證**：M3 commit 的 `moon fmt --check`、`moon info`、`moon check --deny-warn` 與三後端各 70/70 通過；CLI theorem、M3.1–M3.3 acceptance 與 Hosted CI run `44394929260` 均 PASS。其後 M4–M6 已將 Gate 7 擴充為同一 CLI acceptance 門檻（見第三節）。
 
 ---
 
@@ -95,15 +95,23 @@
 
 ### M4 — 奇點胚驅動的「開折」學習
 
-將 Mather 萬有開折（Theorem XII）從**驗證對象**轉為**生成機制**：在 `ICIS` 胚之 Milnor 數 $\mu$ 處主動引入小參數 $u$，觀察角色吸引子如何分裂／合併。目標是讓智能體**主動選擇**自己應處於何種 catastrophe 類 $[A_3]$、$[D_4]$…。
+將 Mather 萬有開折（Theorem XII）從**驗證對象**轉為**生成機制**：在有限原型目錄上比較 A3 cusp 與 D4 umbilic 的 miniversal K-unfolding，依需求的角色平衡分支數主動選型，並以 infinitesimal K-versality 與商空間重建殘差驗證控制參數。首版支援 3／4 個**實臨界分支**；回報穩定極小值數，避免把所有臨界分支都誤稱為吸引子。
+
+**實作狀態（本輪）**：`catastrophe_unfolding.mbt` 的 `learn_catastrophe_for_role_branches` 支援 scalar simple-singularity prototypes A3（$\tau=3$）與 D4（$\tau=4$）；目前不宣稱支援任意 ICIS／全 ADE 目錄。A3 slice $x^4-a x^2$ 有 3 個實臨界分支、2 個局部極小；D4 slice $x^3-3xy^2+a(x^2+y^2)$ 有 4 個臨界分支、1 個局部極小。`catastrophe_unfolding_test.mbt` 驗證目標 3／4 的選型、versality、商空間重建與尺度正規化駐點殘差，並拒絕使 A3 分支數值合併的次正規振幅。另修正 `singularity_germs.mbt` 的 scalar germ ADE 分類器，以 Hessian corank 分類，而非把 scalar map differential corank 誤當 ADE corank。
 
 ### M5 — 微局部事件驅動的注意機制
 
-以 Sato 微函數之奇異譜 $SS(u)$ 作為「注意力觸發源」：當輸入信號之 $SS$ 與既有信念之 $SS$ 發生反對徑碰撞時，觸發隔離（`Bv`）而非忽略。這提供一個**可證偽**的注意機制。
+以 Sato 微函數之奇異譜 $SS(u)$ 作為「注意力觸發源」：當輸入信號與既有信念在**同一基點**具有反對徑方向時，觸發隔離（`Bv`）而非忽略。不同基點的相反方向不構成碰撞。
+
+**實作狀態（本輪）**：`meromorphic_microfunction.mbt` 的 `microlocal_attention_event` 將同基點相反 conormal 的相交提升為隔離 B₄ 值（`FourVal::join(value, Bv)`），並回報方向、基點一致性及 no-explosion 見證。新增輸入有限性檢查；修正 `micro_product` 未檢查 stalk 基點的錯誤，並在對數微函數乘積尚未支援時明確拒絕，而非靜默丟棄 log 項；另將 microlocal anti-derivative 改為 checked API，對模型無法表示之既有 log 項回傳錯誤。`microlocal_attention_test.mbt` 覆蓋同向／異點不隔離、反向隔離、malformed germ、獨立碰撞 predicate、乘積邊界及積分邊界。
 
 ### M6 — 四層引擎之閉環耦合
 
-目前四層為**串接**（Flow → Trop-Kan → Germ-Micro → Syn-Mem-Para）。M6 目標是**閉環**：Syn-Mem-Para 之角色吸收時間應回饋調整 Flow 之超質量分佈與 Trop-Kan 之蒸餾權重，形成自穩定迴圈，並以不動點分析檢驗其收斂性。
+四層由**串接**（Flow → Trop-Kan → Germ-Micro → Syn-Mem-Para）改成具阻尼的固定點回饋：角色吸收時間調整 Flow 的超質量權重與 Trop-Kan 的蒸餾權重；Flow/Trop-Kan 的觀測決定 Hurst 記憶響應，Germ-Micro 的 catastrophe 類與微局部隔離事件也進入回饋映射。
+
+**實作狀態（本輪）**：`four_layer_feedback.mbt` 的 `audit_four_layer_closed_loop` 每次迭代從共同初始殖民地重跑有限步 Flow，執行加權 Trop-Kan、M4 選型與 M5 注意事件，再以 Syn-Mem 精確吸收時間更新兩組角色權重。`role_weights.mbt` 共用穩定正規化；Flow 與 Trop-Kan 的原等權入口保持相容。報告固定點殘差與**實測**相鄰殘差收縮率；這是特定有限模擬軌跡的數值證據，**不是**完整非線性模擬器的全域收斂定理。`four_layer_feedback_test.mbt` 驗證相容、極端權重與固定點，並回放迭代預算耗盡時回報的 Flow 權重以確認它與殘差／能量同屬最後一次已評估軌跡；CLI 3-step 測例以容差 $10^{-3}$ 收斂，M4/M5/M6 acceptance 與 problem-set 驗證同列 Gate 7。
+
+**本輪本地驗證**：`moon fmt --check`、`moon info`（生成介面雜湊穩定）、`moon check --deny-warn` 及 `native`／`wasm-gc`／`wasm`／`js` 各 82/82 通過；CI Gate 7 腳本（18/18 定理、M1–M6 acceptance 與 36 題 problem-set）亦在本地執行通過。Hosted CI 尚未執行；本輪變更尚未提交或推送。
 
 ---
 
@@ -196,16 +204,7 @@ NL2Math 小模型**只是**把自然語言陳述翻譯成本專案之**形式化
 
 ---
 
-## 六、工程紀律
-
-1. **任何新增定理必須附機器精度證據鏈**，並納入 `verify_all_theorems()`；無證據鏈之「定理」不得進入文件。
-2. **CI 七道門檻為唯一事實來源**；本地通過不代表 CI 通過（格式漂移與介面漂移只在完整 CI 中被偵測）。
-3. **橋接層單向性**：Tier 0 不得依賴 Tier 2，違者於 code review 直接退回。
-4. **回歸測試常駐**：所有已修復缺陷皆須有對應之回歸測試（見 `MERGE_ANALYSIS.md` 第六節）。
-
----
-
-## 七、里程碑總覽
+## 六、里程碑總覽
 
 | 版本 | 目標 | 主要交付 |
 | :--- | :--- | :--- |
@@ -215,3 +214,13 @@ NL2Math 小模型**只是**把自然語言陳述翻譯成本專案之**形式化
 | v2.3 | 可組合叢 | 任意 patch 數 Čech 神經網、餘擺合成、叢上範疇 |
 | v2.4 – v2.6 | 開折學習、微局部注意、四層閉環 | M4 / M5 / M6 |
 | v2.7+ | 統一範疇、複雜度計量、可證偽性、多殖民共識 | M7 – M10 |
+
+---
+
+## 七、工程紀律
+
+1. **定理證據鏈**：任何新增定理都必須有機器精度證據鏈，並納入 `verify_all_theorems()`；未有證據鏈的定理不得寫入文件。
+2. **CI 為唯一驗收事實來源**：CI workflow 的七個 gates 為唯一正式驗收紀錄；本地通過不得表述為 CI 通過。格式及公開介面漂移須由完整 CI 偵測。
+3. **橋接層單向性**：Tier 0 不得依賴 Tier 2；違反即退回。
+4. **常駐回歸測試**：每項已修復缺陷均須有對應的常駐回歸測試（另參見 `MERGE_ANALYSIS.md` 第六節）。
+5. **範圍誠實**：M4 僅為有限 A₃／D₄ scalar 正常形原型；M6 的收斂結論僅限實測殘差軌跡，不得寫成完整非線性系統全域定理。

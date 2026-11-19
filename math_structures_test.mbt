@@ -6,8 +6,8 @@
 /// It contains:
 ///   * ALL 31 foundational theorems of the `algo8` lineage, re-expressed as blackbox
 ///     tests against the public API of the unified package;
-///   * 6 REGRESSION tests that lock in the latent bugs which were found during the
-///     cross-repository code audit and FIXED by this merge.
+///   * 12 numbered REGRESSION tests that lock in latent bugs found during the
+///     cross-repository code audit and subsequent quality passes.
 /// Every test is fully deterministic and runs identically on wasm-gc / wasm / js.
 
 ///|
@@ -1041,4 +1041,20 @@ test "R11 NaN defects must FAIL every verification predicate, never silently pas
   assert_true(approx_a)
   let approx_b = @super_emergence.approx(nan_v, 0.0, 1.0e-12)
   assert_true(!approx_b)
+}
+
+///|
+test "R12 complex inversion must preserve tiny and huge finite nonzero values" {
+  let one = @super_emergence.Complex::one()
+  let tiny = @super_emergence.Complex::new(1.0e-200, 2.0e-200)
+  assert_true(tiny.abs().is_finite() && tiny.abs() > 0.0)
+  let tiny_inverse = one / tiny
+  assert_true(tiny_inverse.re.is_finite() && tiny_inverse.im.is_finite())
+  assert_true(c_eq(tiny * tiny_inverse, one, 1.0e-12))
+
+  let huge = @super_emergence.Complex::new(1.0e308, 1.0e308)
+  assert_true(huge.abs().is_finite())
+  let huge_inverse = one / huge
+  assert_true(huge_inverse.re.is_finite() && huge_inverse.im.is_finite())
+  assert_true(c_eq(huge * huge_inverse, one, 1.0e-12))
 }

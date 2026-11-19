@@ -126,6 +126,51 @@ test "Module 1: Poincare-Riemannian supermanifold M^{m|n}, exp/log, transport & 
 }
 
 ///|
+test "Poincare construction projects huge finite vectors and rejects invalid checked inputs" {
+  let huge = @super_emergence.PoincarePoint::new(1.0, [1.0e308, -1.0e308])
+  for coordinate in huge.coords {
+    assert_true(coordinate.is_finite())
+  }
+  assert_true(@super_emergence.vec_norm(huge.coords) < 1.0)
+  assert_true(@super_emergence.vec_norm(huge.coords) > 0.99)
+
+  assert_true(@super_emergence.PoincarePoint::new_checked(0.0, [0.0]) is Err(_))
+  assert_true(
+    @super_emergence.PoincarePoint::new_checked(1.0, [1.0 / 0.0]) is Err(_),
+  )
+  let safe_fallback = @super_emergence.PoincarePoint::new(1.0, [1.0 / 0.0])
+  assert_eq(safe_fallback.coords[0], 0.0)
+}
+
+///|
+test "SGNE flow validates public simulation inputs before indexing the colony" {
+  assert_eq(@super_emergence.init_disordered_colony(-1, 0.25).length(), 0)
+  let (empty_snapshots, empty_agents) = @super_emergence.run_sgne_emergence_simulation(
+    n_agents=0,
+    n_steps=0,
+  )
+  assert_eq(empty_snapshots.length(), 0)
+  assert_eq(empty_agents.length(), 0)
+  assert_true(
+    @super_emergence.run_sgne_emergence_simulation_checked(3, 0, 0.1) is Err(_),
+  )
+  assert_true(
+    @super_emergence.run_sgne_emergence_simulation_checked(4, -1, 0.1) is Err(_),
+  )
+  assert_true(
+    @super_emergence.run_sgne_emergence_simulation_checked(4, 0, 1.0 / 0.0)
+    is Err(_),
+  )
+  match @super_emergence.run_sgne_emergence_simulation_checked(4, 0, 0.1) {
+    Ok((snapshots, agents)) => {
+      assert_eq(snapshots.length(), 1)
+      assert_eq(agents.length(), 4)
+    }
+    Err(_) => assert_true(false)
+  }
+}
+
+///|
 test "Module 2: Affine tensor space, Koszul Yang-Baxter braiding, Riemann curvature & ODE transport" {
   // Affine torsor Chasles identity: (r - q) + (q - p) == r - p & shift equivariance of barycenter
   let p = @super_emergence.AffinePoint::new([1.2, -0.5, 3.0])

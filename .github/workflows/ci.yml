@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   verify:
-    name: Format, Strict Typecheck, 3-Backend Tests, Theorem & M1–M3 Audit
+    name: Format, Strict Typecheck, 3-Backend Tests, Theorem & M1–M6 Audit
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -58,7 +58,7 @@ jobs:
       - name: Gate 6 — Run cross-backend verification (js)
         run: moon test --target js
 
-      - name: Gate 7 — Run theorem, four-layer & M1.1–M3.3 CLI acceptance audit
+      - name: Gate 7 — Run theorem, M1–M6 CLI & problem-set acceptance
         run: |
           OUT="$(moon run cmd/main)"
           printf '%s\n' "$OUT"
@@ -93,12 +93,13 @@ jobs:
           printf '%s\n' "$OUT" | grep -Fq "all sections glue = true | PASS = true"
           printf '%s\n' "$OUT" | grep -Eq '^[[:space:]]+\[M3\.2\].*\| PASS = true$'
           printf '%s\n' "$OUT" | grep -Eq '^[[:space:]]+\[M3\.3\].*\| PASS = true$'
-
-      - name: Gate 8 — Validate the machine-readable emergence problem set
-        run: |
+          printf '%s\n' "$OUT" | grep -Eq '^[[:space:]]+\[M4\].*\| PASS = true$'
+          printf '%s\n' "$OUT" | grep -Eq '^[[:space:]]+\[M5\].*\| PASS = true$'
+          printf '%s\n' "$OUT" | grep -Eq '^[[:space:]]+\[M6\].*\| PASS = true$'
           python3 -c "
           import json
-          d = json.load(open('benchmarks/emergence_problem_set.json'))
+          with open('benchmarks/emergence_problem_set.json', encoding='utf-8') as f:
+              d = json.load(f)
           ps = d['problems']
           ids = [p['id'] for p in ps]
           assert len(ids) == len(set(ids)), 'duplicate problem ids'

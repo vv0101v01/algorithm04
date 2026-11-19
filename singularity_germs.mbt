@@ -331,6 +331,17 @@ pub fn MapGerm::corank(self : MapGerm) -> Int32 {
 }
 
 ///|
+/// Hessian corank used for ADE classification of scalar function germs.
+/// This is intentionally distinct from the differential corank of a general map-germ.
+fn scalar_function_hessian_corank(f : MapGerm) -> Int32 {
+  let n = f.basis.n_vars
+  let hessian = DenseMat::from_fn(n, n, (i, j) => {
+    f.comps[0].partial(i).partial(j).val_at_origin()
+  })
+  n - hessian.numerical_rank()
+}
+
+///|
 /// MATHER CONTACT GROUP K ACTION (Concept 13 — 胚的接觸等價性):
 /// Applies (M, phi) in K = C |x R to f : (R^n, 0) -> (R^p, 0):
 ///   (M . f)(x)_a = sum_{b=0}^{p-1} M_{ab}(x) * f_b(phi(x)),
@@ -572,22 +583,53 @@ pub fn MapGerm::universal_k_unfolding(self : MapGerm) -> UniversalUnfolding {
 }
 
 ///|
-/// Evaluate unfolded map-germ fiber f_u(x) = f(x) + sum_a u_a * phi_a(x) at parameter u in R^tau.
-pub fn UniversalUnfolding::fiber_at(
+/// Evaluate an unfolding fiber after checking parameter dimension and finiteness.
+/// This checked entry point is used by the M4 controller so malformed controls cannot
+/// be silently truncated or propagate NaN/Inf into the germ classifier.
+pub fn UniversalUnfolding::fiber_at_checked(
   self : UniversalUnfolding,
   u : Array[Double],
-) -> MapGerm {
+) -> Result[MapGerm, String] {
+  if self.codim != self.directions.length() || u.length() != self.codim {
+    return Err("unfolding parameter dimension mismatch")
+  }
+  for value in u {
+    if !value.is_finite() {
+      return Err("unfolding parameters must be finite")
+    }
+  }
   let p = self.base.target_dim()
   let comps = Array::makei(p, a => {
     let mut g = self.base.comps[a]
-    for k in 0..<u.length().min(self.codim) {
+    for k in 0..<self.codim {
       if u[k] != 0.0 {
         g = g.add(self.directions[k].comps[a].scale(u[k]))
       }
     }
     g
   })
-  MapGerm::new(comps)
+  Ok(MapGerm::new(comps))
+}
+
+///|
+/// Backwards-compatible permissive evaluator: missing controls are zero-padded and
+/// excess controls ignored. New code that needs input validation should use
+/// `fiber_at_checked`.
+pub fn UniversalUnfolding::fiber_at(
+  self : UniversalUnfolding,
+  u : Array[Double],
+) -> MapGerm {
+  let controls = Array::makei(self.codim, i => {
+    if i < u.length() {
+      u[i]
+    } else {
+      0.0
+    }
+  })
+  match self.fiber_at_checked(controls) {
+    Ok(fiber) => fiber
+    Err(_) => self.base
+  }
 }
 
 ///|
@@ -1168,10 +1210,12 @@ pub(all) struct GermEquivClass {
 
 ///|
 pub fn classify_contact_equiv_class(f : MapGerm) -> GermEquivClass {
-  let crk = f.corank()
+  let p = f.target_dim()
+  // For a scalar function germ the ADE corank is the Hessian corank, not the
+  // differential corank min(n, 1) - rank(df(0)); the latter is always at most one.
+  let crk = if p == 1 { scalar_function_hessian_corank(f) } else { f.corank() }
   let tau = f.tjurina_number()
   let dk = f.strict_k_codimension()
-  let p = f.target_dim()
   let mu = if p == 1 { f.milnor_number() } else { tau }
   let qh = p == 1 && mu == tau
   let label = if tau == 0 {

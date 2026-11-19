@@ -238,7 +238,16 @@ pub fn Complex::norm2(self : Complex) -> Double {
 
 ///|
 pub fn Complex::abs(self : Complex) -> Double {
-  self.norm_sq().sqrt()
+  if !self.re.is_finite() || !self.im.is_finite() {
+    return self.norm_sq().sqrt()
+  }
+  let scale = self.re.abs().max(self.im.abs())
+  if scale == 0.0 {
+    return 0.0
+  }
+  let re = self.re / scale
+  let im = self.im / scale
+  scale * (re * re + im * im).sqrt()
 }
 
 ///|
@@ -259,14 +268,18 @@ pub fn Complex::phase(self : Complex) -> Double {
 }
 
 ///|
-/// Exact multiplicative inverse z^{-1} = z^* / |z|^2 on C \ {0} (zero-guarded).
+/// Scaled multiplicative inverse on C \ {0}; exact zero retains the package's zero fallback.
+/// Scaling before squaring avoids classifying small nonzero values as zero and avoids
+/// overflow for large finite coordinates.
 pub fn Complex::inv(self : Complex) -> Complex {
-  let n2 = self.norm_sq()
-  if n2 <= 1.0e-300 {
-    Complex::zero()
-  } else {
-    self.conj().scale(1.0 / n2)
+  let scale = self.re.abs().max(self.im.abs())
+  if scale == 0.0 {
+    return Complex::zero()
   }
+  let re = self.re / scale
+  let im = self.im / scale
+  let norm_sq = re * re + im * im
+  { re: re / norm_sq / scale, im: -im / norm_sq / scale, }
 }
 
 ///|
