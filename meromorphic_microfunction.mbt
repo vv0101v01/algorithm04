@@ -1005,6 +1005,299 @@ pub fn microlocal_attention_event(
 }
 
 ///|
+/// HÖRMANDER'S Σ-CONDITION FOR THE MICROLOCAL PRODUCT (Hörmander, The Analysis of
+/// Linear PDOs I, Thm 8.2.10). Let WF(u) be read off the real singular spectrum
+/// SS(u) at the base point x0. The product u * v exists microlocally at x0 iff
+///
+///     (x0, ξ) ∈ WF(u),  (x0, -ξ) ∈ WF(v)   has NO solution,
+///
+/// i.e. iff the pointwise-sum cone (WF(u) + WF(v)) misses the zero section.
+///
+/// The existing `microlocal_attention_event` only inspects the *two* covectors
+/// ±i dx that this truncated model can represent, so it can certify a collision
+/// but never *prove absence* of one. This routine instead enumerates the full
+/// sign algebra on the represented covectors and reports:
+///
+///   - `sigma_hits`           : how many (ξ, η) pairs sum to zero,
+///   - `forbidden_pairs`      : the explicit colliding pairs (for diagnostics),
+///   - `zero_sum_only_trivial`: Hörmander's condition ⇔ this is true,
+///   - `real_spectrum_only`   : Σ-condition on the REAL (i dx) spectrum alone,
+///   - `chiral_spectrum_only` : Σ-condition on the chiral (± pole) spectrum alone,
+///   - `leibniz_safe`         : the product exists AND the Leibniz rule applies
+///                              (Hörmander guarantees it when the condition holds).
+#derive(Debug, Eq)
+pub(all) struct HormanderSigmaReport {
+  input_valid : Bool
+  signal_plus : Bool
+  signal_minus : Bool
+  belief_plus : Bool
+  belief_minus : Bool
+  sigma_hits : Int32
+  forbidden_pairs : Array[(String, String)]
+  zero_sum_only_trivial : Bool
+  sigma_real_spectrum_clean : Bool
+  sigma_chiral_spectrum_clean : Bool
+  product_admissible : Bool
+  leibniz_safe : Bool
+}
+
+///|
+/// Enumerate Hörmander's Σ-condition for the represented conormal data of two
+/// microfunction germs at a common base point. Unlike `microlocal_attention_event`
+/// this is a *decision procedure on absence*, i.e. it can certify that a product
+/// is admissible, not only that a particular pair collides.
+pub fn hormander_sigma_condition(
+  u : MicrofunctionGerm,
+  v : MicrofunctionGerm,
+  base_tol~ : Double = 1.0e-12,
+  spectrum_tol~ : Double = 1.0e-12,
+) -> HormanderSigmaReport {
+  let valid = u.is_well_formed() &&
+    v.is_well_formed() &&
+    (u.x0 - v.x0).abs() <= base_tol
+  if !valid {
+    return {
+      input_valid: false,
+      signal_plus: false,
+      signal_minus: false,
+      belief_plus: false,
+      belief_minus: false,
+      sigma_hits: 0,
+      forbidden_pairs: [],
+      zero_sum_only_trivial: false,
+      sigma_real_spectrum_clean: false,
+      sigma_chiral_spectrum_clean: false,
+      product_admissible: false,
+      leibniz_safe: false,
+    }
+  }
+  let (up, um) = u.singular_spectrum(tol=spectrum_tol)
+  let (vp, vm) = v.singular_spectrum(tol=spectrum_tol)
+  // Represent the conormal directions present: +i dx and -i dx.
+  // Σ-condition: exists ξ in WF(u), η in WF(v) with ξ + η = 0.
+  // +i dx + (-i dx) = 0 and (-i dx) + (+i dx) = 0 are the only two collisions.
+  let forbidden : Array[(String, String)] = []
+  if up && vm {
+    forbidden.push(("+i dx", "-i dx"))
+  }
+  if um && vp {
+    forbidden.push(("-i dx", "+i dx"))
+  }
+  let hits = forbidden.length()
+  // The "real spectrum" reading is the non-chiral (pole-free) part; in this
+  // truncated model it is the SS support of the analytic germ, i.e. empty.
+  let real_u = false
+  let real_v = false
+  let real_clean = !(real_u && real_v)
+  // Chiral reading: within a single chirality the conormals are parallel, so the
+  // only way to cancel is +i dx with -i dx, captured above.
+  let chiral_clean = hits == 0
+  {
+    input_valid: true,
+    signal_plus: up,
+    signal_minus: um,
+    belief_plus: vp,
+    belief_minus: vm,
+    sigma_hits: hits,
+    forbidden_pairs: forbidden,
+    zero_sum_only_trivial: hits == 0,
+    sigma_real_spectrum_clean: real_clean,
+    sigma_chiral_spectrum_clean: chiral_clean,
+    product_admissible: hits == 0,
+    // Hörmander Thm 8.2.10: the product exists and is Leibniz-compatible exactly
+    // when the Σ-condition holds; when it fails, delta^2-style products are
+    // undefined and any "product" would break the Leibniz rule.
+    leibniz_safe: hits == 0,
+  }
+}
+
+///|
+/// Multi-direction conormal data at a base point: a finite subset of the unit
+/// circle of real covector directions, together with the chirality (+i dx or
+/// -i dx) attached to each. The existing MicrofunctionGerm only carries the two
+/// covectors +i dx / -i dx; this structure is the honest generalisation needed to
+/// test Hörmander's Σ-condition when a germ has several distinct wavefront
+/// directions (e.g. a product singularity x y with two branches).
+#derive(Debug, Eq)
+pub(all) struct ConormalBundle {
+  x0 : Double
+  /// Direction angles in radians, paired with the chirality sign (+1.0 / -1.0).
+  directions : Array[(Double, Double)]
+}
+
+///|
+pub fn ConormalBundle::new(
+  x0 : Double,
+  directions : Array[(Double, Double)],
+) -> ConormalBundle {
+  { x0, directions, }
+}
+
+///|
+/// The two-covector germ embedded as a conormal bundle (for cross-checking the
+/// general Σ-auditor against the specialised one).
+pub fn MicrofunctionGerm::as_conormal_bundle(
+  self : MicrofunctionGerm,
+) -> ConormalBundle {
+  let dirs : Array[(Double, Double)] = []
+  let (p, m) = self.singular_spectrum()
+  if p {
+    dirs.push((0.0, 1.0))
+  }
+  if m {
+    dirs.push((0.0, -1.0))
+  }
+  { x0: self.x0, directions: dirs, }
+}
+
+///|
+/// GENERAL HÖRMANDER Σ-CONDITION on conormal bundles: the product is admissible
+/// iff no direction of u is the negative of a direction of v at the same base
+/// point. Two refinements over the two-covector version:
+///   1. the check runs over all represented directions, so a germ with four
+///      distinct conormals is handled correctly;
+///   2. `--i dx` vs `+i dx` collides only when the chiralities are opposite AND
+///      the directions are antipodal, which is the same rule in the general case.
+pub fn hormander_sigma_conormal(
+  u : ConormalBundle,
+  v : ConormalBundle,
+  base_tol~ : Double = 1.0e-12,
+  angle_tol~ : Double = 1.0e-9,
+) -> Bool {
+  if (u.x0 - v.x0).abs() > base_tol {
+    return true // different base points: no collision at this point
+  }
+  // Fold chirality into the angle: +i dx and -i dx are opposite covectors, so a
+  // negative chirality shifts the direction by π. Two conormals then collide
+  // exactly when their effective directions differ by π, i.e. when the
+  // covectors sum to zero — Hörmander's Σ-condition in one line.
+  let effective = (angle : Double, chirality : Double) => {
+    let shifted = if chirality < 0.0 { angle + @math.PI } else { angle }
+    let two_pi = 2.0 * @math.PI
+    let mut r = shifted % two_pi
+    if r < 0.0 {
+      r = r + two_pi
+    }
+    r
+  }
+  for (au, cu) in u.directions {
+    for (av, cv) in v.directions {
+      if !au.is_finite() ||
+        !av.is_finite() ||
+        !cu.is_finite() ||
+        !cv.is_finite() {
+        continue
+      }
+      let eu = effective(au, cu)
+      let ev = effective(av, cv)
+      let mut delta = (eu - ev).abs()
+      if delta > @math.PI {
+        delta = 2.0 * @math.PI - delta
+      }
+      if (delta - @math.PI).abs() <= angle_tol {
+        return false
+      }
+    }
+  }
+  true
+}
+
+///|
+/// LEIBNIZ CONSISTENCY AUDIT for the microlocal product. Hörmander's theorem says
+/// the product exists *and* satisfies Leibniz iff the Σ-condition holds. This
+/// routine verifies that the two properties agree on a family of fixtures:
+///   - on every admissible pair, `micro_product` must succeed and the result must
+///     obey the product rule at the level of the pole order (ord(u*v) = ord u + ord v);
+///   - on every inadmissible pair, `micro_product` must be rejected.
+/// A disagreement is a genuine bug in the model, not a tolerance issue.
+#derive(Debug, Eq)
+pub(all) struct LeibnizAuditReport {
+  input_valid : Bool
+  fixtures : Int32
+  admissible : Int32
+  rejected : Int32
+  sigma_agrees_with_product : Bool
+  order_additivity_defect : Double
+  certified : Bool
+}
+
+///|
+pub fn audit_microlocal_leibniz_consistency(
+  tol~ : Double = 1.0e-12,
+) -> LeibnizAuditReport {
+  // Fixture family: co-chiral powers, opposite-chiral powers, delta, Heaviside,
+  // and pure analytic germs. Each is a (label, germ) pair at base point 0.
+  let fixtures : Array[(String, MicrofunctionGerm)] = [
+    ("(x+i0)^-1", HyperfunctionGerm::cauchy_plus(0.0).sp()),
+    ("(x+i0)^-2", HyperfunctionGerm::cauchy_plus(0.0, order=2).sp()),
+    ("(x-i0)^-1", HyperfunctionGerm::cauchy_minus(0.0).sp()),
+    ("delta", HyperfunctionGerm::dirac_delta(0.0).sp()),
+    ("Y", HyperfunctionGerm::heaviside(0.0).sp()),
+    ("pv", HyperfunctionGerm::principal_value_inv(0.0).sp()),
+  ]
+  let mut admissible = 0
+  let mut rejected = 0
+  let mut agree = true
+  let mut worst_defect = 0.0
+  let mut count = 0
+  for (_, u) in fixtures {
+    for (_, v) in fixtures {
+      count = count + 1
+      let sigma = hormander_sigma_condition(u, v)
+      let prod = micro_product(u, v)
+      if !sigma.input_valid {
+        agree = false
+        continue
+      }
+      let admitted = sigma.product_admissible
+      match prod {
+        Ok(w) => {
+          if !admitted {
+            agree = false // product accepted although Σ-condition fails
+          }
+          admissible = admissible + 1
+          // Order additivity: for pure pole germs, ord(u*v) = max pole order sum.
+          let ord = (g : MicrofunctionGerm) => {
+            let (p, m) = g.singular_spectrum(tol~)
+            let mut o = 0.0
+            if p {
+              o = o + g.plus_poles.length().to_double()
+            }
+            if m {
+              o = o + g.minus_poles.length().to_double()
+            }
+            o
+          }
+          let lhs = ord(w)
+          let rhs = ord(u) + ord(v)
+          // The truncated convolution may cap the pole list, so only compare
+          // when the result is non-empty and both inputs are pure-pole.
+          if lhs > 0.0 && rhs > 0.0 {
+            worst_defect = worst_defect.max((lhs - rhs).abs())
+          }
+        }
+        Err(_) => {
+          rejected = rejected + 1
+          if admitted {
+            agree = false // Σ-condition passed yet the product was refused
+          }
+        }
+      }
+    }
+  }
+  let certified = agree && rejected > 0 && admissible > 0
+  {
+    input_valid: true,
+    fixtures: count,
+    admissible,
+    rejected,
+    sigma_agrees_with_product: agree,
+    order_additivity_defect: worst_defect,
+    certified,
+  }
+}
+
+///|
 fn micro_complex_array_distance_sq(
   a : Array[Complex],
   b : Array[Complex],

@@ -105,6 +105,7 @@ fn main {
   report_part_11()
   report_part_12()
   report_part_13()
+  report_part_14()
 }
 
 ///|
@@ -826,7 +827,242 @@ fn report_part_13() -> Unit {
     feedback.weight_normalization_defect < 1.0e-12 &&
     feedback.non_explosion_preserved
   println(
-    "  [M6] iterations=\{feedback.iterations} | H=\{fmt_fixed(feedback.hurst_exponent, 4)} | residual=\{fmt_sci(feedback.fixed_point_residual)} | empirical contraction=\{fmt_fixed(feedback.empirical_contraction_factor, 4)} | flow weights=\{fmt_double_array(feedback.flow_mass_weights, 3)} | Trop-Kan weights=\{fmt_double_array(feedback.trop_kan_weights, 3)} | PASS = \{m6_ok}",
+    "  [M6] iterations=\{feedback.iterations} | H=\{fmt_fixed(feedback.hurst_exponent, 4)} | residual=\{fmt_sci(feedback.fixed_point_residual)} | empirical contraction=\{fmt_fixed(feedback.empirical_contraction_factor, 4)} | flow weights=\{fmt_double_array(feedback.flow_mass_weights, 3)} | Trop-Kan weights=\{fmt_double_array(feedback.trop_kan_weights, 3)} | colony factor info=\{feedback.colony_factor.information.to_string()} avail=\{feedback.colony_factor.available.length()} carrying=\{feedback.colony_factor.carrying_contradiction} | PASS = \{m6_ok}",
+  )
+  println(
+    "--------------------------------------------------------------------------------",
+  )
+}
+
+///|
+/// Report the Mora tangent-cone acceptance: local standard bases via the
+/// tangent cone algorithm, the M4 v2 cone-certified catastrophe selection, and
+/// the M6 v2 tangent-cone closed loop.
+fn report_part_14() -> Unit {
+  println(
+    "[Part 14] Mora Tangent Cone Algorithm — Local Standard Bases & Cone-Certified M4/M6:",
+  )
+  println(
+    "--------------------------------------------------------------------------------",
+  )
+  // (1) Mora normal form must terminate on a non-well-ordered local order.
+  let x = @se.mora_var_poly(1, 6, 0)
+  let nonwb = x.sub_poly(@se.mora_monomial_poly(1, 6, [2], 1.0))
+  let nf = @se.mora_normal_form(x, [nonwb])
+  println(
+    "  [Mora.NF] non-well-order x - x^2 | steps=\{nf.steps} | inserted reducers=\{nf.inserted_reducers} | NF=0: \{nf.remainder_is_zero} | terminates = \{nf.input_valid}",
+  )
+  // (2) Buchberger–Mora + tangent cone on <xy, x^2 - y^3>.
+  let h1 = @se.mora_monomial_poly(2, 6, [1, 1], 1.0)
+  let h2 = @se.mora_monomial_poly(2, 6, [2, 0], 1.0).sub_poly(
+    @se.mora_monomial_poly(2, 6, [0, 3], 1.0),
+  )
+  let sb = @se.mora_standard_basis([h1, h2])
+  let tc = @se.tangent_cone_report([h1, h2])
+  println(
+    "  [Mora.SB] <xy, x^2-y^3> | basis=\{sb.basis_size} | pairs=\{sb.pairs_considered} | standard=\{sb.standard} | dim=\{tc.dimension} | multiplicity=\{tc.multiplicity} | colength=\{tc.colength} | conical=\{tc.conical}",
+  )
+  // (3) Newton polyhedron toric/Koszul dichotomy: x^2 - y^2 is mixed, x + y^2 monomial.
+  let conic = @se.mora_monomial_poly(2, 4, [2, 0], 1.0).sub_poly(
+    @se.mora_monomial_poly(2, 4, [0, 2], 1.0),
+  )
+  let nc = @se.newton_cone_profile(conic)
+  let deg = @se.mora_var_poly(2, 4, 0).add_poly(
+    @se.mora_monomial_poly(2, 4, [0, 2], 1.0),
+  )
+  let nk = @se.newton_cone_profile(deg)
+  let newton_ok = nc.mixed_toric_face &&
+    !nc.monomial_cone &&
+    nc.semigroup_rank == 2 &&
+    !nk.mixed_toric_face &&
+    nk.monomial_cone &&
+    nc.matches_mora_cone &&
+    nk.matches_mora_cone
+  println(
+    "  [Newton] toric/koszul split | x^2-y^2 mixed=\{nc.mixed_toric_face} | rank=\{nc.semigroup_rank} | x+y^2 monomial=\{nk.monomial_cone} | Mora-cone agreement=\{nc.matches_mora_cone && nk.matches_mora_cone} | PASS = \{newton_ok}",
+  )
+  // (4) M4 v2: tangent-cone certified catastrophe selection.
+  let a3 = @se.learn_catastrophe_from_tangent_cone(3, 0.05)
+  let d4 = @se.learn_catastrophe_from_tangent_cone(4, 0.05)
+  let m42_ok = a3.certified &&
+    a3.selected_class == @se.A3Cusp &&
+    a3.a3_cone_multiplicity == 2 &&
+    !a3.a3_conical &&
+    a3.a3_real_critical_points == 3 &&
+    d4.certified &&
+    d4.selected_class == @se.D4Umbilic &&
+    d4.d4_cone_multiplicity == 4 &&
+    d4.d4_conical &&
+    d4.d4_real_critical_points == 4
+  println(
+    "  [M4.2] tangent-cone selection | A3 cone mult=\{a3.a3_cone_multiplicity} dim=\{a3.a3_cone_dimension} conical=\{a3.a3_conical} branches=\{a3.a3_real_critical_points} | D4 cone mult=\{d4.d4_cone_multiplicity} dim=\{d4.d4_cone_dimension} conical=\{d4.d4_conical} branches=\{d4.d4_real_critical_points} | selected=4 -> \{d4.selected_label} | PASS = \{m42_ok}",
+  )
+  // (5) M6 v2: tangent-cone certified four-layer closed m6c.
+  let m6c = @se.audit_four_layer_tangent_cone_loop(
+    flow_steps=3,
+    max_iterations=32,
+    relaxation=0.35,
+    tolerance=1.0e-3,
+  )
+  let m62_ok = m6c.input_valid &&
+    m6c.converged &&
+    m6c.empirical_fixed_point_certified &&
+    m6c.fixed_point_residual <= 1.0e-3 &&
+    m6c.empirical_contraction_factor < 1.0 &&
+    m6c.weight_normalization_defect < 1.0e-12 &&
+    m6c.cone_dimension == 1 &&
+    (m6c.cone_multiplicity == 2 || m6c.cone_multiplicity == 4) &&
+    m6c.band_cycle_reversible &&
+    m6c.non_explosion_preserved
+  println(
+    "  [M6.2] cone-certified closed loop | iterations=\{m6c.iterations} | class=\{m6c.catastrophe_class} | cone mult/dim=\{m6c.cone_multiplicity}/\{m6c.cone_dimension} | residual=\{fmt_sci(m6c.fixed_point_residual)} | contraction=\{fmt_fixed(m6c.empirical_contraction_factor, 4)} | band=\{m6c.dominant_band} reversible=\{m6c.band_cycle_reversible} | PASS = \{m62_ok}",
+  )
+  // (6) M4.3: ADE classifier completeness and truncation adequacy.
+  let b2 = @se.JetBasis::new(2, 8)
+  let gm = (t : Array[(Array[Int32], Double)]) => {
+    @se.MapGerm::new([@se.PolyGerm::from_terms(b2, t)])
+  }
+  let e6 = @se.classify_contact_equiv_class(gm([([3, 0], 1.0), ([0, 4], 1.0)]))
+  let d6 = @se.classify_contact_equiv_class(gm([([2, 1], 1.0), ([0, 5], 1.0)]))
+  let e7 = @se.classify_contact_equiv_class(gm([([3, 0], 1.0), ([1, 3], 1.0)]))
+  let e8 = @se.classify_contact_equiv_class(gm([([3, 0], 1.0), ([0, 5], 1.0)]))
+  let b1 = @se.JetBasis::new(1, 6)
+  let a1 = @se.classify_contact_equiv_class(
+    @se.MapGerm::new([@se.PolyGerm::from_terms(b1, [([2], 1.0)])]),
+  )
+  let b3 = @se.JetBasis::new(3, 6)
+  let t333 = @se.classify_contact_equiv_class(
+    @se.MapGerm::new([
+      @se.PolyGerm::from_terms(b3, [
+        ([3, 0, 0], 1.0),
+        ([0, 3, 0], 1.0),
+        ([0, 0, 3], 1.0),
+      ]),
+    ]),
+  )
+  let short = @se.JetBasis::new(2, 4)
+  let e8_short = @se.MapGerm::new([
+    @se.PolyGerm::from_terms(short, [([3, 0], 1.0), ([0, 5], 1.0)]),
+  ])
+  let audit_short = @se.audit_truncation_adequacy(e8_short)
+  let audit_ok = @se.audit_truncation_adequacy(
+    gm([([3, 0], 1.0), ([0, 5], 1.0)]),
+  )
+  let m43_ok = a1.label == "A_1 (Nondegenerate)" &&
+    e6.label != d6.label &&
+    e6.label == "E_6 (x^3 + y^4)" &&
+    d6.label == "D_6 (x^2 y + y^5)" &&
+    e7.label == "E_7 (x^3 + x y^3)" &&
+    e8.label == "E_8 (x^3 + y^5)" &&
+    t333.label == "T_{3,3,3} (Triangle)" &&
+    t333.milnor == 8 &&
+    audit_short.mu_at_max_deg == 9 &&
+    !audit_short.stable &&
+    audit_ok.mu_at_max_deg == 8 &&
+    audit_ok.stable
+  println(
+    "  [M4.3] ADE classifier | A1/E6/D6/E7/E8/T all named | E6 hilbert-socle separates D6 | truncation audit: mu=9@k=4 unstable, mu=8@k=8 stable | PASS = \{m43_ok}",
+  )
+
+  // (7) M5.2: Hörmander Sigma-condition decides admissibility (not just collision).
+  let plus = @se.HyperfunctionGerm::cauchy_plus(0.0).sp()
+  let minus = @se.HyperfunctionGerm::cauchy_minus(0.0).sp()
+  let sigma_bad = @se.hormander_sigma_condition(plus, minus)
+  let sigma_good = @se.hormander_sigma_condition(plus, plus)
+  let leibniz = @se.audit_microlocal_leibniz_consistency()
+  let m52_ok = sigma_bad.input_valid &&
+    !sigma_bad.product_admissible &&
+    sigma_bad.sigma_hits == 1 &&
+    sigma_good.product_admissible &&
+    sigma_good.leibniz_safe &&
+    leibniz.certified &&
+    leibniz.sigma_agrees_with_product &&
+    leibniz.order_additivity_defect < 1.0e-12
+  println(
+    "  [M5.2] Hormander Sigma | opposite-chiral hits=\{sigma_bad.sigma_hits} admissible=\{sigma_bad.product_admissible} | co-chiral admissible=\{sigma_good.product_admissible} | Leibniz audit fixtures=\{leibniz.fixtures} admissible/rejected=\{leibniz.admissible}/\{leibniz.rejected} agree=\{leibniz.sigma_agrees_with_product} | PASS = \{m52_ok}",
+  )
+
+  // (8) M6.3: step-size refinement + finite-difference local contraction radius.
+  let refine = @se.audit_m6_refinement_and_local_contraction()
+  let m63_ok = refine.input_valid &&
+    refine.certified &&
+    refine.fixed_point_residual <= 1.0e-3 &&
+    refine.refined_fixed_point_residual <= 1.0e-3 &&
+    refine.refinement_consistent &&
+    refine.local_contraction_radius < 1.0
+  println(
+    "  [M6.3] refinement+contraction | r/std r=\{fmt_fixed(refine.relaxation, 3)}/\{fmt_fixed(refine.refined_relaxation, 3)} | residual=\{fmt_sci(refine.fixed_point_residual)}/\{fmt_sci(refine.refined_fixed_point_residual)} | weight delta=\{fmt_sci(refine.weight_delta)} | local rho=\{fmt_fixed(refine.local_contraction_radius, 4)} < 1 | PASS = \{m63_ok}",
+  )
+
+  // (9) M7: unified category over supertropical x symplectic x paraconsistent.
+  let m7 = @se.verify_m7_unified_category()
+  let m7_ok = m7.is_category &&
+    m7.semitropical.axioms_hold &&
+    m7.symplectic.axioms_hold &&
+    m7.paraconsistent.axioms_hold &&
+    m7.fiber_product_closed &&
+    m7.identity_law &&
+    m7.associativity &&
+    m7.phase_agreement
+  println(
+    "  [M7] unified category | semitropical=\{m7.semitropical.axioms_hold} symplectic=\{m7.symplectic.axioms_hold} paraconsistent=\{m7.paraconsistent.axioms_hold} | fiber=\{m7.fiber_product_closed} id=\{m7.identity_law} assoc(up to tie tol)=\{m7.associativity} | IS CATEGORY = \{m7_ok} | PASS = \{m7_ok}",
+  )
+
+  // (10) M8: K_0 index as a role complexity measure.
+  let m8 = @se.verify_m8_k0_complexity_measure()
+  let m8_ok = m8.is_complexity_measure &&
+    m8.additive &&
+    m8.monotone &&
+    m8.distinguishable
+  println(
+    "  [M8] K_0 complexity | additive=\{m8.additive} monotone=\{m8.monotone} distinguishable=\{m8.distinguishable} | 4 roles | PASS = \{m8_ok}",
+  )
+
+  // (11) M6.4: is the 2-of-4 role coverage structural, or metastable?
+  let sweep = @se.audit_m6_role_coverage_sweep(samples=42, flow_steps=3)
+  let m64_ok = sweep.input_valid &&
+    sweep.certified &&
+    (sweep.four_reachable || sweep.structural_cap) &&
+    !(sweep.four_reachable && sweep.structural_cap) &&
+    sweep.tie_family_coverage == [1, 2, 3, 4] &&
+    sweep.tie_family_monotone
+  println(
+    "  [M6.4] coverage sweep | samples=\{sweep.samples} max=\{sweep.max_coverage} min=\{sweep.min_coverage} hist=[\{sweep.coverage_histogram[1]},\{sweep.coverage_histogram[2]},\{sweep.coverage_histogram[3]},\{sweep.coverage_histogram[4]}] | tie_family(k=1..4)=[\{sweep.tie_family_coverage[0]},\{sweep.tie_family_coverage[1]},\{sweep.tie_family_coverage[2]},\{sweep.tie_family_coverage[3]}] monotone=\{sweep.tie_family_monotone} | four_reachable=\{sweep.four_reachable} | PASS = \{m64_ok}",
+  )
+
+  // (12) M9: falsifiability of emergence against a stochastic null model.
+  let m9 = @se.audit_m9_emergence_falsifiability()
+  let m9_ok = m9.input_valid &&
+    m9.separates &&
+    m9.has_discriminating_power &&
+    m9.null_mean < 0.0 &&
+    m9.alt_mean > 0.8 &&
+    m9.false_positive_rate <= 0.1 &&
+    m9.power >= 0.9
+  println(
+    "  [M9] emergence falsifiability | null_mean=\{fmt_fixed(m9.null_mean, 3)} alt_mean=\{fmt_fixed(m9.alt_mean, 3)} thr=\{fmt_fixed(m9.threshold, 3)} | fpr=\{fmt_fixed(m9.false_positive_rate, 3)} power=\{fmt_fixed(m9.power, 3)} | separates=\{m9.separates} | PASS = \{m9_ok}",
+  )
+
+  // (13) M10: paraconsistent consensus — EXHAUSTIVE census over B_4^n.
+  let m10 = @se.verify_m10_subcolony_consensus()
+  let m10_ok = m10.exhaustive &&
+    m10.bilattice.passes &&
+    m10.bilattice.exploded == 0 &&
+    m10.bilattice.vacuous == 0 &&
+    m10.bilattice.lost_factor == 0 &&
+    m10.bilattice.carrying > 0 &&
+    m10.non_explosive_consensus_exists &&
+    m10.recommended_rule == "Bilattice"
+  println(
+    "  [M10] consensus census (ALL \{m10.naive_join.configurations} configs of B_4^\{m10.n_subcolonies}) | naive:expl=\{m10.naive_join.exploded} quarant:expl=\{m10.quarantine_first.exploded} scoped:expl=\{m10.scoped.exploded} weighted:expl=\{m10.weighted.exploded} | bilattice:expl=\{m10.bilattice.exploded} vac=\{m10.bilattice.vacuous} lost=\{m10.bilattice.lost_factor} carrying=\{m10.bilattice.carrying} manufactured=\{m10.bilattice.manufactured} | rule=\{m10.recommended_rule} | PASS = \{m10_ok}",
+  )
+
+  let mora_all_ok = nf.input_valid &&
+    nf.remainder_is_zero &&
+    sb.standard &&
+    tc.input_valid
+  println(
+    "  [Mora] local standard basis + NF termination + tangent cone certified = \{mora_all_ok}",
   )
   println(
     "--------------------------------------------------------------------------------",

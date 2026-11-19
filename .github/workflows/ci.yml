@@ -96,6 +96,22 @@ jobs:
           printf '%s\n' "$OUT" | grep -Eq '^[[:space:]]+\[M4\].*\| PASS = true$'
           printf '%s\n' "$OUT" | grep -Eq '^[[:space:]]+\[M5\].*\| PASS = true$'
           printf '%s\n' "$OUT" | grep -Eq '^[[:space:]]+\[M6\].*\| PASS = true$'
+          printf '%s\n' "$OUT" | grep -Fq "[Mora.NF] non-well-order x - x^2"
+          printf '%s\n' "$OUT" | grep -Fq "NF=0: true | terminates = true"
+          printf '%s\n' "$OUT" | grep -Fq "[Mora.SB] <xy, x^2-y^3> | basis=3 | pairs=3 | standard=true"
+          printf '%s\n' "$OUT" | grep -Fq "[Newton] toric/koszul split"
+          printf '%s\n' "$OUT" | grep -Fq "| PASS = true"
+          printf '%s\n' "$OUT" | grep -Eq '^[[:space:]]+\[M4\.2\].*\| PASS = true$'
+          printf '%s\n' "$OUT" | grep -Eq '^[[:space:]]+\[M6\.2\].*\| PASS = true$'
+          printf '%s\n' "$OUT" | grep -Fq "[Mora] local standard basis + NF termination + tangent cone certified = true"
+          printf '%s\n' "$OUT" | grep -Eq '^[[:space:]]+\[M4\.3\].*\| PASS = true$'
+          printf '%s\n' "$OUT" | grep -Eq '^[[:space:]]+\[M5\.2\].*\| PASS = true$'
+          printf '%s\n' "$OUT" | grep -Eq '^[[:space:]]+\[M6\.3\].*\| PASS = true$'
+          printf '%s\n' "$OUT" | grep -Eq '^[[:space:]]+\[M7\].*\| PASS = true$'
+          printf '%s\n' "$OUT" | grep -Eq '^[[:space:]]+\[M8\].*\| PASS = true$'
+          printf '%s\n' "$OUT" | grep -Eq '^[[:space:]]+\[M6\.4\].*\| PASS = true$'
+          printf '%s\n' "$OUT" | grep -Eq '^[[:space:]]+\[M9\].*\| PASS = true$'
+          printf '%s\n' "$OUT" | grep -Eq '^[[:space:]]+\[M10\].*\| PASS = true$'
           python3 -c "
           import json
           with open('benchmarks/emergence_problem_set.json', encoding='utf-8') as f:

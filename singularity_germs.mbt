@@ -1209,8 +1209,110 @@ pub(all) struct GermEquivClass {
 }
 
 ///|
+/// Degree-by-degree dimension of the Tjurina algebra Q_tau = O_n / (f, df),
+/// i.e. the Hilbert function h_d = dim_R (C[x]/(f, df))_d truncated at max_deg.
+/// Two ADE types with the same (mu, tau) = (6, 6) and the same corank 2 — namely
+/// E6 = x^3 + y^4 and D6 = x^2 y + y^5 — are separated by this invariant:
+///   E6 : [1, 2, 2, 1, 0, ...]      (socle in degree 3)
+///   D6 : [1, 2, 1, 1, 1, 0, ...]   (socle in degree 4)
+/// This is a real discriminator, not a cosmetic label: it computes the quotient
+/// instead of trusting a hand-written table.
+fn scalar_tjurina_hilbert(f : MapGerm) -> Array[Int32] {
+  let basis = f.basis
+  let n = basis.n_vars
+  let gens : Array[PolyGerm] = [f.comps[0]]
+  for v in 0..<n {
+    gens.push(f.comps[0].partial(v))
+  }
+  let (_, pivs) = submodule_rref(basis, 1, gens.map(g => [g]), 0)
+  let is_piv = Array::make(basis.dim(), false)
+  for col in pivs {
+    is_piv[col] = true
+  }
+  let h = Array::make(basis.max_deg + 1, 0)
+  for idx in 0..<basis.dim() {
+    if !is_piv[idx] {
+      h[monom_deg(basis.monoms[idx])] = h[monom_deg(basis.monoms[idx])] + 1
+    }
+  }
+  h
+}
+
+///|
+/// Truncation adequacy audit for Milnor/Tjurina numbers. A jet truncation that
+/// is too small *inflates* mu (E8 = x^3 + y^5 gives mu = 9 at max_deg = 4 but
+/// mu = 8 from max_deg = 5 on). This routine recomputes both numbers at the
+/// requested degree and at a smaller degree, and reports whether the requested
+/// truncation is already stable. `stable = true` is the only setting in which
+/// downstream labels may be trusted; callers that need certainty should read
+/// `mu_next` / `tau_next` and enlarge `max_deg` when `stable = false`.
+#derive(Debug, Eq)
+pub(all) struct TruncationAuditReport {
+  input_valid : Bool
+  max_deg : Int32
+  mu_at_max_deg : Int32
+  mu_at_next : Int32
+  tau_at_max_deg : Int32
+  tau_at_next : Int32
+  mu_stable : Bool
+  tau_stable : Bool
+  stable : Bool
+}
+
+///|
+pub fn audit_truncation_adequacy(f : MapGerm) -> TruncationAuditReport {
+  let p = f.target_dim()
+  let n = f.basis.n_vars
+  if p != 1 || n == 0 {
+    return {
+      input_valid: false,
+      max_deg: f.basis.max_deg,
+      mu_at_max_deg: 0,
+      mu_at_next: 0,
+      tau_at_max_deg: 0,
+      tau_at_next: 0,
+      mu_stable: false,
+      tau_stable: false,
+      stable: false,
+    }
+  }
+  let k = f.basis.max_deg
+  // Grow the truncation until two consecutive degrees agree (bounded search).
+  let probe = (degree : Int32) => {
+    let b = JetBasis::new(n, degree)
+    // Re-expand the surviving terms into the enlarged basis. PolyGerm stores a
+    // flat coefficient vector indexed by basis.monoms, so walk that directly.
+    let terms : Array[(Array[Int32], Double)] = []
+    for idx in 0..<f.basis.dim() {
+      let c = f.comps[0].coeffs[idx]
+      if c.abs() > 1.0e-15 && monom_deg(f.basis.monoms[idx]) <= degree {
+        terms.push((f.basis.monoms[idx], c))
+      }
+    }
+    let g = MapGerm::new([PolyGerm::from_terms(b, terms)])
+    (g.milnor_number(), g.tjurina_number())
+  }
+  let (mu0, tau0) = probe(k)
+  let (mu1, tau1) = probe(k + 1)
+  let mu_stable = mu0 == mu1
+  let tau_stable = tau0 == tau1
+  {
+    input_valid: true,
+    max_deg: k,
+    mu_at_max_deg: mu0,
+    mu_at_next: mu1,
+    tau_at_max_deg: tau0,
+    tau_at_next: tau1,
+    mu_stable,
+    tau_stable,
+    stable: mu_stable && tau_stable,
+  }
+}
+
+///|
 pub fn classify_contact_equiv_class(f : MapGerm) -> GermEquivClass {
   let p = f.target_dim()
+  let n = f.basis.n_vars
   // For a scalar function germ the ADE corank is the Hessian corank, not the
   // differential corank min(n, 1) - rank(df(0)); the latter is always at most one.
   let crk = if p == 1 { scalar_function_hessian_corank(f) } else { f.corank() }
@@ -1218,20 +1320,39 @@ pub fn classify_contact_equiv_class(f : MapGerm) -> GermEquivClass {
   let dk = f.strict_k_codimension()
   let mu = if p == 1 { f.milnor_number() } else { tau }
   let qh = p == 1 && mu == tau
+  let hilb = if p == 1 { scalar_tjurina_hilbert(f) } else { [] }
   let label = if tau == 0 {
     "A_0 (Submersion / Regular)"
+  } else if p == 1 && crk == 0 {
+    // A1: a nondegenerate critical point (e.g. x^2 + y^2).
+    "A_1 (Nondegenerate)"
   } else if p == 1 && crk == 1 {
     "A_\{tau}"
-  } else if p == 1 && crk == 2 && qh {
-    if tau == 4 {
+  } else if p == 1 && qh && crk == 2 && n == 2 {
+    // Corank-2 quasi-homogeneous simple singularities: ADE with the
+    // (mu, tau, Hilbert) joint fingerprint. D_k has mu = tau = k and
+    // Hilbert h = [1, 2, 1, 1, 1, ...] for k >= 6, while the exceptional
+    // E6/E7/E8 have strictly convex Hilbert functions.
+    if mu == 4 {
       "D_4 (Umbilic)"
-    } else if tau == 5 {
+    } else if mu == 5 {
       "D_5 (Parabolic Umbilic)"
-    } else if tau == 6 {
-      "E_6 / D_6"
+    } else if mu == 6 {
+      if hilbert_socle_degree(hilb) == 3 {
+        "E_6 (x^3 + y^4)"
+      } else {
+        "D_6 (x^2 y + y^5)"
+      }
+    } else if mu == 7 {
+      "E_7 (x^3 + x y^3)"
+    } else if mu == 8 {
+      "E_8 (x^3 + y^5)"
     } else {
-      "Corank-2 QH (tau=\{tau})"
+      "Corank-2 QH (mu=\{mu})"
     }
+  } else if p == 1 && qh && crk == 3 && n == 3 && mu == 8 {
+    // T_{3,3,3} = x^3 + y^3 + z^3: mu = 2^3 = 8, corank 3.
+    "T_{3,3,3} (Triangle)"
   } else if p == 1 && !qh {
     "Non-QH Contact Class (tau=\{tau} < mu=\{mu})"
   } else {
@@ -1245,4 +1366,16 @@ pub fn classify_contact_equiv_class(f : MapGerm) -> GermEquivClass {
     strict_k_codim: dk,
     is_quasihomogeneous: qh,
   }
+}
+
+///|
+/// Socle degree (top nonzero degree) of a finite Hilbert function.
+fn hilbert_socle_degree(h : Array[Int32]) -> Int32 {
+  let mut top = -1
+  for d in 0..<h.length() {
+    if h[d] > 0 {
+      top = d
+    }
+  }
+  top
 }

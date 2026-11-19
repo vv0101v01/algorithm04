@@ -4,11 +4,18 @@
   "suite_version": "2.0.0",
   "title": "數理類智能體 emergence 問題集（可機器讀取）",
   "description": "以可執行斷言表述之數理類智能體能力迫出式問題集。每題附陷阱說明與對應之已修復缺陷編號。",
-  "kinds": ["EXACT", "INEQUALITY", "LAW", "METRIC", "EXISTENCE", "COUNTEREXAMPLE"],
+  "kinds": [
+    "EXACT",
+    "INEQUALITY",
+    "LAW",
+    "METRIC",
+    "EXISTENCE",
+    "COUNTEREXAMPLE"
+  ],
   "scoring": {
-    "executability": 0.40,
+    "executability": 0.4,
     "bidirectionality": 0.25,
-    "trap_coverage": 0.20,
+    "trap_coverage": 0.2,
     "layer_coverage": 0.15
   },
   "problems": [
@@ -18,9 +25,14 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "schur_effective_mass_identity",
-      "expected": { "op": "<", "value": 1e-13 },
+      "expected": {
+        "op": "<",
+        "value": 1e-13
+      },
       "trap": "不可使用 ΔM 的經典特徵值最小值作為位移非零之證據；奇–奇 Schur 修正之偶體恆為零。",
-      "related_bugs": ["BUG-15"],
+      "related_bugs": [
+        "BUG-15"
+      ],
       "layer": "Tier2"
     },
     {
@@ -29,9 +41,14 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "schur_soul_mass_shift",
-      "expected": { "soul_norm_gt": 1e-6, "body_trace_abs_lt": 1e-12 },
+      "expected": {
+        "soul_norm_gt": 1e-06,
+        "body_trace_abs_lt": 1e-12
+      },
       "trap": "偶體投影必為零；位移之非零性只能由靈魂範數認證。",
-      "related_bugs": ["BUG-15"],
+      "related_bugs": [
+        "BUG-15"
+      ],
       "layer": "Tier2"
     },
     {
@@ -40,7 +57,9 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "SuperMassTensor::schur_canonical_form",
-      "expected": { "eigenvalue_multiset_preserved": true },
+      "expected": {
+        "eigenvalue_multiset_preserved": true
+      },
       "trap": null,
       "related_bugs": [],
       "layer": "Tier0"
@@ -51,7 +70,10 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "SuperHamiltonian::metriplectic_defect",
-      "expected": { "op": "<", "value": 1e-12 },
+      "expected": {
+        "op": "<",
+        "value": 1e-12
+      },
       "trap": null,
       "related_bugs": [],
       "layer": "Tier2"
@@ -62,7 +84,11 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "SuperHamiltonian::symplectic_defect",
-      "expected": { "op": "<", "value": 1e-9, "det_J": 1.0 },
+      "expected": {
+        "op": "<",
+        "value": 1e-09,
+        "det_J": 1.0
+      },
       "trap": null,
       "related_bugs": [],
       "layer": "Tier2"
@@ -73,7 +99,10 @@
       "kind": "INEQUALITY",
       "module": "arena/super_emergence",
       "function": "double_well_barrier_escape",
-      "expected": { "conservative_escapes": 0, "metriplectic_escapes_gt": 0 },
+      "expected": {
+        "conservative_escapes": 0,
+        "metriplectic_escapes_gt": 0
+      },
       "trap": "保守流因能量守恆恆被侷限；metriplectic 流因耗散得以降能量逃逸。",
       "related_bugs": [],
       "layer": "Tier2"
@@ -84,7 +113,10 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "FourVal::join",
-      "expected": { "pairs_checked": 16, "absorption_holds": true },
+      "expected": {
+        "pairs_checked": 16,
+        "absorption_holds": true
+      },
       "trap": null,
       "related_bugs": [],
       "layer": "Tier0"
@@ -95,9 +127,14 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "FourVal::land",
-      "expected": { "pairs_checked": 16, "absorption_holds": true },
+      "expected": {
+        "pairs_checked": 16,
+        "absorption_holds": true
+      },
       "trap": "舊實作回傳 land(Nv,Tv)=Tv 與 lor(Fv,Bv)=Fv，違反其自身文件化之真值序。",
-      "related_bugs": ["BUG-11"],
+      "related_bugs": [
+        "BUG-11"
+      ],
       "layer": "Tier0"
     },
     {
@@ -106,7 +143,10 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "FourVal::neg",
-      "expected": { "information_order": true, "truth_order": true },
+      "expected": {
+        "information_order": true,
+        "truth_order": true
+      },
       "trap": null,
       "related_bugs": [],
       "layer": "Tier0"
@@ -117,7 +157,9 @@
       "kind": "COUNTEREXAMPLE",
       "module": "arena/super_emergence",
       "function": "explosion_counterexample_exists",
-      "expected": { "value": true },
+      "expected": {
+        "value": true
+      },
       "trap": "矛盾不爆炸不是「無反例」，而是「反例存在且可機器構造」。",
       "related_bugs": [],
       "layer": "Tier0"
@@ -128,9 +170,14 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "paraconsistent_no_explosion",
-      "expected": { "no_explosion": true, "orthogonal_proposition_designated": false },
+      "expected": {
+        "no_explosion": true,
+        "orthogonal_proposition_designated": false
+      },
       "trap": "兩世界 fixture 無法維持正交假命題穿越融合；需至少第三條正交命題。",
-      "related_bugs": ["BUG-16"],
+      "related_bugs": [
+        "BUG-16"
+      ],
       "layer": "Tier2"
     },
     {
@@ -139,7 +186,9 @@
       "kind": "EXISTENCE",
       "module": "arena/super_emergence",
       "function": "all_monotone_maps_have_fixed_point",
-      "expected": { "value": true },
+      "expected": {
+        "value": true
+      },
       "trap": null,
       "related_bugs": [],
       "layer": "Tier0"
@@ -150,7 +199,10 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "cocycle_condition",
-      "expected": { "op": "<", "value": 1e-12 },
+      "expected": {
+        "op": "<",
+        "value": 1e-12
+      },
       "trap": null,
       "related_bugs": [],
       "layer": "Tier0"
@@ -161,9 +213,14 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "patch_sections",
-      "expected": { "compatible": true, "incompatible": false },
+      "expected": {
+        "compatible": true,
+        "incompatible": false
+      },
       "trap": "轉移函數須可逆；奇異轉換須被防護而非產生 NaN。",
-      "related_bugs": ["BUG-09"],
+      "related_bugs": [
+        "BUG-09"
+      ],
       "layer": "Tier0"
     },
     {
@@ -172,7 +229,10 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "SuperOperatorBundle::holonomy_defect",
-      "expected": { "op": "<", "value": 1e-12 },
+      "expected": {
+        "op": "<",
+        "value": 1e-12
+      },
       "trap": null,
       "related_bugs": [],
       "layer": "Tier2"
@@ -183,9 +243,14 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "emergent_commutator_trace",
-      "expected": { "op": "<", "value": 1e-10 },
+      "expected": {
+        "op": "<",
+        "value": 1e-10
+      },
       "trap": "對奇異 g 必須回 false，不得以 NaN 比較之方式蒙混。",
-      "related_bugs": ["BUG-09"],
+      "related_bugs": [
+        "BUG-09"
+      ],
       "layer": "Tier0"
     },
     {
@@ -194,7 +259,13 @@
       "kind": "INEQUALITY",
       "module": "arena/super_emergence",
       "function": "emergent_spectral_gap",
-      "expected": { "diagonal_value": 3.0, "perturbed_between": [2.0, 4.0] },
+      "expected": {
+        "diagonal_value": 3.0,
+        "perturbed_between": [
+          2.0,
+          4.0
+        ]
+      },
       "trap": null,
       "related_bugs": [],
       "layer": "Tier0"
@@ -205,9 +276,14 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "symplectic_identity_residual",
-      "expected": { "symplectic_lt": 1e-6, "explicit_gt": 1e-3 },
+      "expected": {
+        "symplectic_lt": 1e-06,
+        "explicit_gt": 0.001
+      },
       "trap": "變分雅可比必須以 dt 為積分步長，不得以擾動 eps 代替。",
-      "related_bugs": ["BUG-08"],
+      "related_bugs": [
+        "BUG-08"
+      ],
       "layer": "Tier0"
     },
     {
@@ -216,9 +292,14 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "symplectic_det_area",
-      "expected": { "op": "<", "value": 1e-6 },
+      "expected": {
+        "op": "<",
+        "value": 1e-06
+      },
       "trap": null,
-      "related_bugs": ["BUG-08"],
+      "related_bugs": [
+        "BUG-08"
+      ],
       "layer": "Tier0"
     },
     {
@@ -227,7 +308,9 @@
       "kind": "INEQUALITY",
       "module": "arena/super_emergence",
       "function": "energy_drift",
-      "expected": { "symplectic_lt_explicit": true },
+      "expected": {
+        "symplectic_lt_explicit": true
+      },
       "trap": null,
       "related_bugs": [],
       "layer": "Tier0"
@@ -238,7 +321,10 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "slaving_run",
-      "expected": { "op": "<", "value": 1e-9 },
+      "expected": {
+        "op": "<",
+        "value": 1e-09
+      },
       "trap": null,
       "related_bugs": [],
       "layer": "Tier0"
@@ -249,7 +335,10 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "memory_closed_form",
-      "expected": { "op": "<", "value": 1e-9 },
+      "expected": {
+        "op": "<",
+        "value": 1e-09
+      },
       "trap": null,
       "related_bugs": [],
       "layer": "Tier0"
@@ -260,9 +349,15 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "absorption_time_linear_solve",
-      "expected": { "op": "<", "value": 1e-6, "rhs_unmutated": true },
+      "expected": {
+        "op": "<",
+        "value": 1e-06,
+        "rhs_unmutated": true
+      },
       "trap": "線性求解不得就地覆寫呼叫端之右端向量。",
-      "related_bugs": ["BUG-07"],
+      "related_bugs": [
+        "BUG-07"
+      ],
       "layer": "Tier0"
     },
     {
@@ -271,7 +366,10 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "terminal_is_unique_up_to_iso",
-      "expected": { "value": true, "arrow_count": 1 },
+      "expected": {
+        "value": true,
+        "arrow_count": 1
+      },
       "trap": null,
       "related_bugs": [],
       "layer": "Tier0"
@@ -282,9 +380,14 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "compute_finite_pullback",
-      "expected": { "commuting_cone": "Ok", "non_commuting_cone": "Err" },
+      "expected": {
+        "commuting_cone": "Ok",
+        "non_commuting_cone": "Err"
+      },
       "trap": "不相容錐必須回 Err，不得回 Ok。",
-      "related_bugs": ["BUG-16"],
+      "related_bugs": [
+        "BUG-16"
+      ],
       "layer": "Tier0"
     },
     {
@@ -293,7 +396,10 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "cantor_unpair",
-      "expected": { "round_trip": true, "injective": true },
+      "expected": {
+        "round_trip": true,
+        "injective": true
+      },
       "trap": null,
       "related_bugs": [],
       "layer": "Tier0"
@@ -304,9 +410,14 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "godel_encode_finite_set",
-      "expected": { "round_trip": true, "order_invariant": true },
+      "expected": {
+        "round_trip": true,
+        "order_invariant": true
+      },
       "trap": "位數展開依賴呈現次序且與解碼不一致；須以二進位特徵掩碼編碼。",
-      "related_bugs": ["BUG-13"],
+      "related_bugs": [
+        "BUG-13"
+      ],
       "layer": "Tier2"
     },
     {
@@ -315,7 +426,9 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "run_sgne_emergence_simulation",
-      "expected": { "clusters": "2+2+2+2" },
+      "expected": {
+        "clusters": "2+2+2+2"
+      },
       "trap": null,
       "related_bugs": [],
       "layer": "Tier1"
@@ -326,7 +439,9 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "run_sgne_emergence_simulation",
-      "expected": { "mass_error_lt": 1e-12 },
+      "expected": {
+        "mass_error_lt": 1e-12
+      },
       "trap": null,
       "related_bugs": [],
       "layer": "Tier1"
@@ -337,7 +452,10 @@
       "kind": "INEQUALITY",
       "module": "arena/super_emergence",
       "function": "distill_semitropical_projective",
-      "expected": { "before": "8/8", "after": "0/8" },
+      "expected": {
+        "before": "8/8",
+        "after": "0/8"
+      },
       "trap": null,
       "related_bugs": [],
       "layer": "Tier1"
@@ -348,9 +466,13 @@
       "kind": "INEQUALITY",
       "module": "arena/super_emergence",
       "function": "role_memory_profiles",
-      "expected": { "strictly_decreasing": true },
+      "expected": {
+        "strictly_decreasing": true
+      },
       "trap": "profile 順序須依保留率排列，否則吸收時間序顛倒。",
-      "related_bugs": ["BUG-17"],
+      "related_bugs": [
+        "BUG-17"
+      ],
       "layer": "Tier2"
     },
     {
@@ -359,9 +481,14 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "supertropical_wta_dual",
-      "expected": { "strict_max_tangible": true, "tied_max_ghost": true },
+      "expected": {
+        "strict_max_tangible": true,
+        "tied_max_ghost": true
+      },
       "trap": "幽靈偵測若只比較最大值與次大值，並列極大將被誤判為 Tangible。",
-      "related_bugs": ["BUG-14"],
+      "related_bugs": [
+        "BUG-14"
+      ],
       "layer": "Tier2"
     },
     {
@@ -370,9 +497,15 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "finite_bicompleteness_certificate",
-      "expected": { "value": true, "pushout_size_gt": 0, "pullback_size_gt": 0 },
+      "expected": {
+        "value": true,
+        "pushout_size_gt": 0,
+        "pullback_size_gt": 0
+      },
       "trap": null,
-      "related_bugs": ["BUG-16"],
+      "related_bugs": [
+        "BUG-16"
+      ],
       "layer": "Tier2"
     },
     {
@@ -381,7 +514,10 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "verify_all_theorems",
-      "expected": { "count": 18, "all_passed": true },
+      "expected": {
+        "count": 18,
+        "all_passed": true
+      },
       "trap": null,
       "related_bugs": [],
       "layer": "Tier1"
@@ -392,7 +528,14 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "verify_all_theorems",
-      "expected": { "backends": ["wasm-gc", "wasm", "js"], "max_divergence_lt": 1e-9 },
+      "expected": {
+        "backends": [
+          "wasm-gc",
+          "wasm",
+          "js"
+        ],
+        "max_divergence_lt": 1e-09
+      },
       "trap": null,
       "related_bugs": [],
       "layer": "Tier1"
@@ -403,10 +546,260 @@
       "kind": "EXACT",
       "module": "arena/super_emergence",
       "function": "moon_info",
-      "expected": { "root_mbti_clean": true, "cli_mbti_clean": true },
+      "expected": {
+        "root_mbti_clean": true,
+        "cli_mbti_clean": true
+      },
       "trap": null,
       "related_bugs": [],
       "layer": "Tier3"
+    },
+    {
+      "id": "P37",
+      "title": "Mora 弱正規形在非良序局部序上終止",
+      "kind": "EXACT",
+      "module": "arena/super_emergence",
+      "function": "mora_normal_form",
+      "expected": {
+        "remainder_is_zero": true,
+        "terminates": true,
+        "inserted_reducers_gt": 0
+      },
+      "trap": "在 x < 1 的局部序下以 {x - x^2} 化簡 x，樸素除法會無限下降；必須靠 ecart 插入當前 h 才能終止。",
+      "related_bugs": [],
+      "layer": "Tier1"
+    },
+    {
+      "id": "P38",
+      "title": "Buchberger–Mora 局部標準基與切線錐重數",
+      "kind": "EXACT",
+      "module": "arena/super_emergence",
+      "function": "tangent_cone_report",
+      "expected": {
+        "standard": true,
+        "dimension": 0,
+        "multiplicity": 5,
+        "hilbert_function": [
+          1,
+          2,
+          1,
+          1
+        ]
+      },
+      "trap": "只用生成元的最低次齊次部分作錐會漏掉嵌入分量：<xy, x^2 - y^3> 的錐由標準基 {xy, x^2-y^3, y^4} 決定，重數為 5 而非 2。",
+      "related_bugs": [],
+      "layer": "Tier1"
+    },
+    {
+      "id": "P39",
+      "title": "牛頓多面體的 toric/Koszul 二分",
+      "kind": "EXACT",
+      "module": "arena/super_emergence",
+      "function": "newton_cone_profile",
+      "expected": {
+        "mixed_toric_face_x2_minus_y2": true,
+        "monomial_cone_x_plus_y2": true,
+        "matches_mora_cone": true
+      },
+      "trap": "x^2 - y^3 的總次數最小面是單獨的 x^2（單項），不可誤報為混合二項式；混合情形需兩項同次數，如 x^2 - y^2。",
+      "related_bugs": [],
+      "layer": "Tier1"
+    },
+    {
+      "id": "P40",
+      "title": "切線錐認證的 M4 選型與 M6 閉環",
+      "kind": "INEQUALITY",
+      "module": "arena/super_emergence",
+      "function": "audit_four_layer_tangent_cone_loop",
+      "expected": {
+        "residual_op": "<=",
+        "value": 0.001,
+        "band_cycle_reversible": true,
+        "cone_dimension": 1
+      },
+      "trap": "角色覆蓋只能來自實際 Flow/Trop-Kan 末態；以 Flow 末態原始質量作 d_O 會退化成單叢，不可宣稱四叢。",
+      "related_bugs": [],
+      "layer": "Tier2"
+    },
+    {
+      "id": "P41",
+      "title": "ADE 分類器完整性（A1/D6/E6/E7/E8/T）",
+      "kind": "EXACT",
+      "module": "arena/super_emergence",
+      "function": "classify_contact_equiv_class",
+      "expected": {
+        "A1_label": "A_1 (Nondegenerate)",
+        "E6_label": "E_6 (x^3 + y^4)",
+        "D6_label": "D_6 (x^2 y + y^5)",
+        "E7_label": "E_7 (x^3 + x y^3)",
+        "E8_label": "E_8 (x^3 + y^5)",
+        "T_label": "T_{3,3,3} (Triangle)"
+      },
+      "trap": "E6 與 D6 的 (mu,tau,corank) 完全相同 (6,6,2)，必須用 Tjurina 代數 Hilbert 函數的 socle 度數區分；舊版硬編碼表格分不開。",
+      "related_bugs": [],
+      "layer": "Tier1"
+    },
+    {
+      "id": "P42",
+      "title": "截斷充分性審查（E8 的 μ 依 max_deg 而變）",
+      "kind": "COUNTEREXAMPLE",
+      "module": "arena/super_emergence",
+      "function": "audit_truncation_adequacy",
+      "expected": {
+        "mu_at_k4": 9,
+        "stable_at_k4": false,
+        "mu_at_k8": 8,
+        "stable_at_k8": true
+      },
+      "trap": "同一 germ 在不同截斷階下 μ 不同：E8 在 max_deg=4 給 μ=9（錯），>=5 才穩定為 8。任何由 μ 推出的 label 都必須先過這道審查。",
+      "related_bugs": [],
+      "layer": "Tier1"
+    },
+    {
+      "id": "P43",
+      "title": "Hörmander Σ-條件：判「可乘」而非只判「碰撞」",
+      "kind": "EXACT",
+      "module": "arena/super_emergence",
+      "function": "hormander_sigma_condition",
+      "expected": {
+        "opposite_chiral_hits": 1,
+        "opposite_chiral_admissible": false,
+        "co_chiral_hits": 0,
+        "co_chiral_admissible": true
+      },
+      "trap": "舊 microlocal_attention_event 只能證明『存在碰撞』，不能證明『沒有碰撞』。乘積定理要的是全稱否定（zero-sum only trivial），邏輯方向相反。",
+      "related_bugs": [],
+      "layer": "Tier2"
+    },
+    {
+      "id": "P44",
+      "title": "Leibniz 一致性：Σ-條件 vs 乘積實作 36 對窮舉",
+      "kind": "EXACT",
+      "module": "arena/super_emergence",
+      "function": "audit_microlocal_leibniz_consistency",
+      "expected": {
+        "fixtures": 36,
+        "sigma_agrees_with_product": true,
+        "order_additivity_defect_lt": 1e-12
+      },
+      "trap": "Σ-條件與 micro_product 必須在每一對上同向；任何一對『條件話可乘而實作拒絕』都是模型不一致。log 型 germ 的拒絕屬模型表達限制，需與 Σ-判定分開回報。",
+      "related_bugs": [],
+      "layer": "Tier2"
+    },
+    {
+      "id": "P45",
+      "title": "M6 局部收縮半徑與步長細化",
+      "kind": "INEQUALITY",
+      "module": "arena/super_emergence",
+      "function": "audit_m6_refinement_and_local_contraction",
+      "expected": {
+        "local_contraction_radius_lt": 1.0,
+        "refinement_consistent": true,
+        "fixed_point_residual_lte": 0.001,
+        "refined_fixed_point_residual_lte": 0.001
+      },
+      "trap": "相鄰殘差比只證明『走過的軌跡收斂』；固定點要的是 Jacobian 譜半徑 < 1（有限差分估）與 r→r/2 的細化一致性。舊版兩者皆缺。",
+      "related_bugs": [],
+      "layer": "Tier2"
+    },
+    {
+      "id": "P46",
+      "title": "M6.4 角色覆蓋可達性掃描 + 並列最大值家族",
+      "kind": "EXACT",
+      "module": "arena/super_emergence",
+      "function": "audit_m6_role_coverage_sweep",
+      "expected": {
+        "samples": 42,
+        "max_coverage": 4,
+        "four_reachable": true,
+        "structural_cap": false,
+        "tie_family_coverage": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "tie_family_monotone": true
+      },
+      "trap": "四角色權重要求嚴格正，單純形頂點（含 0）係非法輸入；用頂點取樣會令 42 個樣本全部退化為 input_valid=false，同『答案係 false』長得一模一樣。必須用開單純形（eps=1e-3 逼近頂點）。另一陷阱：hist[3]=0 唔代表三叢不穩定——低差異填點從來冇產生剛好三個並列最大嘅權重。必須用 m6_tie_family_weights 直接構造 k 個並列最大嘅家族驗證：tie_family_coverage=[1,2,3,4]。覆蓋數 = 並列最大值個數。",
+      "related_bugs": [],
+      "layer": "Tier2"
+    },
+    {
+      "id": "P47",
+      "title": "M7 統一範疇：超熱帶×辛×副相容之纖維積仍為範疇",
+      "kind": "EXACT",
+      "module": "arena/super_emergence",
+      "function": "verify_m7_unified_category",
+      "expected": {
+        "semitropical_axioms_hold": true,
+        "symplectic_axioms_hold": true,
+        "paraconsistent_axioms_hold": true,
+        "fiber_product_closed": true,
+        "identity_law": true,
+        "associativity": true,
+        "is_category": true
+      },
+      "trap": "結合律必須用容差判定。Double 的嚴格 Eq 對 (0.1-0.04)-0.04 與 0.1+(-0.04-0.04) 會給 false；這不是建構缺陷，而是說明統一範疇是半環值範疇，只在平局容差下結合。另：ghost 理想只對乘法吸收，加法只在平局生 ghost——直覺對但定律錯。",
+      "related_bugs": [],
+      "layer": "Tier2"
+    },
+    {
+      "id": "P48",
+      "title": "M8 K₀ 指數作為角色複雜度計量",
+      "kind": "EXACT",
+      "module": "arena/super_emergence",
+      "function": "verify_m8_k0_complexity_measure",
+      "expected": {
+        "additive": true,
+        "monotone": true,
+        "distinguishable": true,
+        "is_complexity_measure": true,
+        "roles": 4
+      },
+      "trap": "K₀ 直和必須用塊對角 Mat_16(R)（k0_direct_sum_index），不可用生成元數值相加：diag(1,0)+diag(0.5,0.5)=diag(1.5,0.5) 不是投影子，秩會崩。單調性不可用『生成元減半』測——投影子減半不再是投影子。mdl 不可用 summands=max(k0_class,1)：connector（秩 1、兩個和項）會被錯算成 mdl=1，反而掩蓋『秩單獨不夠』。必須獨立計算和項數，mdl 逐個為 [1,1,3,2]。另：coordinator 與 explorer 連 mdl 都相同（皆 1），在本計量下不可分辨。",
+      "related_bugs": [],
+      "layer": "Tier2"
+    },
+    {
+      "id": "P49",
+      "title": "M9 湧現可證偽性：與偽裝隨機搜尋對比",
+      "kind": "INEQUALITY",
+      "module": "arena/super_emergence",
+      "function": "audit_m9_emergence_falsifiability",
+      "expected": {
+        "ensemble": 64,
+        "null_mean_lt": 0.0,
+        "alt_mean_gt": 0.8,
+        "false_positive_rate_lte": 0.1,
+        "power_gte": 0.9,
+        "separates": true
+      },
+      "trap": "觀測量不可追蹤歷史最佳點——兩臂都會飽和到 +1，得到 fpr=0、power=0、separates=false。必須量度末態，並用標準序參數 r=1-Var(x)/Var(x0)（Kuramoto 型）。零假設模型必須給同等評估預算，不可弱化。同時必須報 power 而非只報 p 值。",
+      "related_bugs": [],
+      "layer": "Tier2"
+    },
+    {
+      "id": "P50",
+      "title": "M10 副相容共識：B_4^4 全 256 配置窮舉 + 雙格降解",
+      "kind": "EXACT",
+      "module": "arena/super_emergence",
+      "function": "verify_m10_subcolony_consensus",
+      "expected": {
+        "configurations": 256,
+        "naive_join_exploded": 225,
+        "quarantine_first_exploded": 255,
+        "scoped_exploded": 110,
+        "bilattice_exploded": 0,
+        "bilattice_vacuous": 0,
+        "bilattice_lost_factor": 0,
+        "bilattice_carrying": 65,
+        "bilattice_manufactured": 50,
+        "recommended_rule": "Bilattice"
+      },
+      "trap": "不可把每個 sub-colony 壓成純量因子——B_4 是兩個格的乘積（≤t 真值序、≤i 資訊序），壓成布林等於把向量壓成範數。正解是兩階段降解：≤i 對因子 join（單調不遺忘，故可一邊持有矛盾一邊完成），≤t 投影出可用分支 truth_available(Bv)=[Tv,Fv]。三個 join 型修法全部失敗且已窮舉點算：全域 join 爆 225/256；epistemic_quarantine_map 把 Fv/Tv/Bv 全映到 Bv，爆 255/256（更差）；只隔離顯式 Bv 仍爆 110/256。關鍵：必須區分『本地持有』(某座標本身是 Bv，65 個) 與『製造』(join(Tv,Fv)=Bv 無中生有，50 個)——後者沒有主，不能靠隔離解決。另：vacuity 判準不可把平局當空洞。",
+      "related_bugs": [],
+      "layer": "Tier2"
     }
   ]
 }

@@ -36,11 +36,23 @@ pub fn audit_epistemic_aggregation_laws() -> EpistemicAggregationLawReport
 
 pub fn audit_four_layer_closed_loop(flow_steps? : Int32, max_iterations? : Int32, relaxation? : Double, tolerance? : Double) -> M6ClosedLoopReport
 
+pub fn audit_four_layer_tangent_cone_loop(flow_steps? : Int32, max_iterations? : Int32, relaxation? : Double, tolerance? : Double) -> M6TangentConeFeedbackReport
+
 pub fn audit_godel_set_algebra() -> GodelSetAlgebraReport
 
 pub fn audit_hurst_memory_monotonicity(Array[Double]) -> HurstMemoryTrendReport
 
+pub fn audit_m6_refinement_and_local_contraction(flow_steps? : Int32, max_iterations? : Int32, relaxation? : Double, tolerance? : Double, probe_step? : Double) -> M6RefinementReport
+
+pub fn audit_m6_role_coverage_sweep(samples? : Int32, flow_steps? : Int32) -> RoleCoverageSweepReport
+
+pub fn audit_m9_emergence_falsifiability(ensemble? : Int32, steps? : Int32, n_agents? : Int32, step? : Double, lambda? : Double) -> M9FalsifiabilityReport
+
+pub fn audit_microlocal_leibniz_consistency(tol? : Double) -> LeibnizAuditReport
+
 pub fn audit_serre_normality(MapGerm) -> SerreNormalityReport
+
+pub fn audit_truncation_adequacy(MapGerm) -> TruncationAuditReport
 
 pub fn b4_apply_cut(B4Sequent, B4Sequent) -> B4RuleApplication
 
@@ -76,7 +88,11 @@ pub fn categorical_fisher_matrix(Array[Double]) -> DenseMat
 
 pub fn categorical_probs(Array[Double]) -> Array[Double]
 
+pub fn category_contract(String, Int32, Int32, Bool, Bool, Bool) -> CategoryContract
+
 pub fn cayley_hamilton_2x2(Array[Array[Quat]], Double) -> Bool
+
+pub fn census_rule(String, (Array[SubColonyVerdict]) -> ConsensusResult, Int32) -> ConsensusCensus
 
 pub fn chirality_grading_mat(Int32, Int32) -> DenseMat
 
@@ -90,13 +106,29 @@ pub fn classify_contact_equiv_class(MapGerm) -> GermEquivClass
 
 pub fn cocycle_condition(Array[Double], Array[Double], Array[Double], Double) -> Bool
 
+pub fn colony_factor(Array[SubColonyVerdict]) -> ColonyFactor
+
 pub fn colony_para_fusion(Array[ProtoAgent], Double, Double) -> (Bool, Array[FourVal], Int32)
 
+pub fn colony_role_modules() -> Array[RoleModule]
+
 pub fn compare_natural_vs_euclidean_kl(Array[Double], Array[Double], Int32, Double) -> (Double, Double)
+
+pub fn compose_unified_morphisms(UnifiedMorphism, UnifiedMorphism) -> UnifiedMorphism
 
 pub fn compute_finite_pullback(Hom, Hom) -> FinitePullback
 
 pub fn compute_finite_pushout(Int32, Int32, Array[Int32], Array[Int32]) -> FinitePushout
+
+pub fn consensus_bilattice(Array[SubColonyVerdict]) -> ConsensusResult
+
+pub fn consensus_naive_join(Array[SubColonyVerdict]) -> ConsensusResult
+
+pub fn consensus_quarantine_first(Array[SubColonyVerdict]) -> ConsensusResult
+
+pub fn consensus_scoped(Array[SubColonyVerdict]) -> ConsensusResult
+
+pub fn consensus_weighted(Array[SubColonyVerdict]) -> ConsensusResult
 
 pub fn count_terminal_arrows(Int32) -> Int32
 
@@ -208,6 +240,10 @@ pub fn hermitian2_eigs(Hermitian2) -> (Double, Double)
 
 pub fn hermitian2_projector_plus(Hermitian2) -> (Double, Double, Quat)
 
+pub fn hormander_sigma_condition(MicrofunctionGerm, MicrofunctionGerm, base_tol? : Double, spectrum_tol? : Double) -> HormanderSigmaReport
+
+pub fn hormander_sigma_conormal(ConormalBundle, ConormalBundle, base_tol? : Double, angle_tol? : Double) -> Bool
+
 pub fn ideal_colength(JetBasis, Array[PolyGerm]) -> Int32
 
 pub fn init_disordered_colony(Int32, Double) -> Array[ProtoAgent]
@@ -233,6 +269,16 @@ pub fn kramers_multiplicity_profile(Array[Double], eps? : Double) -> (Bool, Arra
 pub fn laplace_beltrami_berezin_1d(SuperManifold, (Double) -> Double, Double, eps? : Double) -> Double
 
 pub fn learn_catastrophe_for_role_branches(Int32, Double) -> M4LearningReport
+
+pub fn learn_catastrophe_from_tangent_cone(Int32, Double) -> M4TangentConeReport
+
+pub fn m10_all_configurations(Int32) -> Array[Array[SubColonyVerdict]]
+
+pub fn m6_coverage_at_weights(Array[Double], Int32) -> Int32
+
+pub fn m6_tie_family_weights() -> Array[Array[Double]]
+
+pub fn m9_sync_order_parameter(Array[Double], Array[Double]) -> Double
 
 pub fn make_osp_even_generator(Int32, Int32, Int32, DenseMat, DenseMat, Array[Grassmann]) -> SuperMatrix
 
@@ -262,9 +308,27 @@ pub fn mobius_gyration(Double, Array[Double], Array[Double], Array[Double]) -> A
 
 pub fn monom_deg(Array[Int32]) -> Int32
 
+pub fn mora_compare_monomials(MoraOrdering, Array[Int32], Array[Int32]) -> Int32
+
+pub fn mora_const_poly(Int32, Int32, Double) -> MoraPoly
+
+pub fn mora_monomial_poly(Int32, Int32, Array[Int32], Double) -> MoraPoly
+
+pub fn mora_normal_form(MoraPoly, Array[MoraPoly], ordering? : MoraOrdering, tol? : Double, iteration_budget? : Int32) -> MoraNormalFormReport
+
+pub fn mora_standard_basis(Array[MoraPoly], ordering? : MoraOrdering, tol? : Double, pair_budget? : Int32, iteration_budget? : Int32) -> MoraStandardBasisReport
+
+pub fn mora_var_poly(Int32, Int32, Int32) -> MoraPoly
+
+pub fn mora_zero_poly(Int32, Int32) -> MoraPoly
+
 pub fn natural_gradient(DenseMat, Array[Double], damping? : Double) -> Array[Double]
 
 pub fn natural_gradient_kl_step(DenseMat, Array[Double], Double, damping? : Double) -> Array[Double]
+
+pub fn newton_cone_profile(MoraPoly, tol? : Double) -> NewtonConeProfile
+
+pub fn newton_polyhedron_report(MoraPoly, tol? : Double) -> NewtonPolyhedronReport
 
 pub fn normalize_semigroup_curve_germ(Array[Int32], branches? : Int32) -> CurveNormalization
 
@@ -325,6 +389,12 @@ pub fn reassign_roles_by_orbit_distance(Array[SuperMassTensor], Array[SuperMassT
 pub fn rebuild_from_coords(Double, Double) -> Complex
 
 pub fn role_absorption_time(Double) -> (Double, Double)
+
+pub fn role_direct_sum_index(RoleModule, RoleModule) -> (Int32, Double)
+
+pub fn role_irreducible_summands(RoleModule) -> Int32
+
+pub fn role_mdl(RoleModule) -> Double
 
 pub fn role_memory_profiles() -> Array[RoleMemoryProfile]
 
@@ -412,6 +482,8 @@ pub fn symplectic_identity_residual(NeuralH, Array[Double], Array[Double], Doubl
 
 pub fn symplectic_odd_inner(Array[Grassmann], Array[Grassmann], Int32) -> Grassmann
 
+pub fn tangent_cone_report(Array[MoraPoly], ordering? : MoraOrdering, tol? : Double) -> TangentConeReport
+
 pub fn tarski_least_fixed_point((FourVal) -> FourVal) -> FourVal
 
 pub fn terminal_is_unique_up_to_iso() -> Bool
@@ -429,6 +501,8 @@ pub fn tropical_left_kan_extension(Array[Int32], DenseMat, Array[Double]) -> Arr
 pub fn tropical_projective_geodesic(TropProjPoint, TropProjPoint, Double) -> TropProjPoint
 
 pub fn tropical_right_kan_extension(Array[Int32], DenseMat, Array[Double]) -> Array[Double]
+
+pub fn truth_available(FourVal) -> Array[FourVal]
 
 pub fn unify_neuro_symbolic(NeuroSymState, NeuroSymState, (String) -> PoincarePoint, tau? : Double, min_coherence? : Double) -> UnifyResult
 
@@ -458,7 +532,19 @@ pub fn verify_all_theorems() -> Array[TheoremReport]
 
 pub fn[A : Module] verify_free_module_adjunction(Int32, Array[A], FreeVec) -> Double
 
+pub fn verify_m10_subcolony_consensus(n_subcolonies? : Int32) -> M10ConsensusReport
+
+pub fn verify_m7_unified_category() -> M7UnificationReport
+
+pub fn verify_m8_k0_complexity_measure() -> M8ComplexityReport
+
 pub fn verify_natural_gradient_covariance(Array[Double], (Array[Double]) -> Array[Double], (Array[Double]) -> Double, eps? : Double) -> (Double, Double)
+
+pub fn verify_paraconsistent_category() -> CategoryContract
+
+pub fn verify_semitropical_category() -> CategoryContract
+
+pub fn verify_symplectic_category() -> CategoryContract
 
 pub fn wedge_sign(Int32, Int32, Int32) -> Double
 
@@ -617,6 +703,18 @@ pub(all) enum CatastropheKind {
 }
 
 #derive(Eq, @debug.Debug)
+pub(all) struct CategoryContract {
+  name : String
+  object_count : Int32
+  morphism_count : Int32
+  identity_law : Bool
+  associativity : Bool
+  extra_axioms : Bool
+  axioms_hold : Bool
+  failing_axiom : String
+}
+
+#derive(Eq, @debug.Debug)
 pub(all) struct CechCategory {
   bundle : SuperOperatorBundle
   tolerance : Double
@@ -636,6 +734,16 @@ pub(all) struct CechMorphism {
   src : Int32
   dst : Int32
   transport : SuperMatrix
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct ColonyFactor {
+  coordinates : Array[FourVal]
+  information : FourVal
+  available : Array[FourVal]
+  local_contradictions : Int32
+  carrying_contradiction : Bool
+  manufactured_contradiction : Bool
 }
 
 #derive(Eq, @debug.Debug)
@@ -708,6 +816,33 @@ pub(all) struct Cone {
 pub fn Cone::equal(Self, Self) -> Bool
 pub fn Cone::not_equal(Self, Self) -> Bool
 pub fn Cone::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct ConormalBundle {
+  x0 : Double
+  directions : Array[(Double, Double)]
+}
+pub fn ConormalBundle::new(Double, Array[(Double, Double)]) -> Self
+
+#derive(Eq, @debug.Debug)
+pub(all) struct ConsensusCensus {
+  rule : String
+  configurations : Int32
+  exploded : Int32
+  vacuous : Int32
+  lost_factor : Int32
+  carrying : Int32
+  manufactured : Int32
+  passes : Bool
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct ConsensusResult {
+  agent_value : FourVal
+  factor : ColonyFactor
+  informing : Int32
+  contradicting : Int32
+}
 
 pub(all) struct Coyoneda[S, A] {
   seeds : Array[S]
@@ -1066,6 +1201,22 @@ pub fn[A, X, Y] HomFunctor::fmap(Self[A, X], (X) -> Y) -> Self[A, Y]
 pub fn[A] HomFunctor::universal_id() -> Self[A, A]
 
 #derive(Eq, @debug.Debug)
+pub(all) struct HormanderSigmaReport {
+  input_valid : Bool
+  signal_plus : Bool
+  signal_minus : Bool
+  belief_plus : Bool
+  belief_minus : Bool
+  sigma_hits : Int32
+  forbidden_pairs : Array[(String, String)]
+  zero_sum_only_trivial : Bool
+  sigma_real_spectrum_clean : Bool
+  sigma_chiral_spectrum_clean : Bool
+  product_admissible : Bool
+  leibniz_safe : Bool
+}
+
+#derive(Eq, @debug.Debug)
 pub(all) struct HurstMemoryResponse {
   input_valid : Bool
   hurst_exponent : Double
@@ -1135,6 +1286,30 @@ pub fn Layer::not_equal(Self, Self) -> Bool
 pub fn Layer::to_repr(Self) -> @debug.Repr
 
 #derive(Eq, @debug.Debug)
+pub(all) struct LeibnizAuditReport {
+  input_valid : Bool
+  fixtures : Int32
+  admissible : Int32
+  rejected : Int32
+  sigma_agrees_with_product : Bool
+  order_additivity_defect : Double
+  certified : Bool
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct M10ConsensusReport {
+  n_subcolonies : Int32
+  naive_join : ConsensusCensus
+  quarantine_first : ConsensusCensus
+  scoped : ConsensusCensus
+  weighted : ConsensusCensus
+  bilattice : ConsensusCensus
+  exhaustive : Bool
+  non_explosive_consensus_exists : Bool
+  recommended_rule : String
+}
+
+#derive(Eq, @debug.Debug)
 pub(all) struct M4LearningReport {
   input_valid : Bool
   certified : Bool
@@ -1156,6 +1331,27 @@ pub(all) struct M4LearningReport {
 }
 
 #derive(Eq, @debug.Debug)
+pub(all) struct M4TangentConeReport {
+  input_valid : Bool
+  certified : Bool
+  target_role_branches : Int32
+  a3_cone_multiplicity : Int32
+  a3_cone_dimension : Int32
+  a3_conical : Bool
+  a3_real_critical_points : Int32
+  d4_cone_multiplicity : Int32
+  d4_cone_dimension : Int32
+  d4_conical : Bool
+  d4_real_critical_points : Int32
+  selected_class : CatastropheKind
+  selected_label : String
+  milnor_number : Int32
+  unfolding_codimension : Int32
+  cone_hilbert_a3 : Array[Int32]
+  cone_hilbert_d4 : Array[Int32]
+}
+
+#derive(Eq, @debug.Debug)
 pub(all) struct M6ClosedLoopReport {
   input_valid : Bool
   converged : Bool
@@ -1165,6 +1361,7 @@ pub(all) struct M6ClosedLoopReport {
   catastrophe_class : String
   role_coverage_count : Int32
   microlocal_quarantined : Bool
+  colony_factor : ColonyFactor
   microlocal_value : FourVal
   flow_mass_weights : Array[Double]
   trop_kan_weights : Array[Double]
@@ -1174,6 +1371,84 @@ pub(all) struct M6ClosedLoopReport {
   weight_normalization_defect : Double
   flow_free_energy : Double
   non_explosion_preserved : Bool
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct M6RefinementReport {
+  input_valid : Bool
+  relaxation : Double
+  refined_relaxation : Double
+  fixed_point_residual : Double
+  refined_fixed_point_residual : Double
+  weight_delta : Double
+  local_contraction_radius : Double
+  refinement_consistent : Bool
+  local_contraction_certified : Bool
+  certified : Bool
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct M6TangentConeFeedbackReport {
+  input_valid : Bool
+  converged : Bool
+  empirical_fixed_point_certified : Bool
+  iterations : Int32
+  hurst_exponent : Double
+  catastrophe_class : String
+  cone_multiplicity : Int32
+  cone_dimension : Int32
+  cone_conical : Bool
+  role_coverage_count : Int32
+  role_assignment : Array[Int32]
+  cluster_sizes : Array[Int32]
+  dominant_band : Int32
+  band_cycle_reversible : Bool
+  microlocal_quarantined : Bool
+  microlocal_value : FourVal
+  flow_mass_weights : Array[Double]
+  trop_kan_weights : Array[Double]
+  role_absorption_times : Array[Double]
+  fixed_point_residual : Double
+  empirical_contraction_factor : Double
+  weight_normalization_defect : Double
+  non_explosion_preserved : Bool
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct M7UnificationReport {
+  semitropical : CategoryContract
+  symplectic : CategoryContract
+  paraconsistent : CategoryContract
+  fiber_product_closed : Bool
+  identity_law : Bool
+  associativity : Bool
+  phase_agreement : Bool
+  is_category : Bool
+  failing_leg : String
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct M8ComplexityReport {
+  profiles : Array[RoleKTheoryProfile]
+  additive : Bool
+  monotone : Bool
+  distinguishable : Bool
+  is_complexity_measure : Bool
+  failing_property : String
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct M9FalsifiabilityReport {
+  input_valid : Bool
+  ensemble : Int32
+  null_mean : Double
+  alt_mean : Double
+  threshold : Double
+  false_positive_rate : Double
+  power : Double
+  separates : Bool
+  has_discriminating_power : Bool
+  caveat : String
 }
 
 #derive(Eq, @debug.Debug)
@@ -1259,6 +1534,7 @@ pub(all) struct MicrofunctionGerm {
   minus_log : Complex
 }
 pub fn MicrofunctionGerm::antipodal_collision(Self, Self, base_tol? : Double, spectrum_tol? : Double) -> Bool
+pub fn MicrofunctionGerm::as_conormal_bundle(Self) -> ConormalBundle
 pub fn MicrofunctionGerm::dist(Self, Self) -> Double
 pub fn MicrofunctionGerm::equal(Self, Self) -> Bool
 pub fn MicrofunctionGerm::integrate_microlocal(Self) -> Result[Self, String]
@@ -1280,6 +1556,58 @@ pub(all) struct MicrolocalAttentionReport {
   value_before : FourVal
   value_after : FourVal
   non_explosion_preserved : Bool
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct MoraBasisElement {
+  poly : MoraPoly
+  genesis : String
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct MoraNormalFormReport {
+  input_valid : Bool
+  remainder : MoraPoly
+  remainder_is_zero : Bool
+  steps : Int32
+  inserted_reducers : Int32
+  max_ecart_seen : Int32
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) enum MoraOrdering {
+  NegDegRevLex
+  NegDegLex
+  NegLexLastSmall
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct MoraPoly {
+  n_vars : Int32
+  max_deg : Int32
+  coeffs : Array[Array[Double]]
+}
+pub fn MoraPoly::add_poly(Self, Self) -> Self
+pub fn MoraPoly::coeff_of(Self, Array[Int32]) -> Double
+pub fn MoraPoly::initial_monomial(Self, MoraOrdering, tol? : Double) -> Array[Int32]
+pub fn MoraPoly::mul_poly(Self, Self) -> Self
+pub fn MoraPoly::neg_poly(Self) -> Self
+pub fn MoraPoly::num_terms(Self, tol? : Double) -> Int32
+pub fn MoraPoly::scale_poly(Self, Double) -> Self
+pub fn MoraPoly::sub_poly(Self, Self) -> Self
+
+#derive(Eq, @debug.Debug)
+pub(all) struct MoraStandardBasisReport {
+  input_valid : Bool
+  dimension : Int32
+  basis_size : Int32
+  pairs_considered : Int32
+  normal_forms_computed : Int32
+  inserted_reducers : Int32
+  budget_exhausted : Bool
+  standard : Bool
+  basis : Array[MoraPoly]
+  initial_monomials : Array[Array[Int32]]
 }
 
 #derive(Eq, @debug.Debug)
@@ -1330,6 +1658,28 @@ pub(all) struct NeuroSymState {
 pub fn NeuroSymState::equal(Self, Self) -> Bool
 pub fn NeuroSymState::not_equal(Self, Self) -> Bool
 pub fn NeuroSymState::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct NewtonConeProfile {
+  input_valid : Bool
+  total_degree : Int32
+  initial_terms : Array[Array[Int32]]
+  mixed_toric_face : Bool
+  monomial_cone : Bool
+  semigroup_rank : Int32
+  cone_equations : Array[MoraPoly]
+  matches_mora_cone : Bool
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct NewtonPolyhedronReport {
+  input_valid : Bool
+  vertices : Array[Array[Int32]]
+  facet_normals : Array[Array[Int32]]
+  dimension : Int32
+  total_degree_facet : Bool
+  prototype_valuations : Array[Array[Double]]
+}
 
 #derive(Eq, @debug.Debug)
 pub(all) struct NonCommGraph {
@@ -1404,6 +1754,13 @@ pub fn Parity::hash(Self) -> Int32
 pub fn Parity::hash_combine(Self, Hasher) -> Unit
 pub fn Parity::not_equal(Self, Self) -> Bool
 pub fn Parity::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct Pcg32 {
+  state : Int64
+}
+pub fn Pcg32::next_unit(Self) -> (Double, Self)
+pub fn Pcg32::seeded(Int64) -> Self
 
 #derive(Eq, Hash, @debug.Debug)
 pub(all) enum Phase {
@@ -1551,6 +1908,33 @@ pub fn QuatSpectralTriple::not_equal(Self, Self) -> Bool
 pub fn QuatSpectralTriple::to_repr(Self) -> @debug.Repr
 
 #derive(Eq, @debug.Debug)
+pub(all) struct RoleCoverageSweepReport {
+  input_valid : Bool
+  samples : Int32
+  max_coverage : Int32
+  min_coverage : Int32
+  coverage_histogram : Array[Int32]
+  four_reachable : Bool
+  witness_weights : Array[Double]
+  structural_cap : Bool
+  tie_family_coverage : Array[Int32]
+  tie_family_monotone : Bool
+  certified : Bool
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) struct RoleKTheoryProfile {
+  role : String
+  k0_class : Int32
+  rank : Double
+  irreducible_summands : Int32
+  primitive : Bool
+  mdl : Double
+  additive : Bool
+  monotone : Bool
+}
+
+#derive(Eq, @debug.Debug)
 pub(all) struct RoleMemoryProfile {
   role : Int32
   gates : Gates
@@ -1559,6 +1943,12 @@ pub(all) struct RoleMemoryProfile {
 pub fn RoleMemoryProfile::equal(Self, Self) -> Bool
 pub fn RoleMemoryProfile::not_equal(Self, Self) -> Bool
 pub fn RoleMemoryProfile::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct RoleModule {
+  name : String
+  generator : Hermitian2
+}
 
 #derive(Eq, @debug.Debug)
 pub(all) struct SerreNormalityReport {
@@ -1600,6 +1990,13 @@ pub fn SpectralTriple::lip_seminorm(Self, DenseMat) -> Double
 pub fn SpectralTriple::not_equal(Self, Self) -> Bool
 pub fn SpectralTriple::spectral_action(Self, Double) -> Double
 pub fn SpectralTriple::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct SubColonyVerdict {
+  name : String
+  value : FourVal
+  confidence : Double
+}
 
 #derive(Eq, @debug.Debug)
 pub(all) struct Substitution {
@@ -1867,6 +2264,20 @@ pub fn SynergeticNet::push_morphism(Self, Array[Double], Array[Double]) -> Array
 pub fn SynergeticNet::to_repr(Self) -> @debug.Repr
 
 #derive(Eq, @debug.Debug)
+pub(all) struct TangentConeReport {
+  input_valid : Bool
+  dimension : Int32
+  multiplicity : Int32
+  colength : Int32
+  hilbert_function : Array[Int32]
+  hilbert_slope : Int32
+  conical : Bool
+  lineality : Bool
+  cone_equations : Array[MoraPoly]
+  standard_basis_size : Int32
+}
+
+#derive(Eq, @debug.Debug)
 pub(all) struct TheoremReport {
   id : String
   title : String
@@ -1955,6 +2366,19 @@ pub fn TropicalKanMacroAgent::not_equal(Self, Self) -> Bool
 pub fn TropicalKanMacroAgent::to_repr(Self) -> @debug.Repr
 
 #derive(Eq, @debug.Debug)
+pub(all) struct TruncationAuditReport {
+  input_valid : Bool
+  max_deg : Int32
+  mu_at_max_deg : Int32
+  mu_at_next : Int32
+  tau_at_max_deg : Int32
+  tau_at_next : Int32
+  mu_stable : Bool
+  tau_stable : Bool
+  stable : Bool
+}
+
+#derive(Eq, @debug.Debug)
 pub(all) struct UEAElement {
   dim : Int32
   terms : Array[(Array[Int32], Double)]
@@ -1971,6 +2395,27 @@ pub fn UEAElement::to_repr(Self) -> @debug.Repr
 pub fn UEAElement::unit(Int32, c? : Double) -> Self
 pub fn UEAElement::universal_lift_rep(Self, Array[DenseMat]) -> DenseMat
 pub fn UEAElement::zero(Int32) -> Self
+
+#derive(Eq, @debug.Debug)
+pub(all) struct UnifiedMorphism {
+  trop_mul : Double
+  trop_add : Double
+  dt : Double
+  operand : FourVal
+  phase_shift : Double
+}
+pub fn UnifiedMorphism::identity() -> Self
+
+#derive(Eq, @debug.Debug)
+pub(all) struct UnifiedObject {
+  trop : Double
+  ghost : Bool
+  q : Double
+  p : Double
+  belief : FourVal
+  maslov_phase : Double
+}
+pub fn UnifiedObject::apply_morphism(Self, UnifiedMorphism) -> Self
 
 #derive(Eq, @debug.Debug)
 pub(all) enum UnifyResult {
